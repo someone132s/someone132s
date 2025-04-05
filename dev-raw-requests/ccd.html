@@ -1,0 +1,677 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    
+    <meta HTTP-EQUIV="pragma" CONTENT="no-cache">
+    <meta HTTP-EQUIV="Cache-Control" CONTENT="no-store, must-revalidate">
+    <meta HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
+    <meta HTTP-EQUIV="expires" CONTENT="0">
+    
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <title>病区患者列表</title>
+        <link rel="stylesheet" href="/ccd/static/css/weui.1.1.2.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/jquery-weui.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/ihealth.css?v=29">
+        <link rel="stylesheet" href="/ccd/static/css/iconfont.css?v=11">
+    
+    <style>
+
+        .rightMenu {
+            position: absolute;
+            top: 0;
+            opacity: 0;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            z-index: 999;
+            border: 1px solid #f2f2f2;
+            border-left: none;
+            border-right: none;
+            display: none;
+        }
+
+        .rightMenu > .leftBox {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 20%;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+
+        }
+
+        .rightMenu > .rightBox {
+            background: #FFF;
+            position: absolute;
+            left: 20%;
+            bottom: 0;
+            top: 0;
+            right: 0;
+        }
+
+        .rightMenu>.rightBox .ft {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 14px;
+        }
+
+        .weui-input {
+            border: 1px solid #8B3B46;
+            border-radius: 10px;
+            text-indent: 10px;
+        }
+
+        .line-gap {
+            margin: 5px 10px;
+        }
+
+        .weui-btn_default {
+            border: 1px solid #8B3B46;
+        }
+
+        .weui-btn_primary {
+            border-radius: 2em;
+        }
+
+        small {
+            font-size: 12px;
+            color: #ABABAB;
+        }
+        #clinic_type_btnGroup{
+            background-color: #f5f5f5;
+        }
+
+        .care-contianer {
+            top: 2.6em !important;
+        }
+        .care-contianer .ccdList-page{
+            top: 3em !important;
+        }
+        .care-contianer .inOrOutTime small,
+        .care-contianer .font12{
+            font-size: 16px;
+        }
+    </style>
+
+    <style>
+        .care-mode{
+            position: fixed;
+            top: 65%;
+            right: 1.1%;
+            width: 55px;
+            height: 65px;
+            background: url(/ccd/static/images/btn_care1.png) center center no-repeat;
+            background-size: cover;
+            z-index: 999;
+        }
+        .is-care-mode{
+            background: url(/ccd/static/images/btn_care2.png) center center no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+
+    
+        
+        <header class="common-header">
+        
+            <div class="left">
+                <div class="weui-icon-back"></div>
+            </div>
+        
+
+        <div class="title ellipsis">病区患者列表</div>
+        <div class="tools">
+            <i class='iconfont'>&#xe632;</i>科室
+        </div>
+        
+    </header>
+    
+    <div class="contianer">
+        <div class="mine-page" style="overflow-y: hidden">
+            <div class="weui-flex waterMarkHome">
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+                    <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                    </div>
+                
+            </div>
+            <div class="weui-flex" id="clinic_type_btnGroup">
+                <div class="weui-flex__item">
+                    <div class="btn-group">
+                        <a href="javascript:void(0)" data-value="I" class="selected">在院病人： <span class="patient-number">0</span></a>
+                        <a href="javascript:void(0)" data-value="O" class="">历史病人</a>
+                    </div>
+                </div>
+                
+                
+                
+                <div id="filterBtn" class="text-common" style="margin-right: 5px;">
+                    <i class='iconfont'>&#xe686;</i><span style="width: 1em;">筛选</span>
+                </div>
+            </div>
+            <div class="ccdList-page" style="top: 3.5em;overflow-x: hidden;">
+                <div class="weui-pull-to-refresh__layer" style="padding:7px;">
+                    <div class='weui-pull-to-refresh__arrow'></div>
+                    <div class='weui-pull-to-refresh__preloader'></div>
+                    <div class="down">下拉刷新</div>
+                    <div class="up">释放刷新</div>
+                    <div class="refresh">正在刷新</div>
+                </div>
+
+                <div id="ccd-list" style="top:3em;">
+                </div>
+                <div class="weui-infinite-scroll" style="display: none;">
+                    <div class="infinite-preloader"></div>
+                    <div class="weui-loadmore" style="margin: 0 auto">
+                        <i class="weui-loading"></i>
+                        <span class="weui-loadmore__tips">正在加载</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="rightMenu">
+            <div class="leftBox"></div>
+            <div class="rightBox">
+             
+                    <div class="text-common line-gap"> 时间区间：
+                    </div>
+                    <div class="weui-flex line-gap">
+                        <input id="start_date" type="text" class="weui-input">
+                        <span style="width: 2em;text-align: center">-</span>
+                        <input id="end_date" type="text" class="weui-input">
+                    </div>
+                    <div class="text-common line-gap"> 类型：
+                    </div>
+                    <div class="weui-flex line-gap">
+                        <input id="select_type" class="weui-input" value="历史病人" data="O" readonly="readonly"
+                            unselectable="on"
+                            onfocus="this.blur()">
+                    </div>
+                    <div class="text-common line-gap"> 住院号：
+                    </div>
+                    <div class="weui-flex line-gap">
+                        <input id="inpatient_no" type="text" class="weui-input">
+                    </div>
+
+                    <div class="text-common line-gap"> 住院诊断：
+                    </div>
+                    <div class="weui-flex line-gap">
+                        <input id="inpatient_diagnose" type="text" class="weui-input">
+                    </div>
+                    <div class="text-common line-gap"> 患者姓名：
+                    </div>
+                    <div class="weui-flex line-gap">
+                        <input id="patient_name" type="text" class="weui-input">
+                    </div>
+                    <div class="weui-flex line-gap ft">
+                        <input id="cancelBtn" type="button" class="weui-btn weui-btn_default"
+                            style="margin: 10px; line-height: 2;border-width:1px " value="重置">
+                        <input id="searchBtn" type="button" class="weui-btn weui-btn_primary"
+                            style="margin: 10px;"
+                            value="确认">
+                    </div>
+            
+            </div>
+        </div>
+    </div>
+
+<!-- 关怀模式 -->
+<div class="care-mode"></div>
+<script src="/ccd/static/js/fastclick.js?v=4"></script>
+<script src="/ccd/static/js/vconsole.min.js?v=11"></script>
+<script type="text/javascript">
+    // var vConsole = new VConsole();// 初始化
+    var navRoot = "/ccd";
+    (function () {
+        FastClick.attach(document.body);
+    }());
+</script>
+<!-- <script src='https://cdn.bootcss.com/vConsole/3.2.2/vconsole.min.js' type="text/javascript" charset="utf-8"></script>
+<script>
+	window.vConsole = new window.VConsole()
+</script> -->
+
+    
+    <script src="/ccd/static/js/jquery-1.11.3.min.js?v=17"></script>
+    <script src="/ccd/static/js/jquery-weui.min.js?v=17"></script>
+    <script src="/ccd/static/js/jsBridge.js?v=17"></script>
+    <script src="/ccd/static/js/common.js?v=21"></script>
+    <script src="/ccd/static/js/careMode.js?v=1" type="text/javascript"></script>
+    <script type="text/javascript">
+            $(function(){
+                if (jsBridge ) {
+                    setTimeout(function(){
+                        jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                            if (data) {
+                                localStorage.setItem('jsBridgeHeaders', data); // 缓存设备信息
+                            }
+                        })
+                        jsBridge.callAppRouter("JS_IsCareMode", "", function (data) {
+                            if (data) {
+                                const careMode = JSON.parse(data)?JSON.parse(data).careMode : 0;
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').addClass('care-contianer');
+                                }
+                                sessionStorage.setItem('userCareMode', careMode);
+                            } else {
+                                const careMode = sessionStorage.getItem('userCareMode');
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').removeClass('care-contianer');
+                                }
+                            }
+                        })
+                    },500)
+                    
+                    if(!sessionStorage.getItem('isHomePage')){
+                        sessionStorage.setItem('isHomePage',window.location.href);// 储存首次进来的路径
+                    }
+                    $(".weui-icon-back").parent().click(function () {
+                        // 没有历史记录，可以执行其他逻辑，比如返回首页或者其他操作
+                        if(jsBridge && sessionStorage.getItem('isHomePage') === window.location.href){
+                            jsBridge.callAppRouter("JS_backToHomePage", '', function (data) {})
+                        }
+                    });
+                }
+
+
+            });
+
+    </script>
+
+    <script type="text/javascript">
+        var token = common.getQueryString("token");
+        var deptId = common.getQueryString("deptId");
+        if (deptId) {
+            sessionStorage.setItem('deptId', deptId);
+        }
+        var dept_id = sessionStorage.getItem('deptId');
+        history.replaceState(null, '', location.href.replace(/(deptId=.*?(&|$))|(token=.*?(&|$))/g, ''));
+
+        //todo 增加列表缓存，跳转到下个页面前缓存，返回后不再重新查数据库
+        var cacheDataList = null;
+        $("#clinic_type_btnGroup a").click(function () {
+            $(this).parent().find(".selected").removeClass("selected");
+            $(this).addClass("selected");
+            clinic_type = $(this).attr("data-value");
+            getCCDList("");
+        });
+        $("#cancelBtn").click(function () {
+            $("#start_date").picker("setValue", common.getNextDay(-92).split("-"));
+            $("#end_date").picker("setValue", common.getNextDay(0).split("-"));
+            $("#patient_name").val("");
+            $("#inpatient_no").val("");
+            $("#inpatient_diagnose").val("");
+        });
+        $("#searchBtn").click(function () {
+            $(".rightMenu").animate({width: '0', opacity: '0'}, "fast").hide();
+            getCCDList("search");
+            $("#start_date").picker("setValue", common.getNextDay(-92).split("-"));
+            $("#end_date").picker("setValue", common.getNextDay(0).split("-"));
+            $("#patient_name").val("");
+            $("#inpatient_no").val("");
+            $("#inpatient_diagnose").val("");
+        });
+
+        $("#inpatient_no").focus(function(e){
+            const val = $(this).val();
+            const startText = "ZY01";
+            (val.indexOf(startText) === 0) || ($(this).val(startText));
+        })
+
+        function choisDept(deptId) {
+            dept_id = deptId;
+            $.closeModal();
+            var url = navRoot + "?deptId=" + deptId;
+            var state = {
+                title: "index",
+                url: url
+            };
+            window.history.replaceState(state, "index", url);
+            getCCDList("");
+            
+        }
+
+        $(function () {
+            $("#select_type").click(function () {
+                var actions = [
+                    {
+                        text: "历史病人",
+                        onClick: function () {
+                            $("#select_type").val("历史病人");
+                            $("#select_type").attr("data", "O");
+                        }
+                    },
+                    {
+                        text: "在院病人",
+                        onClick: function () {
+                            $("#select_type").val("在院病人");
+                            $("#select_type").attr("data", "I");
+                        }
+                    }
+                ]
+                $.actions({
+                    actions: actions
+                })
+            })
+            var searchDuration = -31;
+            var dept_id1 = "6e314b98b3c9960a7826143ec747b071";
+            var dept_id2 = "3c0ed39dae693ab8f943f790a57ca9b0";
+            if (dept_id == dept_id1) {
+                searchDuration = -31
+            } else if (dept_id == dept_id2) {
+                searchDuration = -31
+            }
+            $("#start_date").datetimePicker({
+                "yearSplit": "-",
+                "monthSplit": "-",
+                "value": (common.getNextDay(searchDuration) + " "),
+                years: (function () {
+                    var arr = [];
+                    for (var i = 1900; i <= 2030; i++) {
+                        arr.push(i);
+                    }
+                    return arr;
+                })(),
+                "times": function () {
+                    return []
+                }
+            });
+            $("#end_date").datetimePicker({
+                "yearSplit": "-",
+                "monthSplit": "-",
+                "value": (common.getNextDay(0) + " "),
+                years: (function () {
+                    var arr = [];
+                    for (var i = 1900; i <= 2030; i++) {
+                        arr.push(i);
+                    }
+                    return arr;
+                })(),
+                "times": function () {
+                    return []
+                }
+            });
+            $("#start_date").picker("open");
+            $("#start_date").picker("close");
+            $("#end_date").picker("open");
+            $("#end_date").picker("close");
+            getCCDList("");
+            //点击页面空白处将下拉列表收起
+            $(".rightMenu>.leftBox").click(function () {
+                if ($(".rightMenu").css("opacity") > 0) {
+                    $(".rightMenu").animate({width: '0', opacity: '0'}, "fast").hide();
+                    $("#start_date").picker("setValue", common.getNextDay(-31).split("-"));
+                    $("#end_date").picker("setValue", common.getNextDay(0).split("-"));
+                    $("#patient_name").val("");
+                    $("#inpatient_no").val("");
+                }
+            });
+            $(".rightMenu").click(function () {
+                event.preventDefault();
+                event.stopPropagation();
+            });
+            $("#filterBtn").click(function () {
+                if ($(".rightMenu").css("opacity") > 0) {
+                    $(".rightMenu").animate({width: '0', opacity: '0'}, "fast").hide();
+                    $(this).css("background-color", "transparent");
+                } else {
+                    $(".rightMenu").show().animate({width: '100%', opacity: '1'}, "fast");
+                    $(this).css("background-color", "");
+                }
+            });
+            $(".common-header>.tools").click(function () {
+                $.getJSON(navRoot + "/api/getRoleDeptList", function (data) {
+                    if (data["code"] == 200 && data["data"] && data["data"].length > 0 && data["data"][0]["deptList"].length > 0) {
+                        var dept_list = data["data"][0]["deptList"];
+                        var content = $('<div><div class="weui-cells"></div></div>');
+                        var itemList = 0;
+                        for (var i in dept_list) {
+                            if (dept_list[i]["DEPT_TYPE"] == "I") {
+                                itemList++;
+                                var item = $('' +
+                                    '<div class="weui-cell" onclick="choisDept(\'' + dept_list[i]["CODE"] + '\')">' +
+                                    '<div class="weui-cell__hd">' +
+                                    dept_list[i]["DEPT_NAME"] +
+                                    '</div>' +
+                                    '</div>');
+                                content.find(".weui-cells").append(item);
+                            }
+                        }
+                        if (itemList > 0) {
+                            $.modal({
+                                title: "请选择你要查看的科室",
+                                text: content.html(),
+                                buttons: []
+                            }, function () {
+                                if ($(".weui-mask.weui-mask--visible")) {
+                                    $(".weui-mask.weui-mask--visible").click(function () {
+                                        $.closeModal();
+                                    })
+                                }
+                            });
+                            return;
+                        }
+
+                    }
+                    // $.getJSON(navRoot + "/newtoken", function (data) {
+                    //     if (data["code"] == 200) {
+                    //         var token = data["data"];
+                    //         location.href = "https://zsfy-dev.gzsums.net/" + $self.attr("href").substring(1) + "?token=" + token;
+                    //     } else {
+                    //         location.href = navRoot + "/login";
+                    //     }
+                    // });
+
+                });
+            })
+            $(".ccdList-page").pullToRefresh({
+                onRefresh: function () { /* 当下拉刷新触发的时候执行的回调 */
+                    $("#ccd-list").empty();
+                    getCCDList("");
+                    $(".ccdList-page").pullToRefreshDone();
+                },
+                onPull: function (percent) { /* 用户下拉过程中会触发，接收一个百分比表示用户下拉的比例 */
+                },
+                distance: 50 /* 下拉刷新的触发距离， 注意，如果你重新定义了这个值，那么你需要重载一部分CSS才可以，请参考下面的自定义样式部分 */
+            });
+        })
+
+        window.addEventListener('pageshow', function(event) {
+            // 移除 info 页缓存
+            sessionStorage.removeItem('info-selected_index');
+            sessionStorage.removeItem('info-selected_record_index');
+            sessionStorage.removeItem('info-selected_record_table_index');
+        });
+
+        function getCCDList(searchType) {
+            $("#ccd-list").empty();
+            $.showLoading();
+            if (sessionStorage.getItem("list_type")) {
+                var cache_type = sessionStorage.getItem("list_type");
+                sessionStorage.removeItem("list_type");
+                $("#clinic_type_btnGroup a.selected").removeClass("selected");
+                $("#clinic_type_btnGroup a[data-value='" + cache_type + "']").addClass("selected");
+            }
+            var type = $("#clinic_type_btnGroup a.selected").attr("data-value");
+            var start_date = $("#start_date").val().trim();
+            if (start_date != "") {
+                start_date = start_date.split("-").join("") + "000000";
+            }
+            var end_date = $("#end_date").val().trim();
+            if (end_date != "") {
+                end_date = end_date.split("-").join("") + "235959";
+            }
+            var patient_name = $("#patient_name").val().trim();
+            var inpatient_no = $("#inpatient_no").val().trim();
+            var inpatient_diagnose = $("#inpatient_diagnose").val().trim();
+            if (searchType == "search") {
+                var select_type = $("#select_type").attr("data");
+                $("#clinic_type_btnGroup a.selected").removeClass("selected");
+                $("#clinic_type_btnGroup a[data-value='" + select_type + "']").addClass("selected");
+                type = select_type;
+            }
+
+            var params = {
+                "type": type,
+                "dept_id": dept_id,
+                "patient_name": patient_name,
+                "inpatient_no": inpatient_no,
+                "inpatient_diagnose": inpatient_diagnose
+            };
+            if (sessionStorage.getItem("list_params")) {
+                var cache_params = sessionStorage.getItem("list_params");
+                params = JSON.parse(cache_params);
+                sessionStorage.removeItem("list_params");
+            }
+            if (type != "I") {
+                params["end_date"] = end_date;
+                params["start_date"] = start_date;
+            }
+            $.post(navRoot + "/api/inpatient/list", params, function (data) {
+                if (data["code"] == 200) {
+                    var list = [];
+                    try {
+                        if (data["data"]["List"]) {
+
+                            var dataObj = data["data"]["List"]["InPatientMainInfo"];
+                            if (!dataObj.hasOwnProperty("length")) {
+                                list[0] = dataObj;
+                            } else {
+                                list = dataObj;
+                            }
+                            if(type == "I"){
+                                $(".patient-number").text(list.length);
+                            }
+                            cacheDataList = list;
+                            for (var i in list) {
+                                const InPatientMainInfo = list[i];
+                                const item = $('<div class="weui-well weui-well_access">' +
+                                    '<div class="weui-well__top weui-flex">' +
+                                    '    <div class="weui-flex__item inOrOutTime">' + InPatientMainInfo["NAME"] + " " + InPatientMainInfo["BED_NO"].substring(4) + '床</div>' +
+                                    '    <div class="critical_flag font12 font-bold text-common"></div>' +
+                                    '</div>' +
+                                    '<div class="weui-well__footer">' +
+                                    '   <div class="weui-flex">' +
+                                    '       <div class="weui-flex__item font12">住院诊断：' + InPatientMainInfo["DIAG_NAME1"] + '</div>' +
+                                    '   </div>' +
+                                    '</div>' +
+                                    '</div>'
+                                );
+                                if (type == "O") {
+                                    item.find(".inOrOutTime").append($("<small>出院时间：" + common.dateFormart(InPatientMainInfo["OUT_DATE"], "yyyy年MM月dd日") + "</small>"))
+                                } else {
+                                    item.find(".inOrOutTime").append($("<small>住院天数：" + common.transDateInterval(InPatientMainInfo["IN_DATE"]) + "</small>"))
+                                }
+                                if (InPatientMainInfo["CRITICAL_FLAG"] == "1") {
+                                    item.find(".critical_flag").text("病重");
+                                } else if (InPatientMainInfo["CRITICAL_FLAG"] == "2") {
+                                    item.find(".critical_flag").text("病危");
+                                } else {
+                                    item.find(".critical_flag").text("普通");
+                                }
+
+                                item.data("info", InPatientMainInfo);
+                                item.data("id", InPatientMainInfo["INPATIENT_NO"]);
+                                item.click(function () {
+                                    var id = $(this).data("info")["EMPI"];//修改为EMPI作为逐渐查询时间轴
+                                    
+                                    var type = $(this).data("info")["PACT_NAME"];
+                                    var cost = $(this).data("info")["FREE_COST"];
+                                    var admitDate = $(this).data("info")["IN_DATE"];
+                                    var inpat_no = $(this).data("info")["INPATIENT_NO"];
+                                    sessionStorage.setItem("list_scrollTop", $(".ccdList-page").scrollTop());
+                                    sessionStorage.setItem("list_params", JSON.stringify(params));
+                                    sessionStorage.setItem("list_type", params.type);
+                                    var deptCode = $(this).data("info")["DEPT_CODE"];
+                                    if(InPatientMainInfo['IN_STATE'] == 'I'){
+                                        window.location.href = navRoot + `/info?empi=${id}&admitDate=${admitDate}&domain=2.16.840.1.113883.4.487.2.1.4.4&mzbl=false&id=${inpat_no}&deptCode=${deptCode}&type=${encodeURIComponent(type)}&cost=${cost}&inStart=I&access_channel=inpatient&deptName=${InPatientMainInfo['DEPT_NAME']}`;
+                                    }else{
+                                        location.href = navRoot + "/record?id=" + id + "&type=" + encodeURIComponent(type) + "&cost=" + cost + "&deptCode=" + deptCode + "&access_channel=inpatient" + "&deptName=" + InPatientMainInfo['DEPT_NAME'];
+                                    }
+                                });
+                                $("#ccd-list").append(item);
+                            }
+                        } else {
+                            $("#ccd-list").append('<div class="weui-loadmore weui-loadmore_line"><span class="weui-loadmore__tips">暂无数据</span></div>');
+                        }
+                        if (sessionStorage.getItem("list_scrollTop")) {
+                            $(".ccdList-page").scrollTop(sessionStorage.getItem("list_scrollTop"));
+                            sessionStorage.removeItem("list_scrollTop");
+                        }
+                    } catch (err) {
+                        $.alert("数据错误:" + err);
+                    }
+                } else if (data["code"] == 501) {
+                    $("#ccd-list").append('<div class="weui-loadmore weui-loadmore_line"><span class="weui-loadmore__tips">暂无数据</span></div>');
+                } else {
+                    $.alert(data["errmsg"]);
+                }
+                $.hideLoading();
+            }, "json")
+        }
+    </script>
+
+</body>
+</html>

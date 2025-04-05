@@ -1,0 +1,2278 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+
+<head>
+    
+    
+    
+    <meta HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
+    <meta HTTP-EQUIV="expires" CONTENT="0">
+    
+        <meta charset="UTF-8">
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"> -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <meta http-equiv="Cache-Control" content="max-age=7200"/>
+        <meta http-equiv="Expires" content="Mon, 20 Jul 2013 23:00:00 GMT"/>
+        <title>首页</title>
+        <link rel="stylesheet" href="/portal/static/css/weui.1.1.2.min.css">
+        <link rel="stylesheet" href="/portal/static/css/jquery-weui.min.css">
+        
+        <link rel="stylesheet" href="/portal/static/css/ihealth.css?v=36">
+        <link rel="stylesheet" href="/portal/static/css/iconfont.css?v=12">
+    
+    <style>
+        .weui-grids {
+            background: #FFFFFF;
+        }
+
+        .weui-grid__icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .weui-grids:after, .weui-grids:before, .weui-grid:after, .weui-grid:before {
+            border: none;
+        }
+
+        .disabledItem {
+            opacity: .2;
+        }
+
+        #scanBtn {
+            padding: 10px;
+            position: fixed;
+            top: 20px;
+            right: 15px;
+            background: #f4ff73;
+            border-radius: 50%;
+            height: 25px;
+            width: 25px;
+            text-align: center;
+            z-index: 999;
+            background-image: url(/portal/static/images/scan_icon.png);
+            background-size: cover;
+        }
+
+        /* #scanBtn > .iconfont {
+            font-size: 25px;
+            line-height: 26px;
+            color: #fff;
+        } */
+
+        .weui-tab__bd {
+            position: absolute;
+            height: auto;
+            bottom: 3.5em;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .leftIcon {
+            font-size: 22px;
+            color: rgba(142, 147, 156, 1);
+        }
+
+        #yzs_badge ,
+        .yzs_badge{
+            position: absolute;
+            top: 1em;
+            right: 2em;
+        }
+
+        .biometric-icon {
+            width: 22px;
+            height: 22px;
+            margin-right: 5px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .biometric-icon.face {
+            background-image: url(/portal/static/images/faceID2.png);
+        }
+        .biometric-icon.finger {
+            background-image: url(/portal/static/images/touchID2.png);
+        }
+
+
+        .weui-navbar {
+            background-color: #fff;
+        }
+        
+        .weui-navbar__item.weui-bar__item--on {
+            background-color: #fff;
+            font-weight: bold;
+        }
+        
+        .weui-navbar__item {
+            font-size: 1em;
+        }
+        
+        .weui-navbar:after,
+        .weui-navbar__item:after {
+            border: none;
+        }
+        
+        #add_normal {
+            display: none;
+        }
+        
+        .add_normal_head {
+            height: 2.75em;
+            background-color: #8C3A47;
+            color: #fff;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .add_mods_title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-family: -apple-system-font, Helvetica Neue, sans-serif;
+        }
+        
+        .left {
+            width: 3em;
+            height: 45px;
+            text-align: left;
+            line-height: 45px;
+            padding-left: 10px;
+        }
+        
+        .weui-icon-back:before {
+            content: '';
+            display: flex;
+            align-items: center;
+            -webkit-transform: rotate(225deg);
+            transform: rotate(225deg);
+            width: 0.6em;
+            height: 0.6em;
+            border-width: 2px 2px 0 0;
+            border-color: #FFFFFF;
+            border-style: solid;
+        }
+        
+        .title_head {
+            height: 2.5em;
+            background-color: #FAF9FE;
+            color: #C3C3C6;
+            line-height: 2.5em;
+            padding-left: 1em;
+            border-bottom: 1px solid #F1F2F5;
+        }
+        .modules_item {
+            height: 44px;          
+            border-bottom: 1px solid #F1F2F5;
+        }
+        .modules_item div {
+            height: 2.5em;
+            margin: 0 5px;
+            line-height: 40px;
+        }
+        .delete_item{
+            background: url(/portal/static/images/cancel_item.png) no-repeat 100% 100%;
+            background-size: cover;
+        }
+        .add_item{
+            background: url(/portal/static/images/add_item.png) no-repeat 100% 100%;
+            background-size: cover;
+        }
+        
+        .modules_item img{
+            height: 40px!important;
+            width: 40px;
+        }
+        .delete_item,
+        .add_item{
+            height: 20px!important;
+            width: 20px;
+            margin-left: 10px!important;
+        }
+        .flex_box{
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .drag_class{
+            position: absolute;
+            right: 10px;
+        }
+        .header-bg {
+            background: url(/portal/static/images/bg_red.png) center no-repeat ;
+            background-size: 100% 100%;
+            background-color: #fff;
+        }
+        .message_bg{
+            background: url(/portal/static/images/card_bg_yh.png) center no-repeat ;
+            background-size: 100% 100%;
+            position: absolute;
+            width: 85%;
+            top: 2em;
+            height: 120px;
+                }
+        .header{
+            min-height: 10em;
+        }
+        .weui-tab.new_height{
+            position: absolute;
+            height: auto;
+            top:11em;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 5px;
+        }
+        .fix_line_height{
+            text-align: center;
+            line-height: 4em;
+        }
+        .weui-tab__bd{
+            background-color: #fff;
+        }
+        #get_data{
+            display: none;
+        }
+        .weui-tab__bd.bottom_0{
+            bottom: 0;
+        }
+        .add_content{
+            height: calc(100% - 2.75em);
+            overflow: auto;
+        }
+        #add_normal{
+            height: 100%;
+        }
+        .weui-grid{
+            padding: 10px;
+        }
+        /* .weui-flex__item_2{
+            -webkit-box-flex: 2;
+            -webkit-flex: 2;
+            flex: 2;
+        } */
+        .margin_top_1{
+            margin-top: 1em;
+        }
+        #doctor_name{
+            font-size: 20px;
+            text-align: left;
+            padding-left: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .f_size_18{
+            font-size: 18px;
+        }
+        .flex_center{
+            align-items: center;
+        }
+        #userPhoto{
+            width: 50px;
+            height: 50px;
+        }
+        .notify{
+            position: relative;
+            margin-top: 8px;
+        }
+        .notify .readBadge{
+            width: 10px;
+            height: 10px;
+            border-radius: 10px;
+            position: relative;
+            top: -2.1em;
+            right: -1.5em;
+            display: none;
+            background: red;
+        }
+        .readBadge.show{
+            display: block;
+        }
+        .cover{
+            width: 25px !important;
+            height: 25px !important;
+        }
+        .cov-title{
+            margin-top: 0px !important;
+        }
+        .icon-collect{
+            width: 24px !important;
+            height: 24px !important;
+        }
+            .img-entry{
+                width: 100%;
+                min-height: 99px;
+            }
+            .year-entry{
+                position: absolute;
+                width: 100%;
+                height: 100px;
+                padding: 5px 10px 0;
+                /* margin-top: 5px; */
+                background-color: #ffffff;
+                box-sizing: border-box;
+                z-index: 999;
+            }
+            .weui-tab__bd .weui-tab__bd-item{
+                opacity: 0;
+            }
+            .weui-tab__bd .weui-tab__bd-item.weui-tab__bd-item--active{
+                opacity: 1;
+            }
+            .pd50{
+                padding-bottom: 50px;
+            }
+            .pt150{
+                padding-top: 150px !important;
+            }
+            .year-navbar{
+                top: 103px;
+            }
+
+        /* 全景病历选择手术室 弹窗样式 */
+        .op-dept-picker.show .pact-content {
+            transform: translateY(0);
+        }
+        .op-dept-picker .mask {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            display: none;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9001;
+        }
+        .op-dept-picker.show .mask{
+            display: block;
+        }
+        .op-dept-picker .pact-content {
+            position: fixed;
+            bottom: 0%;
+            left: 0;
+            right: 0;
+            z-index: 9002;
+            transform: translateY(250%);
+            transition: all 0.5s;
+            background-color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .pact-content .title-head{
+            display: flex;
+            align-items: center;
+        }
+        .pact-content .title-head p{
+            width: 50px;
+            padding: 10px 10px;
+        }
+        .pact-content .title-head .flex {
+            flex: 1;
+        }
+        .op-dept-picker .weui-picker-modal.picker-modal-inline{
+            height: 200px;
+        }
+        .op-dept-picker .weui-picker-modal .picker-modal-inner{
+            height: 200px;
+        }
+        .weui-tabbar .tabbar{
+            display: flex;
+            width: 100%;
+        }
+        /* 关怀模式 */
+        
+        .care-mode-common .care-header{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 5px 10px;
+            background-color: #8B3B46;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+        .care-mode-common .care-header .name span{
+            margin-right: 20px;
+        }
+        .care-mode-common .care-header .scan{
+            display: flex;
+            align-items: center;
+            padding: 2px 10px;
+            background-color: #ffffff;
+            color: #8B3B46;
+            border-radius: 24px;
+
+        }
+        .care-mode-common .care-header .scan img {
+            width: 17px;
+            height: 17px;
+            margin-right: 5px;
+        }
+        .care-mode-common .care-contianer .year-entry{
+            height: auto;
+        }
+        .care-mode-common .care-tabbar{
+            bottom: 12px;
+            right: 0;
+            left: 0;
+            background-color: transparent;
+        }
+        .care-mode-common .care-tabbar::before{
+            border-color: transparent;
+        }
+        .care-mode-common .care-tabbar .tabbar{
+            margin: 0 22px;
+            padding: 5px 0;
+            background-color: #ffffff;
+            box-shadow: 0px 0px 11px #e6e6e6;
+            border-radius: 8px;
+        }
+        .care-mode-common .care-tabbar .switch_mine_index p{
+            font-size: 14px;
+        }
+        .care-mode-common .modules-list{
+            display: none;
+            height: 100%;
+            padding: 115px 10px;
+            font-size: 16px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .care-mode-common .modules-list.pt10{
+            padding-top: 10px !important;
+        }
+        .care-mode-common .modules-list .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #823f48;
+        }
+        .care-mode-common .modules-list .item .weui-grid__icon {
+            width: 90px;
+            height: 90px;
+        }
+        .care-mode-common #mine{
+            position: relative;
+        }
+        
+        
+        .care-mode{
+            position: fixed;
+            right: -1.1%;
+            width: 55px;
+            height: 65px;
+            background: url(/portal/static/images/btn_care1.png) center center no-repeat;
+            background-size: cover;
+            z-index: 999;
+        }
+        .is-care-mode{
+            background: url(/portal/static/images/btn_care2.png) center center no-repeat;
+            background-size: cover;
+        }
+        .care-mode:active{
+            background-color: transparent;
+        }
+
+        .mod-cell{
+            padding: 5px 15px;
+
+        }
+        .mod-cell::before, .mod-search::before {
+            border: 0;
+        }
+        .mod-image{
+            width: 100%;
+            height: auto;
+        }
+        .mod-search{
+            margin: 10px 15px;
+            padding: 5px 5px;
+            border: 1px solid #e5e5e5;
+        }
+        .mod-search img {
+            width: 25px;
+            height: 25px;
+        }
+        .mod-search .weui-cell__ft{
+            display: flex;
+            align-items: center;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="mine-page contianer" id="home_tab">
+
+        <div class="header header-bg ">
+            <div class="weui-cell message_bg">
+                <div class="weui-cell__bd ">
+                    <div class="weui-flex__item weui-flex flex_center">
+                        <img id="userPhoto" 
+                        src="/portal/static/images/doctor.png"
+                        onerror="this.src='/portal/static/images/doctor.png"
+                        class="imageCricle">
+                        <span id="doctor_name" class="weui-flex__item fix_line_height"></span>
+                        <div class="weui-flex__item_2 fix_line_height">
+                            <span class="f_size_18" id="doctor_code"></span>
+                        </div>
+                    </div>
+                    <p style="display: none;"><span class="f_size_18" id="doctor_department"></span></p>
+                </div>
+                <div class="weui-cell__ft"></div>
+                <div id="scanBtn"></div>
+            </div>
+        </div>
+
+        <div class="weui-tab new_height care-contianer">
+            <div class="weui-tab__bd">
+                
+                <div id="index" class="weui-tab__bd-item weui-tab__bd-item--active pd50">
+                    <div class="care-header" style="display: none;">
+                        <div class="name font18">
+                            <span id="care_doctor_name"></span>
+                            <span id="care_doctor_code"></span>
+                        </div>
+                        <div class="scan" id="careScanBtn"><img src="/portal/static/images/scan_btn_icon.png">扫一扫</div>
+                    </div>
+                    	
+	                        <img class="year-entry" loading="lazy" data-title="年度员工报告" data-url="https://aipms.gzsums.net:10240/aer/medical/?source_type=app&amp;code=899258ec199a5839763033e435e25da7&amp;r_year=2024" src="https://aipms.gzsums.net:10240/aipms/uploads/2025/01/08/b8c575e8694e4355c8763c59c443134d.jpg" alt="">
+                    	
+                    <div class="weui-tab tab-main">
+                        <div class="weui-navbar year-navbar">
+                            <a class="weui-navbar__item weui-bar__item--on" href="#tab1">常用</a>
+                            <a class="weui-navbar__item" href="#tab2">医疗服务</a>
+                            <a class="weui-navbar__item" href="#tab4">患者服务</a>
+                            <a class="weui-navbar__item" id="all_modules" href="#tab3">全部</a>
+                        </div>
+                        <div class="weui-tab__bd bottom_0 pt150">
+                            <div id="tab1" class="weui-tab__bd-item weui-tab__bd-item--active ">
+                                <div class="weui-grids" id="content_first"></div>
+                            </div>
+                            <div id="tab2" class="weui-tab__bd-item ">
+                                <div class="weui-grids" id="content_patient"></div>
+                            </div>
+                            <div id="tab3" class="weui-tab__bd-item ">
+                                <div class="weui-grids" id="content_all"></div>
+                            </div>
+                            <div id="tab4" class="weui-tab__bd-item ">
+                                <div class="weui-grids" id="content_medical"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modules-list bottom_0  ">
+                        <div class="item">
+                            <p class="title">常用模块</p>
+                            <div class="weui-grids" id="care_content_first"></div>
+                        </div>
+                        <div class="item">
+                            <p class="title">医疗服务</p>
+                            <div class="weui-grids" id="care_content_patient"></div>
+                        </div>
+                        <div class="item">
+                            <p class="title">患者服务</p>
+                            <div class="weui-grids" id="care_content_medical"></div>
+                        </div>
+                        <div class="item">
+                            <p class="title">全部</p>
+                            <div class="weui-grids" id="care_content_all"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="mine" class="weui-tab__bd-item ">
+                    <div class="weui-cells">
+                        <a href="/portal/userinfo" id="my_hz" class="weui-cell weui-cell_access">
+                            <div class="weui-cell__hd">
+                                <i class="iconfont leftIcon font-bold">&#xe7a3;</i>
+                            </div>
+                            <div class="weui-cell__bd">
+                                我的信息
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        <a href="/portal/collects" id="my_hz" class="weui-cell weui-cell_access">
+                            <div class="weui-cell__hd">
+                                <img src="/portal/static/images/my-collect.png" alt="" class="icon-collect">
+                            </div>
+                            <div class="weui-cell__bd">
+                                我的收藏
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+
+                        <a href="/portal/forget_pwd" class="weui-cell weui-cell_access">
+                            <div class="weui-cell__hd">
+                                <i class="iconfont leftIcon">&#xe640;</i>
+                            </div>
+                            <div class="weui-cell__bd">
+                                修改密码
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+
+                        <a href="/portal/app/version" class="weui-cell weui-cell_access">
+                            <div class="weui-cell__hd">
+                                <i class="iconfont leftIcon">&#xe672;</i>
+                            </div>
+                            <div class="weui-cell__bd">
+                                关于版本
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        <a href="/portal/privacy" class="weui-cell weui-cell_access">
+                            <div class="weui-cell__hd">
+                                <i class="iconfont leftIcon" style="font-weight: bolder;">&#xe6cc;</i>
+                            </div>
+                            <div class="weui-cell__bd">
+                                隐私政策与用户协议
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        
+                        <a id="biometric-box" href="javascript:void 0;" style="display: none;" class="weui-cell weui-cell_access">
+                            <div class="weui-cell__hd">
+                                <div id="biometric-icon" class="biometric-icon"></div>
+                            </div>
+                            <div class="weui-cell__bd">
+                                指纹登录
+                            </div>
+                            <input id="switchBiometric" class="weui-switch" type="checkbox">
+                        </a>
+
+                        <a href="javascript:" id="loginOutBtn" class="weui-cell weui-cell_access">
+                            <div class="weui-cell__hd">
+                                <i class="iconfont leftIcon">&#xe603;</i>
+                            </div>
+                            <div class="weui-cell__bd">
+                                退出登录
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+
+                    </div>
+                </div>
+                <!-- 关怀模式 -->
+                <div class="care-mode"></div>
+            </div>
+            <div class="weui-tabbar">
+                <div class="tabbar">
+                    <a href="#index" class="tab_list weui-tabbar__item switch_mine_index weui-bar__item--on " data-index="0">
+                        <div class="weui-tabbar__icon">
+                            <i class="iconfont">&#xe9a8;</i>
+                        </div>
+                        <p class="weui-tabbar__label">医护首页</p>
+                    </a>
+                     <a href="/portal/notify" class="tab_mine weui-tabbar__item switch_mine_index" data-index="1">
+                        <div class="weui-tabbar__icon notify">
+                            <img src="/portal/static/images/noti.png" alt="" class="cover">
+                        </div>
+                        <p class="weui-tabbar__label cov-title">动态</p>
+                    </a>
+                    <a href="#mine" class="tab_mine weui-tabbar__item switch_mine_index" data-index="2">
+                        <div class="weui-tabbar__icon">
+                            <i class=" iconfont">&#xe7a3;</i>
+                        </div>
+    
+                        <p class="weui-tabbar__label">我的</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="add_normal">
+        <div class="add_normal_head">
+            <div class="return_home_div left" id="reflesh_web" >
+                <div class="weui-icon-back">
+                </div>
+            </div>
+            <div class="add_mods_title">常用模块管理</div>
+        </div>
+        <div class="add_content">
+            <div>
+                <div class="title_head">已添加模块</div>
+                <ul id="had_mods">
+    
+                </ul>
+            </div>
+            <div>
+                <div class="title_head">更多模块</div>
+                <ul id="other_mods">
+    
+                </ul>
+            </div>
+        </div>
+    </div>
+
+<script src="/portal/static/js/jquery-1.11.3.min.js?v=7"></script>
+<script src="/portal/static/js/jsBridge.js?v=3.6.0"></script>
+<script src="/portal/static/js/jsBridgeMethod.js?v=3.6.0"></script>
+<script src="/portal/static/js/fastclick.js?v=4"></script>
+
+<script type="text/javascript">
+    var navRoot = "/portal";
+    if (navRoot.indexOf("https") < 0) {
+        navRoot = navRoot.replace("http:", "https:");
+    }
+    if (jsBridge && window.isAndroid) {
+        var path = document.location.href;
+        const isScreenshot = {
+            is_screenshot: path.indexOf('login') > -1 ? 0 : 0,
+        }
+        jsBridge.callAppRouter("JS_canScreenshot", JSON.stringify(isScreenshot), function(data){
+            if (data != null) {
+                console.log('通知成功');
+            } else {
+                'function' === typeof callback && callback(data);
+            }
+        })
+    }
+    if(jsBridge){
+        // 获取app 当前用户是否关怀模式状态
+        jsBridge.callAppRouter("JS_IsCareMode", "", function(data){
+            if (data) {
+                localStorage.setItem('userCareMode', JSON.parse(data)?JSON.parse(data).careMode : 0); // 缓存设备信息
+            }else{
+                localStorage.setItem('userCareMode', localStorage.getItem("userCareMode") || 0);
+            }
+        })
+    }
+    window.addEventListener('resize', function() {
+        var event = new Event('resize');
+        document.dispatchEvent(event);
+    });
+</script>
+
+    
+    <script type="text/javascript">
+        (function () {
+            FastClick.attach(document.body);
+        }());
+    </script>
+    
+    <script src="/portal/static/js/jquery-weui.min.js"></script>
+    <script src="/portal/static/js/jsBridge.js?v=3.6.0"></script>
+    <script src="/portal/static/js/jsBridgeMethod.js?v=3.6.0"></script> 
+    <script src="/portal/static/js/common.js?v=12"></script>
+
+    <script src="/portal/static/js/Sortable.js"></script>
+    <script src="/portal/static/js/jsBridge.js?v=3.6.0"></script>
+    <script src="/portal/static/js/jsBridgeMethod.js?v=3.6.0"></script>
+    <script src="/portal/static/js/careMode.js?v=4" type="text/javascript"></script>
+    <script type="text/javascript">
+        var None = null;
+        var True = true;
+        var False = false;
+        var domainChangeFlag = false;
+        var uname = localStorage.getItem('userName');
+
+        if (uname === null) {
+            domainChangeFlag = true;
+        }
+
+        var userInfo = null;
+        var osType = "";
+        var hasShowAD = sessionStorage.getItem("hasShowAD");
+        var hasShowADNew = sessionStorage.getItem("hasShowADNew");
+        var hasShowUpdateRemind = false;
+
+        var flag_index=sessionStorage.getItem('navbarIndex');
+
+        const caremodel = "0"; // 首页是否显示关怀模式开关图标
+        let userCareMode = localStorage.getItem("userCareMode") || 0; // 是否开启关怀模式 0：否   1：是
+        let userCareModeIndex = 0; // 关怀模式 0：首页   2：我的
+
+        let ccdDeptList = null; // 全景病历弹窗-科室列表
+
+        // 加载时判断是否记录之前navbar_item的index，如果存在就默认点击
+        if(flag_index){
+            $('.weui-navbar__item').eq(flag_index).click();
+        }
+
+        var a_url = {
+            QJBL: '#ccd', //全景
+            HEADss: '/bi/#/', //HEADss
+            WJZ: '#critical', //危急值
+            HLWYY: '#IHospital', //互联网医院
+            CARZ: '#CA', //CA认证
+            YCHZ: '#remote', //远程会诊
+            SXDZ: '#referral', //双向转诊
+            KJYWSP: '#resist_disease', //抗菌药物审批
+            MBGL: '#chronic_disease', //慢病药物管理
+            SFYSD: '#noOpen', //随访
+            RYTZD: '#inpatient_apply', //入院通知单
+            BAQS: '#baqs', //病案签收
+            YNHZ: '#Doctor', //院内会诊
+            HLSM:'#nursing',// 护理上门
+            FZYY: '#reDiagnostic', //复诊预约
+            JZHZ: '#jzhz', // 就诊患者
+            QXST: '#QXST', // 全息视图
+            NEWTEST: '#newtest'
+            // 患者服务
+            // SY
+
+        }
+        
+        //获取用户数据，初始化该页面的时候查询一次
+        function loadUserInfo() {
+            $.getJSON(navRoot + "/userinfo/data", function (data) {
+                if (data && data["code"] == 200) {
+                    userInfo = data["data"];
+                    if (domainChangeFlag) {
+                        localStorage.setItem("userName", userInfo['loginName']);
+                    }
+                    if (userInfo["userFlag"] == 2 || userInfo["forceEditPassword"] == true && !sessionStorage.getItem("cancelChangePwd")) {
+                        $.modal({
+                            title: "您的密码不安全",
+                            text: "院方希望您修改为更复杂的密码！",
+                            buttons: [
+                                {
+                                    text: "取消",
+                                    className: "default",
+                                    onClick: function () {
+                                        sessionStorage.setItem("cancelChangePwd", "1");
+                                        $.closeModal();
+                                    }
+                                },
+                                {
+                                    text: "修改密码",
+                                    className: "primary",
+                                    onClick: function () {
+                                        location.href = navRoot + "/vertifyPhone";
+                                    }
+                                }
+                            ],
+                            autoClose: true
+                        })
+                        ;
+                        
+                    }
+                    sessionStorage.setItem("doctorInfo", JSON.stringify(userInfo));
+                  
+                    $("#doctor_name, #care_doctor_name").text(userInfo["username"]);
+                    $("#doctor_code").text('工号：'+userInfo["loginName"]);
+                    $("#care_doctor_code").text(userInfo["loginName"]);
+                    $("#doctor_department").text('科室：'+userInfo["defaultDeptName"]);
+                } else {
+                    
+                    location.href = navRoot + "/login";
+                    
+                }
+            })
+        }
+
+        function checkUserFlag() {
+            $.getJSON(navRoot + "/userinfo/data", function (data) {
+                if (data && data["code"] == 200) {
+                    userInfo = data["data"];
+                    if (userInfo["userFlag"] == 2) {
+                        $.modal({
+                            title: "温馨提示",
+                            text: "该账号暂未激活, 请先激活再进行登录",
+                            buttons: [
+                                {
+                                    text: "取消",
+                                    className: "default",
+                                    onClick: function () {
+                                        $.closeModal();
+                                        $.post(navRoot + "/loginout", function (data) {
+                                            sessionStorage.clear();
+                                            localStorage.clear();
+                                        }, "json");
+                                        location.href = navRoot + "/login";
+                                    }
+                                },
+                                {
+                                    text: "去激活",
+                                    className: "primary",
+                                    onClick: function () {
+                                        localStorage.setItem("activating", "1");
+                                        location.href = navRoot + "/userinfo";
+                                    }
+                                }
+                            ],
+                            autoClose: true
+                        })
+                        ;
+                        
+                    } else {
+                        localStorage.setItem("activating", "0");
+                    }
+                } else {
+                    
+                    location.href = navRoot + "/login";
+                    
+                }
+            })
+        }
+
+        // 全景病历手术室选择弹窗
+        function opDeptListPicker(target_url, deptId, list){
+            const op_html = $(' <div class="op-dept-picker show">'+
+                            '    <div class="mask close-dept-picker"></div>'+
+                            '    <div class="pact-content">'+
+                            '        <div class="title-head text-center">'+
+                            '            <p class="text-disabled close-dept-picker">取消</p>'+
+                            '            <p class="flex">请选择手术室</p>'+
+                            '            <p class="text-red sumbit-picker">确定</p>'+
+                            '        </div>'+
+                            '        <div id="picker-container"></div>'+
+                            '        <input type="hidden" id="inline" class="weui-input" value="">'+
+                            '    </div>'+
+                            '</div>');
+            $('#home_tab').append(op_html)
+            op_html.find('.close-dept-picker').click(function(){
+                $('#home_tab').find('.op-dept-picker').remove();
+            });
+            op_html.find('.sumbit-picker').click(function(){
+                const op_code = op_html.find('#inline').val();
+                $('#home_tab').find('.op-dept-picker').remove();
+                fetchNewToken(target_url, deptId, op_code)
+            });
+            $("#inline").picker({
+                container: '#picker-container',
+                cols: [{
+                    textAlign: 'center',
+                    values: list,
+                }],
+            });
+        }
+
+        function fetchNewToken(target_url, deptId, op_code){
+            $.getJSON(navRoot + "/newtoken", {mod_code:target_url === 'QXST'? target_url:''}, function (data) {
+                if (data["code"] == 200) {
+                    if(target_url === 'QXST'){
+                        target_url = 'ccd/universalSearch';
+                    }
+                    var token = data["data"]["access_token"];
+                    let url = "https://yihu.gzsums.net/" + target_url + "?token=" + token + "&deptId=" + deptId.trim();
+                    if(op_code){
+                        url = "https://yihu.gzsums.net/" + target_url + "/patientList?token=" + token + "&dept_code=" + deptId.trim()+"&op_code="+encodeURIComponent(op_code);
+                    }
+                    const param = {
+                        redirectUrl: url,
+                        is_screenshot: data.data.is_screenshot || 0, // 1为不允许截图，0允许
+                        title: "全景病历"
+                    };
+                    if (jsBridge) {
+                        jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                            if (data != null) {
+                                console.log(data);
+                            } else {
+                                location.href = url;
+                            }
+                        })
+                    }
+                } else {
+                    location.href = navRoot + "/login";
+                }
+            });
+        }
+
+        function choisDept(target_url, deptId, dept_type) {
+            if(['O', 'OP'].includes(dept_type)){
+                $.closeModal();
+                $.showLoading();
+                $.getJSON(navRoot + "/getOpDeptList",{ dept_code: deptId}, function (data) {
+                    $.hideLoading();
+                    if (data["code"] == 200) {
+                        opDeptListPicker(target_url, deptId, data['data']);
+                    } else {
+                        $.alert(data['errmsg']);
+                    }
+                });
+            } else if(target_url === "JZHZ"){
+                location.href = navRoot + "/outpatient";
+            } else {
+                fetchNewToken(target_url, deptId);
+            }
+            
+        }
+
+        // 检索科室列表，根据关键字重新渲染
+        function searchDept(){
+            const keyword = $(".dept-search-input").val().trim();
+            const href = $(".mod-search").attr('href');
+            const dept_list = ccdDeptList.filter(item => item.DEPT_NAME.includes(keyword));
+            $(".dept-list").empty();
+            if(dept_list && dept_list.length){
+                for (var i in dept_list) {
+                    if (href == "#critical" && dept_list[i]["DEPT_TYPE"] !== "I"){
+                        continue;
+                    }
+                    if (href == "#ccd" && dept_list[i]["DEPT_TYPE"] !== "I" && dept_list[i]["DEPT_TYPE"] !== "O" && dept_list[i]["DEPT_TYPE"] !== "OP") {
+                        continue;
+                    }
+                    var item = $('' +
+                        '<div class="weui-cell" onclick="choisDept(\'' + href.substring(1) + '\',\'' + dept_list[i]["CODE"] + '\',\'' + dept_list[i]["DEPT_TYPE"] +  '\')">' +
+                        '<div class="weui-cell__hd">' +
+                        dept_list[i]["DEPT_NAME"] +
+                        '</div>' +
+                        '</div>');
+                    $(".dept-list").append(item);
+                }
+            } else {
+                $(".dept-list").append("<div class='weui-cell' style='justify-content: center;'>暂无数据</div>");
+            }
+            
+        }
+
+        $(function () {            
+            if (jsBridge) {
+                jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                    if (data) {
+                        localStorage.setItem('jsBridgeHeaders', data); // 缓存设备信息
+                    }
+                })
+            }
+            jsUserCareMode(); // 关怀模式渲染
+            if(caremodel == 0){
+                if(userCareModeIndex === 0){
+                    $(".care-mode").hide();
+                }else{
+                    $(".care-mode").show();
+                }
+            }
+            //年度报告入口
+            $(".year-entry").click(function(){
+                var ua = navigator.userAgent,
+                 report_url = this.dataset.url,
+                 report_title = this.dataset.title || "年度行医报告";
+                if (jsBridge) {
+                    var param = {
+                        redirectUrl: report_url,
+                        title: report_title,
+                    };
+                    jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                        if (data != null) {
+                            console.log(data);
+                        } else {
+                            location.href = report_url;
+                        }
+                    })
+                }
+            })
+
+            checkUserFlag();
+            var tabName = location.href.split("#");
+            if (tabName.length == 2) {
+                switch (tabName[1]) {
+                    case "index":
+                        $(".weui-navbar__item, .weui-tabbar__item:first").trigger("click");
+                        $("#scanBtn").show();   
+                        userCareModeIndex = 0;
+                        localStorage.setItem('userCareModeIndex',userCareModeIndex)
+                        break;
+                    case "mine":
+                        $(".weui-navbar__item, .weui-tabbar__item:last").trigger("click");
+                        $("#scanBtn").hide();
+                        userCareModeIndex = 2;   
+                        localStorage.setItem('userCareModeIndex',userCareModeIndex)
+                        break;
+                    case "redirect":
+                        $.toast("暂无权限查看，抱歉！", "text");
+                    
+                        window.history.pushState({id: 0}, "首页", "#");
+                        break;
+                }
+            }
+            
+            !hasShowAD && showAD(updateRemind);
+            !hasShowADNew && showADNew(updateRemind);
+            hasShowADNew && hasShowAD && updateRemind();
+            
+            var user_info=JSON.parse(sessionStorage.getItem('doctorInfo'))
+            if(user_info){
+               
+                $("#doctor_name, #care_doctor_name").text(user_info["username"]);
+                $("#doctor_code").text('工号：'+user_info["loginName"]);
+                $("#care_doctor_code").text(user_info["loginName"]);
+                $("#doctor_department").text('科室：'+user_info["defaultDeptName"]);
+            }else{
+                loadUserInfo();
+            }
+
+            // 处理getRoleDeptList 事件
+            function getRoleDeptList(data, $self) {
+                var dept_list = data["deptList"];
+                const mod_list = data["modList"];
+                var content = $('<div>' +
+                    '<div class="weui-cells role-dept-list" style="-webkit-overflow-scrolling:touch;"></div>' +
+                    '<div class="mod-list"></div>' +
+                    '<div class="search-input"></div>' +
+                    '<div class="dept-list"></div>' +
+                    '</div>');
+                // 整合CCD模块入口
+                if($self.attr("href") == "#ccd" && mod_list.length){
+                    let itemModList = [];
+                    const bg_jzhz="/portal/static/images/bg_jzhz.jpg";
+                    const bg_qxst="/portal/static/images/bg_qxst.jpg";
+                    for (let v in mod_list) {
+                        const mod_item=mod_list[v];
+                        const bg_url = mod_item['code'] === 'QXST' ? bg_qxst : bg_jzhz;
+                        const modItem = $('' +
+                            '<div class="weui-cell mod-cell" onclick="choisDept(\'' + mod_item["code"] + '\',\'' + '' + '\',\'' + '' +  '\')">' +
+                            '<img class="mod-image" src="'+ bg_url +'">' +
+                            '</div>');
+                        content.find(".mod-list").append(modItem);
+                    }
+                }
+
+                // 科室
+                var itemList = [];
+                for (var i in dept_list) {
+                    if ($self.attr("href") == "#critical" && dept_list[i]["DEPT_TYPE"] !== "I"){
+                        continue;
+                    }
+                    if ($self.attr("href") == "#ccd" && dept_list[i]["DEPT_TYPE"] !== "I" && dept_list[i]["DEPT_TYPE"] !== "O" && dept_list[i]["DEPT_TYPE"] !== "OP") {
+                        continue;
+                    }
+                    itemList.push(i);
+                    var item = $('' +
+                        '<div class="weui-cell" onclick="choisDept(\'' + $self.attr("href").substring(1) + '\',\'' + dept_list[i]["CODE"] + '\',\'' + dept_list[i]["DEPT_TYPE"] +  '\')">' +
+                        '<div class="weui-cell__hd">' +
+                        dept_list[i]["DEPT_NAME"] +
+                        '</div>' +
+                        '</div>');
+                    content.find(".dept-list").append(item);
+                }
+                $.hideLoading();
+                if (itemList.length == 1 && !itemList.length) {
+                    choisDept($self.attr("href").substring(1), dept_list[itemList[0]]["CODE"], dept_list[itemList[0]]["DEPT_TYPE"]);
+                    return;
+                }
+                if (!itemList.length && mod_list.length == 1) {
+                    const modCode = mod_list[0]['code'];
+                    switch (modCode) {
+                        case 'QXST':
+                            fetchNewToken(modCode, '');
+                            break;
+                        case 'JZHZ':
+                            location.href = navRoot + "/outpatient";
+                            break;
+                        default:
+                            break;
+                    }
+                    return;
+                }
+                // 新增搜索科室
+                if (itemList.length > 10) {
+                    const searchItem = $('<div class="weui-cell mod-search">' +
+                        '<div class="weui-cell__bd">' +
+                        '<input class="weui-input dept-search-input" type="text" placeholder="请输入住院/手术病区名称" onblur="searchDept()">' +
+                        '</div>' +
+                        '<div class="weui-cell__ft">' +
+                        `<img src="/portal/static/images/icon-search.png" />` +
+                        '</div>' +
+                        '</div>');
+                        searchItem.attr('href', $self.attr("href"));
+                        ccdDeptList = dept_list;
+                    content.find(".search-input").append(searchItem);
+                }
+                $.modal({
+                    title: "请选择查看类型",
+                    text: content.html(),
+                    buttons: []
+                }, function () {
+                    if ($(".weui-mask.weui-mask--visible")) {
+                        $(".weui-mask.weui-mask--visible").click(function () {
+                            $.closeModal();
+                            ccdDeptList = null; // 清空
+                        })
+                    }
+                });
+                $('.weui-dialog__bd').css({"padding":"0 10px 10px", "max-height": "350px"});
+            }
+
+            // 绑定原有a标签的跳转功能
+            function bindAJump(){
+                
+                $("#index .jump_next").click(function () {
+                    if ($(this).attr("href") != "#") {
+                        event.preventDefault();
+                        var $self = $(this);
+                        // 模块编码含new 走新的跳转方式
+                        if($self.attr('code').indexOf('NEW') != -1 ){
+                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                if (data["code"] == 200) {
+                                    var token = data["data"]["access_token"];
+                                    $.getJSON(navRoot + "/module?code=" + $self.attr('code'), function(resData) {
+                                        var redirect_url = resData["data"]["url"];
+                                        const new_url = redirect_url.match(/\?./)?`${redirect_url}&token=${token}`:`${redirect_url}?token=${token}`;
+                                        var param = {
+                                            redirectUrl: new_url,
+                                            title: $self.find('.weui-grid__label').text(),
+                                            permissionList: [1, 2, 3, 4]
+                                        };
+                                        if (jsBridge) {
+                                            jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                                                if (data != null) {
+                                                    console.log(data);
+                                                } else {
+                                                    location.href = new_url;
+                                                }
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    $.hideLoading();
+                                    location.href = navRoot + "/login";
+                                }
+                            })
+                            return;
+                        }
+                        if($self.attr('type')=='url'){
+                            // /portal/module
+                            let code=$self.attr('code')
+                            $.getJSON(navRoot + "/module?code=" + code, function(resData) {
+                                // var resData = JSON.parse(data)
+                                if(resData["code"] == 200){
+                                    window.location.href=resData.data.url;
+                                }else{
+                                    $.alert(resData['errmsg'], function() {
+                                        location.href = navRoot + "/login";
+                                    });
+                                }
+                            })
+                            return false;
+                        }
+                        //如果需要弹出权限科室弹框
+                        if ($self.attr("href") == "#ccd" || $self.attr("href") == "#critical") {
+                            var param = {"permissionList": [ 4 ]};
+                            if (jsBridge) {
+                                jsBridge.callAppRouter("JS_checkPermission", JSON.stringify(param), function(data){
+                                    if (data != null) {
+                                        console.log(data);
+                                    } else {
+                                    }
+                                })
+                            }
+                            $.showLoading();
+                            $.getJSON(navRoot + "/getRoleDeptList", {show_mod: "1", dept_types: $self.attr("href") == "#ccd"? "I,O,OP": "I"}, function (data) {
+                                if (data["code"] == 200){
+                                	if (data["data"] && data["data"].length > 0 || data["data"][0]["deptList"].length > 0) {
+                                        getRoleDeptList(data["data"][0], $self);
+                                	}
+                                } else{
+                                	$.hideLoading();
+                                    $.alert(data["errmsg"], function () {
+                                        location.href = navRoot + "/login";
+                                    })
+                                }
+                            });
+                        
+                        } else if($(this).attr("href") == "#QXST"){
+                            choisDept($(this).attr("href").substring(1), '');
+                            // $.getJSON(navRoot + "/newtoken", function (data) {
+                            //     if (data["code"] == 200) {
+                            //         var token = data["data"]["access_token"];
+                            //         let url = "https://yihu.gzsums.net/ccd/universalSearch" + "?token=" + token + "&deptId=" + dept_list[i]["CODE"];
+                            //         const param = {
+                            //             redirectUrl: url,
+                            //             title: "病历检索"
+                            //         };
+                            //         if (jsBridge) {
+                            //             jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                            //                 if (data != null) {
+                            //                     console.log(data);
+                            //                 } else {
+                            //                     location.href = url;
+                            //                 }
+                            //             })
+                            //         }
+                            //     } else {
+                            //         location.href = navRoot + "/login";
+                            //     }
+                            // })
+                        } else if ($(this).attr("href") == "#inpatient_apply"){
+                            // 入院申请
+                            if (jsBridge) {
+                                jsBridge.callAppRouter("JS_checkPermission", JSON.stringify({"permissionList": [ 1, 2, 3, 4 ]}), function(data){})
+                            }
+                            var param = {
+                                "index": 2
+                            }
+                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                if (data["code"] == 200) {
+                                    var token = data["data"]["access_token"];
+                                    $.post(navRoot + "/ihospital/redirect", param, function(data) {
+                                        if (data["code"] == 200) {
+                                            $.hideLoading();
+                                            var redirect_url = data["data"]["url"];
+
+                                            var param = {
+                                                redirectUrl: redirect_url,
+                                                title: "入院通知单",
+                                                permissionList: [1, 2, 3, 4]
+                                            };
+                                                 
+                                            if (jsBridge) {
+                                               
+                                                jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                                                    if (data != null) {
+                                                        console.log(data);
+                                                    } else {
+                                                        location.href = redirect_url;
+                                                    }
+                                                })
+                                            }
+                                        } else {
+                                            $.hideLoading();
+                                            $.alert(data["errmsg"], function () {
+                                                location.href = navRoot + "/login";
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    $.hideLoading();
+                                    location.href = navRoot + "/login";
+                                }
+                            })
+                            ;
+                        } else if ($self.attr("href") == "#nursing"){
+                            var param = {"permissionList": [ 5 ]};
+                            if (jsBridge) {
+                                jsBridge.callAppRouter("JS_checkPermission", JSON.stringify(param), function(data){
+                                    if (data != null) {
+                                        console.log(data);
+                                    } else {
+                                    }
+                                })
+                            }
+                            $.showLoading();
+                            $.getJSON(navRoot + "/nursing", function (data) {
+                                $.hideLoading();
+                                if (data["code"] == 200 && data["data"] && data["data"].length > 0){
+                                    location.href = data["data"];
+                                } else if (data["code"] != 200) {
+                                    $.alert(data['errmsg'], function() {
+                                        location.href = navRoot + "/login";
+                                    });
+                                } else {
+                                    location.href = navRoot + "/login";
+                                }
+                            })
+                        } else if ($self.attr("href") == "#remote") {
+                            // 远程会诊
+                            var param = {"permissionList": [ 2, 3, 4 ]};
+                            if (jsBridge) {
+                                jsBridge.callAppRouter("JS_checkPermission", JSON.stringify(param), function(data){
+                                    if (data != null) {
+                                        console.log(data);
+                                    } else {
+                                    }
+                                })
+                            }
+                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                    if (data["code"] == 200) {
+                                        var token = data["data"]["access_token"];
+                                        $.hideLoading();
+                                        location.href = '/remote/webapp' + "?token=" + token;
+                                    } else {
+                                        $.hideLoading();
+                                        location.href = navRoot + "/login";
+                                    }
+                                });
+                        } else if ($self.attr("href") == "#reDiagnostic") {
+                            // 复诊预约
+                            if (jsBridge) {
+                                jsBridge.callAppRouter("JS_checkPermission", JSON.stringify({"permissionList": [ 1, 2, 3, 4 ]}), function(data){})
+                            }
+                            var param = {
+                                "index": 1
+                            }
+                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                if (data["code"] == 200) {
+                                    var token = data["data"]["access_token"];
+                                    $.post(navRoot + "/ihospital/redirect", param, function(data) {
+                                        if (data["code"] == 200) {
+                                            $.hideLoading();
+                                            var redirect_url = data["data"]["url"];
+                                            var param = {
+                                                redirectUrl: redirect_url,
+                                                title: "复诊预约",
+                                                permissionList: [1, 2, 3, 4]
+                                            };
+                                            if (jsBridge) {
+                                                jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                                                    if (data != null) {
+                                                        console.log(data);
+                                                    } else {
+                                                        location.href = redirect_url;
+                                                    }
+                                                })
+                                            }
+                                        } else {
+                                            $.hideLoading();
+                                            $.alert(data["errmsg"], function () {
+                                                location.href = navRoot + "/login";
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    $.hideLoading();
+                                    location.href = navRoot + "/login";
+                                }
+                            });
+                        } else if ($self.attr("href") == "#resist_disease"){
+                            $.showLoading();
+                            $.getJSON(navRoot + "/resist_disease", function (data) {
+                                if (data["code"] == 200 && data["data"] && data["data"].length > 0){
+                                    $.hideLoading();
+                                    location.href = data["data"];
+                                } else {
+                                    $.hideLoading();
+                                    location.href = navRoot + "/login";
+                                }
+                            })
+                        } else if ($self.attr("href") == "#jzhz"){
+                            location.href = navRoot + "/outpatient"
+                        } else if ($(this).attr("href") == "#IHospital") {
+                            //点击云诊室添加弹出广告
+                            $.getJSON(navRoot + "/window", {"type": "yzs"}, function (data) {
+                                if (data && data["code"] == 200) {
+                                    data = data["data"];
+                                    if (data && data["is_show"]) {
+                                        var floatAD = $('<div style="position:absolute;display: flex;align-items: center;justify-content: center;width: 100%;height: 100%;z-index: 999;">' +
+                                            '<div class="weui-mask weui-mask--visible" style="background: rgba(255,255,255);"></div>' +
+                                            '<div style="text-align:center;max-width:100%;z-index: 1050;">' +
+                                            '<img class="windowAD" style="max-width:100%;max-height:100%;" src="' + data["img_url"] + '">' +
+                                            '</div>' +
+                                            '</div>');
+                                        floatAD.find('img').on('load', function(){
+                                            $("body").append(floatAD);
+                                            setTimeout(function() {
+                                                // 3秒后再调用进入云诊室的接口
+                                                floatAD.fadeOut();
+                                            });
+                                        });
+                                        setTimeout(function () {
+                                            $.showLoading();
+                                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                                $.hideLoading();
+                                                if (data["code"] == 200) {
+                                                    $.getJSON(navRoot + "/ihlogin", function (data) {
+                                                        if (data["code"] == 200) {
+                                                            data = data["data"];
+                                                            var redirect_url = data["url"];
+                                                            var param = {
+                                                                redirectUrl: redirect_url,
+                                                                title: "互联网医院",
+                                                                permissionList: [1, 2, 3, 4]
+                                                            };
+                                                            if (jsBridge) {
+                                                                jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                                                                    if (data != null) {
+                                                                        console.log(data);
+                                                                    } else {
+                                                                        location.href = redirect_url;
+                                                                    }
+                                                                })
+                                                            }
+                                                        } else {
+                                                            $.alert(data["errmsg"]);
+                                                        }
+                                                    })
+                                                } else {
+                                                    location.href = navRoot + "/login";
+                                                }
+                                            });
+                                        }, 5000);
+                                    } else {
+                                        $.showLoading();
+                                        $.getJSON(navRoot + "/newtoken", function (data) {
+                                            $.hideLoading();
+                                            if (data["code"] == 200) {
+                                                $.getJSON(navRoot + "/ihlogin", function (data) {
+                                                        if (data["code"] == 200) {
+                                                            data = data["data"];
+                                                            var redirect_url = data["url"];
+                                                            var param = {
+                                                                redirectUrl: redirect_url,
+                                                                title: "互联网医院",
+                                                                permissionList: [1, 2, 3, 4]
+                                                            };
+                                                            if (jsBridge) {
+                                                                jsBridge.callAppRouter("openDoctorNew", JSON.stringify(param), function(data){
+                                                                    if (data != null) {
+                                                                        console.log(data);
+                                                                    } else {
+                                                                        location.href = redirect_url;
+                                                                    }
+                                                                })
+                                                            }
+                                                        } else {
+                                                            $.alert(data["errmsg"]);
+                                                        }
+                                                    })
+                                            } else {
+                                                location.href = navRoot + "/login";
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        } else if ($(this).attr("href") == "#Doctor") {
+                            var param = {"permissionList": [ 1, 2, 3, 4, 5 ]};
+                            if (jsBridge) {
+                                jsBridge.callAppRouter("JS_checkPermission", JSON.stringify(param), function(data){
+                                    if (data != null) {
+                                        console.log(data);
+                                    } else {
+                                    }
+                                })
+                            }
+                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                    if (data["code"] == 200) {
+                                        var token = data["data"]["access_token"];
+                                        $.hideLoading();
+                                        location.href = "/hcons" + "?token=" + token;
+                                    } else {
+                                        $.hideLoading();
+                                        location.href = navRoot + "/login";
+                                    }
+                                });
+                        } else if ($(this).attr("href") == "#CA") {
+                            $.actions({
+                                actions: [{
+                                    text: "绑定设备",
+                                    onClick: function () {
+                                        if (jsBridge) {
+                                            jsBridge.callAppRouter("bindDevice", "", function (data) {
+                                                console.log(data);
+                                            })
+                                        }
+                                    }
+                                }, {
+                                    text: "扫一扫",
+                                    onClick: function () {
+                                        if (jsBridge) {
+                                            jsBridge.callAppRouter("scan", "", function (data) {
+                                                console.log(data);
+                                            })
+                                        }
+    
+                                    }
+                                }, {
+                                    text: "远程协助申请",
+                                    onClick: function () {
+    
+                                        $.getJSON(navRoot + "/newtoken", function (data) {
+                                            $.hideLoading();
+                                            if (data["code"] == 200) {
+                                                var token = data["data"]["access_token"];
+                                                var param = {
+                                                    access_token: token,
+                                                };
+                                                if (jsBridge) {
+                                            jsBridge.callAppRouter("authorized", JSON.stringify(param), function (data) {
+                                                console.log(data);
+                                            })
+                                        } else {
+                                                    location.href = navRoot + "/login";
+                                                }
+                                            } else {
+                                                location.href = navRoot + "/login";
+                                            }
+                                        });
+    
+    
+                                    }
+                                }, {
+                                    text: "远程协助管理",
+                                    onClick: function () {
+                                        $.getJSON(navRoot + "/newtoken", function (data) {
+                                            $.hideLoading();
+                                            if (data["code"] == 200) {
+                                                var token = data["data"]["access_token"];
+                                                var param = {
+                                                    access_token: token,
+                                                };
+                                                if (jsBridge) {
+                                            jsBridge.callAppRouter("authorized", JSON.stringify(param), function (data) {
+                                                console.log(data);
+                                            })
+                                        } else {
+                                                    location.href = navRoot + "/login";
+                                                }
+                                            } else {
+                                                location.href = navRoot + "/login";
+                                            }
+                                        });
+                                    }
+                                }, {
+                                    text: "修改电子签名密码",
+                                    onClick: function () {
+                                        if (jsBridge) {
+                                            jsBridge.callAppRouter("changePIN", "", function (data) {
+                                                console.log(data);
+                                            })
+                                        }
+                                    }
+                                }, {
+                                    text: "找回电子签名密码",
+                                    onClick: function () {
+                                        if (jsBridge) {
+                                            jsBridge.callAppRouter("findPIN", "", function (data) {
+                                                console.log(data);
+                                            })
+                                        }
+                                    }
+                                }]
+                            });
+                        } else if ($self.attr("href") == "#referral") {
+                            $.showLoading();
+                            $.getJSON(navRoot + "/refresh/token", function (data) {
+                                $.hideLoading();
+                                if (data["code"] == 200) {
+                                    var token = data["data"];
+                                    
+                                    location.href = "https://yihu.gzsums.net/twoway/referral" + "?token=" + token;
+                                } else {
+                                    location.href = navRoot + "/login";
+                                }
+                            });
+    
+                        } else if ($self.attr("href") == "#chronic_disease"){
+                            $.showLoading();
+                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                $.hideLoading();
+                                if (data["code"] == 200) {
+                                    $.getJSON(navRoot + "/chronic_disease", function (data) {
+                                        if (data["code"] == 200 && data["data"] && data["data"].length > 0) {
+                                            $.hideLoading();
+                                            var redirect_url = data["data"];
+                                            var params = {
+                                                redirectUrl: redirect_url,
+                                                title: "慢病管理",
+                                                permissionList: [2, 4]
+                                            };
+                                            if (jsBridge) {
+                                                jsBridge.callAppRouter("openDoctorNew", JSON.stringify(params), function(data){
+                                                    if (data != null) {
+                                                        console.log(data);
+                                                    } else {
+                                                        location.href = redirect_url;
+                                                    }
+                                                })
+                                            }
+                                        } else {
+                                            $.hideLoading();
+                                            location.href = navRoot + "/login";
+                                        }
+                                    })
+                                } else{
+                                    $.hideLoading();
+                                    location.href = navRoot + "/login";
+                                }
+                            });
+    
+                        } else if ($self.attr("href") == "#baqs"){
+                            $.showLoading();
+                            $.getJSON(navRoot + "/baqs", function (data) {
+                                if (data["code"] == 200 && data["data"] && data["data"].length > 0) {
+                                    $.hideLoading();
+                                    var redirect_url = data["data"];
+                                    location.href = redirect_url;
+                                } else {
+                                    $.hideLoading();
+                                    location.href = navRoot + "/login";
+                                }
+                            });
+    
+                        } else if ($(this).attr("href") == "#noOpen") {
+                            $.alert('暂未开放，敬请期待！', function(){
+                                location.href = "/portal";
+                            });
+                        } else {
+                            $.showLoading();
+                            $.getJSON(navRoot + "/newtoken", function (data) {
+                                $.hideLoading();
+                                if (data["code"] == 200) {
+                                    var token = data["data"]["access_token"];
+                                    location.href = $self.attr("href") + "?token=" + token;
+                                } else {
+                                    location.href = navRoot + "/login";
+                                }
+                            });
+                        }
+                    } else { 
+                        $.alert('暂无权限查看！', function() {
+                            
+                            location.href = "/portal";
+                        });
+                    }
+    
+                })
+            }
+
+
+
+            // 创建可展示的模块节点
+        function handleData(data,all_data) {
+            //第一参数为需要展示的模块code，第二参数为所有的模块信息
+            let html = ''
+            data.forEach(item => {
+                let id='';
+                let jump_flag='jump_next';
+                let url=a_url[all_data[item].code]
+                if(item=='HLWYY'){
+                    id='yzs_badge';
+                }
+                if(!all_data[item].has_auth){
+                    url='#';
+                    jump_flag='jump_next disabledItem'
+                }
+                html += '<a href="' + url + '" class="weui-grid '+jump_flag+'" type='+all_data[item].type+' code='+all_data[item].code+'><div class="weui-grid__icon">' +
+                    '<img src="' + all_data[item].icon_url + '" alt="">' +
+                    '<span id="'+id+'" class="weui-badge read '+id+'" style="display: none"></span>'+
+                    '</div><p class="weui-grid__label">' + all_data[item].name + '</p></a>'                
+            }); 
+            return html;
+        }
+        // 常用模块单独添加最后的添加模块
+        function addModul(data,all_data) {
+            let img_url='/portal/static/images/add.png';
+            let add_html = '<a href="#" class="weui-grid add_normal_mods"><div class="weui-grid__icon">' +
+                '<img src="'+img_url+'" alt="">' +
+                '</div><p class="weui-grid__label">添加</p></a>'
+            let html = handleData(data,all_data)
+            return html + add_html;
+        }
+            //全部模块加载
+        function allModulsInit(data){
+            let all=Object.keys(data);
+            let html=handleData(all,data);
+            $('#content_all, #care_content_all').html(html);
+        }
+
+        // 切换首页和添加模块标签
+        function bindAddNormalModClick() {
+            $('.add_normal_mods').off('click').click(function() {
+                $('#add_normal').toggle()
+                $('#home_tab').toggle()
+            })
+        }
+
+            // 删除已有模块
+            function deleteItem(){
+            $('.delete_item').off('click').click(function(){
+                $(this).removeClass('delete_item').addClass('add_item')
+                $(this).parent().find('.drag_class').remove();//删除拖拽标志
+                let html=$(this).parent().prop("outerHTML");//获取节点
+                let postData={
+                    'codes':getAllNormalCode()
+                }
+                let obj=$(this);
+                // POST /portal/module/common-used
+                $.ajax({
+                    url:navRoot+'/module/common-used',
+                    type:'POST',
+                    data:JSON.stringify(postData),
+                    dataType:'json',
+                    contentType:'application/json',
+                    success:function (data) {
+                        obj.parent().remove();
+                        $('#other_mods').append(html)
+                        addItem();
+                    },
+                    error:function (data) {
+                        alert(data.msg)
+                    }
+                 })
+               
+            })
+        }
+        // 添加新模块到常用模块
+        function addItem(){
+            $('.add_item').off('click').click(function(){
+                $(this).removeClass('add_item').addClass('delete_item');
+                let drag_html='<span class="drag_class">&#9776;</span>';
+                $(this).parent().append(drag_html)
+                let html=$(this).parent().prop("outerHTML")
+                let postData={
+                    'codes':getAllNormalCode()
+                }
+                let obj=$(this)
+                // POST /portal/module/common-used
+                $.ajax({
+                    url:navRoot+'/module/common-used',
+                    type:'POST',
+                    data:JSON.stringify(postData),
+                    dataType:'json',
+                    contentType:'application/json',
+                    success:function (data) {
+                        obj.parent().remove();
+                        $('#had_mods').append(html)
+                        bindDrag();
+                        deleteItem()
+                    },
+                    error:function (data) {
+                        alert(data.msg)
+                    }
+                 })
+                
+            })
+        }
+
+        // 获取所有的常用模块code
+        function getAllNormalCode(){
+            let arr=[];
+            $('.delete_item').each(function(){
+                arr.push($(this).attr('code'))
+            })
+            let code=arr.join(',');
+            return code;
+        }
+        // 切回首页 并在同时刷新页面
+        $('#reflesh_web').click(function(){ 
+            // window.location.href="/portal/redirect-index";
+            location.href = "/portal"
+                })
+        // 存储之前weui-navbar__item的状态
+        function saveNavbarIndex(){
+            $('.weui-navbar__item').off('click').click(function(){
+                sessionStorage.setItem('navbarIndex',$(this).index())
+            })
+        }
+
+        let sort=''//用于储存拖拽的dom
+        function bindDrag(){
+            if(sort){
+                sort.destroy();
+            }//避免第一次渲染报错
+            let dom=document.getElementById('had_mods');
+		    sort=Sortable.create(dom, {
+			    sort: true,
+			    group: {
+		             name: 'had_mods',
+	    	         pull: false,
+	    	         put: true},
+		    	animation: 150,
+                onUpdate:function(){
+                    let postData={
+                    'codes':getAllNormalCode()
+                }
+                    $.ajax({
+                        url:navRoot+'/module/common-used',
+                        type:'POST',
+                        data:JSON.stringify(postData),
+                        dataType:'json',
+                        contentType:'application/json',
+                        success:function (data) {
+                        },
+                        error:function (data) {
+                            alert(data.msg)
+                        }
+                 })
+                }
+		});
+        }
+
+            //创建添加模块页面的节点
+            function creatAddOrDeleteNode(flag,showData,all_data){
+            let html='';
+            if(flag){//TRUE为已有模块的节点
+                showData.forEach(item=>{
+                    html+='<li class="modules_item flex_box">'+
+                        '<div class="delete_item" code="'+all_data[item].code+'"></div>'+
+                        '<div class="flex_box"><img src="'+all_data[item].icon_url+'" alt=""></div>'+
+                        '<div>'+all_data[item].name+'</div><span class="drag_class">&#9776;</span></li>'
+                    })
+                }else{//FALSE为需要添加的模块节点
+                    //添加的模块只展示有权限的模块
+                    let real_mods=[]
+                    let all_data_key=Object.keys(all_data)
+                    for (let i = 0; i < all_data_key.length; i++) {
+                         if(all_data[all_data_key[i]].has_auth){
+                            real_mods.push(all_data[all_data_key[i]].code);
+                         }
+                     }
+                    let add_item=showData.concat(real_mods).filter(function(v,i,arr){
+                        return arr.indexOf(v)===arr.lastIndexOf(v)
+                    })//获取非常用模块的信息
+                    add_item.forEach(item=>{
+                        html+='<li class="modules_item flex_box">'+
+                        '<div class="add_item" code="'+all_data[item].code+'"></div>'+
+                        '<div class="flex_box"><img src="'+all_data[item].icon_url+'" alt=""></div>'+
+                        '<div>'+all_data[item].name+'</div></li>'
+                    })
+            }
+            return html;
+        }
+        // 初始化添加添加标签的节点
+        function initAddHtml(data){
+            let html=creatAddOrDeleteNode(true,data.common_mod_codes,data.all_mods)
+            $('#had_mods').html(html);
+            bindDrag();//绑定拖拽
+            
+            
+            html=creatAddOrDeleteNode(false,data.common_mod_codes,data.all_mods);
+            $('#other_mods').html(html);
+
+            deleteItem()
+            addItem()
+        }
+            // 初始化页面
+            function initHome(data){
+
+                // 当常用模块的长度为0，自动跳转为全部
+                if(data.common_mod_codes.length<=0){
+                    $('#all_modules').trigger('click')
+                }
+                $('#content_first, #care_content_first').html(addModul(data.common_mod_codes,data.all_mods))
+
+                let medical_data=data.manager_mods.filter(item=>{ return item.name=='医疗服务'})
+                let patient_data=data.manager_mods.filter(item=>{ return item.name=='患者服务'})
+                $('#content_medical, #care_content_medical').html(handleData(patient_data[0].mod_codes, data.all_mods))
+                $('#content_patient, #care_content_patient').html(handleData(medical_data[0].mod_codes, data.all_mods))
+                bindAddNormalModClick()
+                //全部模块加载
+                allModulsInit(data.all_mods);
+
+                initAddHtml(data);
+
+                saveNavbarIndex();
+
+                bindAJump();
+
+                getUnreadNum();
+            }
+
+            function getData(){
+                let data={'all_mods': {'QJBL': {'id': 4, 'code': 'QJBL', 'name': '全景病历', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/b2abfa619aaab085999087bd1ddab6ea.png', 'has_auth': True}, 'QXST': {'id': 241, 'code': 'QXST', 'name': '全息视图', 'config': '{"url_to_format": "https://yihu-dev.gzsums.net/ccd/universalSearch?token={access_token}"}', 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/08/01/f39e047972ba7ad63146fd2052673cac.png', 'has_auth': False}, 'HEADss': {'id': 6, 'code': 'HEADss', 'name': 'HEADss', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/7fb76a2d7fd9284f9a98039bb80a447d.png', 'has_auth': False}, 'WJZ': {'id': 7, 'code': 'WJZ', 'name': '危急值', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/496229b999aa7b60e59a293e682aaa23.png', 'has_auth': True}, 'HLWYY': {'id': 13, 'code': 'HLWYY', 'name': '互联网医院', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/014da38cbe0cea93d621638dfebff75f.jpg', 'has_auth': False}, 'YNHZ': {'id': 23, 'code': 'YNHZ', 'name': '院内会诊', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/6d28d6a49e94b6a65b6d3d366631cf0a.png', 'has_auth': True}, 'CARZ': {'id': 10, 'code': 'CARZ', 'name': 'CA认证', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/21976fcf4d22c0b9ae3c461f57d6b05a.png', 'has_auth': True}, 'JZHZ': {'id': 121, 'code': 'JZHZ', 'name': '门诊患者列表', 'config': None, 'top_right': 2, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2023/09/18/b367a52247863850414bef43b02e8a4a.png', 'has_auth': False}, 'FZYY': {'id': 81, 'code': 'FZYY', 'name': '复诊预约', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/87f080495de93a2c09b674b00e702c35.png', 'has_auth': False}, 'RYTZD': {'id': 21, 'code': 'RYTZD', 'name': '入院通知单', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/6e897a820fe5caaa79f25ddfeb4c77de.png', 'has_auth': False}, 'KJYWSP': {'id': 11, 'code': 'KJYWSP', 'name': '抗菌药物审批', 'config': '{"url_to_format": "https://kangjun.gzsums.net/htcpoe/antibiotic-approval-login.jsp?openId={user_id}&token={encrypted_access_token_t}"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': '功能测试中', 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/660fcab0695320af32abee7d0a201102.jpg', 'has_auth': False}, 'MBGL': {'id': 15, 'code': 'MBGL', 'name': '慢病管理', 'config': '{"url_to_format": "http://14.23.155.11:1168/static/app/medical/index.html?access_token={access_token}"}', 'top_right': 2, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/f6f4f16b9bf957360f6f8c352779bc6c.jpg', 'has_auth': False}, 'BAQS': {'id': 22, 'code': 'BAQS', 'name': '病案签收', 'config': '{"url_to_format": "http://14.23.155.14:1128/htmr/do?module=htmr&action=CaseStateSearch&method=showCaseStateSearch&openId={user_id}"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/dd36ffa71fdf2e44517c4f8391f4ed56.png', 'has_auth': False}, 'YCHZ': {'id': 8, 'code': 'YCHZ', 'name': '远程会诊', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/e96c3a225a8baf7898a2e73ff518fb89.png', 'has_auth': False}, 'SXDZ': {'id': 9, 'code': 'SXDZ', 'name': '双向转诊', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/ace6cb0738d099a78c6c2ab010da5320.png', 'has_auth': False}, 'HLSM': {'id': 14, 'code': 'HLSM', 'name': '互联网+护理', 'config': None, 'top_right': 0, 'type': 'org', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/18/30d8fc9c548b1f37def722189c4db1e5.jpg', 'has_auth': False}, 'SFYSD': {'id': 24, 'code': 'SFYSD', 'name': '耳鼻喉随访', 'config': '{"url_to_format": "http://14.23.155.17:1098/wechat/#/"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': 'http://14.23.155.17:1098/wechat/#/', 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2022/10/20/3db67d65bb6d0f163a516a8825ab60b9.png', 'has_auth': False}, 'ZHSFTEST': {'id': 321, 'code': 'ZHSFTEST', 'name': '智慧随访测试', 'config': '{"url_to_format": "https://frp08.carekd.com/yihu/index?token={encrypted_access_token_t}"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/12/16/5319c053e6d4df3351389a09c13bab18.png', 'has_auth': False}, 'ZHSF': {'id': 301, 'code': 'ZHSF', 'name': '智慧随访', 'config': '{"url_to_format": "https://medicalfollowupsystem.gzsums.net/yihu/index?token={encrypted_access_token_t}"}', 'top_right': 2, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/10/17/d27820712bb6a1ac479fb9303dcddb59.png', 'has_auth': False}, 'ZQWS': {'id': 221, 'code': 'ZQWS', 'name': '知情文书', 'config': '{"url_to_format": "https://signature.gzsums.net/?doctorId={encrypted_access_token_t}"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/06/18/ecccb917c32e77d6c5dbaefbdbb97e1d.png', 'has_auth': False}, 'KFZL': {'id': 242, 'code': 'KFZL', 'name': '康复治疗测试', 'config': '{"url_to_format": "https://kangfu.gzsums.net/htptsmws/do?type=3&encrypted_access_token_t={encrypted_access_token_t}"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/06/18/8a067633c0bcd1bb538c394af9fade46.png', 'has_auth': False}, 'SXSQSP': {'id': 141, 'code': 'SXSQSP', 'name': '输血申请审批', 'config': '{"url_to_format": "http://14.23.155.12:1119/htweb5/sso-call-webservice.jsp?type=showBloodApprovalMt&token={encrypted_access_token_t}"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/02/12/ca6d346da9b62b5d7ea4834ae316e5b8.png', 'has_auth': False}, 'ZZCIS': {'id': 261, 'code': 'ZZCIS', 'name': '重症CIS', 'config': '{"url_to_format": "https://smartcare-mobile.gzsums.net/#/main?encrypted_access_token_t={encrypted_access_token_t}"}', 'top_right': 2, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/11/25/57aba803d11ebcf0b4caea01c1d4b92a.jpg', 'has_auth': True}, 'YRYXT': {'id': 281, 'code': 'YRYXT', 'name': '预入院系统', 'config': '{"url_to_format": "https://prebooking.gzsums.net/System/ToPreBookingSystem?encrypted_access_token_t={encrypted_access_token_t}"}', 'top_right': 0, 'type': 'url', 'switch': True, 'close_tips': None, 'close_url': None, 'close_type': 0, 'icon_url': 'https://aipms.gzsums.net:10240/aipms/uploads/2024/08/13/b8ee087c61f6f22e0a5397ca3f48f242.png', 'has_auth': True}}, 'common_mod_codes': [], 'manager_mods': [{'name': '医疗服务', 'desc': None, 'mod_codes': ['QJBL', 'HEADss', 'WJZ', 'YCHZ', 'SXDZ', 'CARZ', 'KJYWSP', 'BAQS', 'YNHZ', 'SFYSD', 'ZZCIS', 'JZHZ', 'SXSQSP', 'ZQWS', 'KFZL', 'QXST']}, {'name': '患者服务', 'desc': None, 'mod_codes': ['HLWYY', 'HLSM', 'MBGL', 'RYTZD', 'FZYY', 'YRYXT', 'ZHSF', 'ZHSFTEST']}, {'name': '内部测试模块', 'desc': None, 'mod_codes': []}], 'notify_unread': False, 'annual_report_icon': 'https://aipms.gzsums.net:10240/aipms/uploads/2025/01/08/b8c575e8694e4355c8763c59c443134d.jpg', 'annual_report_url': 'https://aipms.gzsums.net:10240/aer/medical/?source_type=app&code=899258ec199a5839763033e435e25da7&r_year=2024', 'annual_report_title': '年度员工报告'};
+                initHome(data);
+            };
+            getData()
+            $("#scanBtn, #careScanBtn").click(function () {
+                if (jsBridge) {
+                    jsBridge.callAppRouter("scan", "", function (data) {
+                        console.log(data);
+                    })
+                }
+            })
+            // moveDivs("scanBtn")
+            $("#loginOutBtn").click(logout);
+
+            $(".switch_mine_index").on("click", function (e) {
+                var $a = $(e.currentTarget);
+                var href = $a.attr("href");
+                if ($a.hasClass("weui-bar__item--on")) return;
+                if (!/^#/.test(href)) return;
+                var state = {
+                    state: 0
+                };
+                if (href == "#index") {
+                    $("#scanBtn").show();
+                } else {
+                    $("#scanBtn").hide();
+                }
+                window.history.replaceState(state, "", href);
+                // 关怀模式下，切换布局
+                userCareModeIndex = $a.data('index');
+                localStorage.setItem('userCareModeIndex',userCareModeIndex)
+                jsUserCareMode(); 
+                if(caremodel == 0){
+                    if(userCareModeIndex === 0){
+                        $(".care-mode").hide();
+                    }else{
+                        $(".care-mode").show();
+                    }
+                }
+            });
+
+
+            
+        });
+
+        //获取百慧云诊室未读消息
+        function getUnreadNum() {
+            $.getJSON(navRoot + "/notification/bh/num", function (data) {
+                if (data["code"] == 200) {
+                    var unReadNumbers = data["data"]["unReadNumbers"];
+                    var param = {
+                        unReadNumber: unReadNumbers
+                    };
+                    if (jsBridge) {
+                        jsBridge.callAppRouter("getUnReadNum", JSON.stringify(param), function (data) {
+                            console.log(data);
+                        })
+                    }
+                    if (unReadNumbers && unReadNumbers > 0) {
+                        $(".yzs_badge").text(unReadNumbers).show();
+                    } else {
+                        $(".yzs_badge").hide();
+                    }
+                }
+            });
+        }
+
+        //获取云诊室未读消息
+        function getUnreadNumOld() {
+            $.getJSON(navRoot + "/notification/num", function (data) {
+                if (data["code"] == 200) {
+                    var unReadNumbers = data["data"]["unReadNumbers"];
+                    
+                    if (unReadNumbers && unReadNumbers > 0) {
+                        $("#yzs_badge").text(unReadNumbers).show();
+                    } else {
+                        $("#yzs_badge").hide();
+                    }
+                }
+            });
+        }
+
+        function showAD(callback) {
+            if (!hasShowAD) {
+                $.getJSON(navRoot + "/window", function (data) {
+                    if (data && data["code"] == 200) {
+                        data = data["data"];
+                        if (data && data["is_show"]) {
+                            var floatAD = $('<div style="position:absolute;display: flex;align-items: center;justify-content: center;width: 100%;height: 100%;z-index: 2001;">' +
+                                '<div class="weui-mask weui-mask--visible" style="background: rgba(140,4,16);"></div>' +
+                                '<div style="text-align:center;max-width:100%;max-height:100%;z-index: 1050;">' +
+                                '<img class="windowAD" style="max-width:100%;max-height:100%;" src="' + data["img_url"] + '">' +
+                                '</div>' +
+                                '</div>');
+                            $("body").append(floatAD);
+                            setTimeout(function () {
+                                floatAD.fadeOut();
+                                callback()
+                            }, 2500);
+                            sessionStorage.setItem("hasShowAD", "true");
+                        }
+                    }
+                });
+            }
+        }
+
+        function showADNew(callback) {
+            if (!hasShowADNew) {
+                $.getJSON(navRoot + "/richtext?code=yihu_home_notice", function (data) {
+                    if (data && data["code"] == 200) {
+                        data = data["data"];
+                        if (data && data["is_show"]) {
+                            var AD = data["content"];
+                            var floatAD = '<div style="text-align: left">' +
+                                AD +
+                                '</div>';
+                            $.confirm({
+                                title: data['title'] || '温馨提示',
+                                text: floatAD,
+                                onOK: function () {
+                                    callback()
+                                },
+                                onCancel: function () {
+                                    callback()
+                                },
+                            });
+                            sessionStorage.setItem("hasShowADNew", "true");
+                        }
+                    } else {
+                        callback();
+                        console.log(JSON.stringify(data))
+                    }
+                });
+            }
+        }
+
+        function logout() {
+            $.post(navRoot + "/loginout", function (data) {
+                sessionStorage.clear();
+                localStorage.clear();
+                $.alert(data["data"], function () {
+                    if (window.isAndroid) {
+                        jsBridge.callAppRouter("loginOutApp", "", function (data) {
+                            location.href = navRoot;
+                        });
+                    } else {
+                        location.href = navRoot;
+                    }
+                });
+            }, "json");
+        }
+
+        !(function(w, d) {
+            var isOnDev = true;
+            var isPhoneLogin = false;
+            w.callbackBiometericInfo = function(data) {
+                if (isOnDev) console.log('[debug] get BiometericInfo from app: ', data);
+                if (localStorage.getItem('loginType') === 'phone' || localStorage.getItem('isWeComLogin') == '0') isPhoneLogin = true;
+                if (data && 'string' === typeof data['account'] && data['account'] != '') {
+                    if ('string' === typeof data) {
+                        if (isOnDev) console.log('[debug] get BiometericInfo from app response a string type data.');
+                        data = JSON.parse(data);
+                    }
+                    // fingerprint
+                    if (data['biometricType'] == '1') {
+                        $('#biometric-box').css('display', '')
+                        $('#biometric-icon').attr('class', 'biometric-icon finger')
+                        $('#biometric-box .weui-cell__bd').text('指纹登录')
+                        // face
+                    } else if (data['biometricType'] == '2') {
+                        $('#biometric-box').css('display', '')
+                        $('#biometric-icon').attr('class', 'biometric-icon face')
+                        $('#biometric-box .weui-cell__bd').text('脸部登录')
+                    }
+                    !isPhoneLogin && $('#switchBiometric').prop('checked', data['isOpen'] == '1')
+                }
+            }
+            $('#switchBiometric').click(function(evt) {
+                evt.preventDefault();
+                if (isPhoneLogin) {
+                    const tests = $('#biometric-box .weui-cell__bd').text();
+                    $.modal({
+                        title: "温馨提示",
+                        text: `若要使用${tests}需使用账号登录方式可开启，请重新登录，再次开启${tests}！`,
+                        buttons: [
+                            { text: "取消", className: "default", onClick: function(){ } },
+                            { text: "重新登录", onClick: function(){ logout() } },
+                        ]
+                    });
+                } else {
+                    var stage = $(this).prop('checked') ? '1' : '0';
+                    console.log('[debug] stage: ', stage);
+                    // stage: 1. tell app to open; 0. to close;
+                    activeBiometric({"isOpen": stage, page: '2'});
+                }
+            })
+            function checkForBiometric(callback) {
+                if (jsBridge) {
+                    jsBridge.callAppRouter("JS_getBiometricInfo", '', function(data){
+                        if (data != null) {
+                            console.log(data);
+                        } else {
+                            'function' === typeof callback && callback(data);
+                        }
+                    })
+                }
+            }
+            // 启用|检查生物认证授权状态
+            // {"isOpen": 1|0,”page”: 1|0 【登录页|个人中心】}
+            function activeBiometric(params) {
+                if (jsBridge) {
+                    jsBridge.callAppRouter("JS_getBiometricState", JSON.stringify(params), function(data){
+                        if (isOnDev) console.log('[debug] active biometric...', data);
+                        if (data != null) {
+                            console.log(data);
+                        } else {
+                        }
+                    })
+                }
+            }
+            checkForBiometric();
+        })(this, document)
+
+        // app更新提示
+        function updateRemind(callback){
+            if (hasShowUpdateRemind) return;
+            hasShowUpdateRemind = true;
+            var ua = navigator.userAgent;
+            var platform = "web";
+            if (ua.indexOf('MicroMessenger') > 0) {
+                platform = "weixin";
+            } else if (ua.indexOf('AlipayClient') > 0) {
+                platform = "alipay";
+            } else if (/(iPhone|iPad|iPod)/i.test(ua)) {
+                platform = "ios";
+            } else if (ua.indexOf('Android') > 0) {
+                platform = "android";
+            }
+            
+            if (jsBridge) {
+                jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                    if (data) {
+                        var data = JSON.parse(data);
+                        mobileIp = data["ip"];
+                        phoneModel = data["equipmentType"];
+                        osType = data["osType"];
+                        var curVersion = (data["version"] || "");
+                        var payload = {
+                            "osType": osType,
+                            "curVersion" :curVersion,
+                        }
+                        $.post(navRoot + "/app/version", payload, function (data) {
+                            if (data["code"] == 200) {
+                                var isForceUpdate = data['data']['isForceUpdate'];
+                                var isUpdateTip = data['data']['isUpdateTip'];
+                                var appVersion = data['data']['appVersion'];
+                                var downloadUrl = data['data']['downloadUrl'];
+                                localStorage.setItem("newVersion", appVersion);
+                                if (isUpdateTip) {
+                                    if (curVersion == "" || (curVersion != "" && curVersion != appVersion)) {
+                                        if (isForceUpdate) {
+                                            $.alert("当前版本（" + (curVersion || "") + "）太低，请更新到最新版本（" + appVersion + "）后再使用！", function () {
+                                                if(platform == 'android'){
+                                                    if (jsBridge) {
+                                                        jsBridge.callAppRouter('getApkDownloadUrl', JSON.stringify({ 'downloadUrl': downloadUrl }), function (data) {
+                                                            if (data["code"] == 200) {
+                                                                $.alert("已开始下载");
+                                                            }
+                                                        })
+                                                        return;
+                                                    }
+                                                }
+                                                location.href = navRoot + "/download";
+                                            });
+                                        } else {
+                                            $.confirm({
+                                                title: '温馨提示',
+                                                text: "当前版本（" + (curVersion || "") + "）太低，请更新到最新版本（" + appVersion + "）后再使用！",
+                                                onOK: function () {
+                                                    //点击确认
+                                                    if(platform == 'android'){
+                                                        if (jsBridge) {
+                                                            jsBridge.callAppRouter('getApkDownloadUrl', JSON.stringify({ 'downloadUrl': downloadUrl }), function (data) {
+                                                                if (data["code"] == 200) {
+                                                                    $.alert("已开始下载");
+                                                                }
+                                                            })
+                                                            return;
+                                                        }
+                                                    }
+                                                    location.href = navRoot + "/download";
+                                                    callback()
+                                                },
+                                                onCancel: function () {
+                                                    callback()
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }, 'json');
+                    }
+                })
+            }
+        }
+    </script>
+
+</body>
+</html>

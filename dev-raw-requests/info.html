@@ -1,0 +1,2031 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    
+<meta HTTP-EQUIV="pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Cache-Control" CONTENT="no-store, must-revalidate">
+<meta HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
+<meta HTTP-EQUIV="expires" CONTENT="0">
+    
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <title>全景电子病历</title>
+        <link rel="stylesheet" href="/ccd/static/css/weui.1.1.2.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/jquery-weui.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/ihealth.css?v=29">
+        <link rel="stylesheet" href="/ccd/static/css/iconfont.css?v=11">
+    
+    <style>
+        img {
+            max-width: 100%!important;
+            height: auto!important;
+        }
+        #patientInfo {
+            background: #FFFFFF;
+            padding: 10px;
+            font-size: 13px;
+            z-index: 2;
+        }
+
+        #type_btn_group > a {
+            margin-right: 3px;
+         margin-bottom: 5px;
+        }
+
+        .weui-well {
+            border-left: 1px solid #E5E5E5;
+            border-right: 1px solid #E5E5E5;
+        }
+
+        .well-print {
+            margin: 5px 8px;
+            padding: 0;
+        }
+
+        .weui-cell_access .weui-cell__ft:after {
+            -webkit-transition: -webkit-transform .3s;
+            transition: -webkit-transform .3s;
+            transition: transform .3s;
+            transition: transform .3s, -webkit-transform .3s;
+        }
+
+        .weui-cell_access.selected .weui-cell__ft:after {
+            -webkit-transform: rotate(135deg);
+            -moz-transform: rotate(135deg);
+            -ms-transform: rotate(135deg);
+            -o-transform: rotate(135deg);
+            transform: rotate(135deg);
+            -webkit-transition: -webkit-transform .3s;
+            transition: -webkit-transform .3s;
+            transition: transform .3s;
+            transition: transform .3s, -webkit-transform .3s;
+        }
+
+        .weui-well__content {
+            display: none;
+            padding: 10px 15px;
+            border-top: 1px solid #E5e5e5;
+            font-size: 14px;
+            border-bottom: none;
+        }
+
+        .content_tit {
+            display: inline-block;
+            color: #8B3B46;
+        }
+
+        .content_text {
+            display: inline-block;
+            word-break: break-all;
+        }
+
+        .recordDate {
+            font-size: 13px;
+        }
+
+        .recordDesc.ellipsis {
+            -webkit-line-clamp: 1;
+        }
+
+        .recordType {
+            font-size: 13px;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            width: 100%;
+        }
+
+        table th {
+            text-align: left;
+        }
+
+        
+        
+        
+
+        .scan_report_image {
+            list-style: none;
+        }
+
+        .zycf_item {
+            display: inline-block;
+            width: 50%;
+        }
+
+        .echartsTable {
+            position: absolute;
+            width: 45%;
+            right: 30px;
+            top: 25px;
+        }
+
+        .popUp {
+            width: 900px;
+            height: 606px;
+            background: #fff;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -450px;
+            margin-top: -303px;
+            border: 1px solid #C7CACD;
+        }
+
+        .popUp_head {
+            background: #d9e0e8;
+            border-bottom: 1px solid #c7cacd;
+            color: #666;
+            font-weight: bold;
+            height: 31px;
+            line-height: 31px;
+            padding-left: 10px;
+        }
+
+        #echartsTable .popUp_head {
+            background: none;
+            border-bottom: 0;
+            color: #666;
+            font-weight: normal;
+            height: 31px;
+            line-height: 31px;
+            padding-left: 10px;
+            font-size: 16px;
+        }
+
+        #echartsTable .popUp_content {
+            background: #fff;
+            width: 100%;
+        }
+
+        #echartsTable .popUp_head .close {
+            display: none;
+        }
+
+        .popUp_head .close {
+            position: absolute;
+            background: url(../img/close.gif) no-repeat center center;
+            border: 2px solid #d9e0e8;
+            cursor: pointer;
+            height: 20px;
+            padding: 0;
+            right: 5px;
+            top: 5px;
+            width: 20px;
+        }
+
+        .leftMenu {
+            /* width: 210px;
+            height: 574px;
+            overflow: auto;
+            *position: relative;
+            border-right: 2px solid #666;
+            text-align: left; */
+            display: none;
+        }
+
+        .leftMenu li {
+            line-height: 30px;
+            padding: 0 5px;
+            position: relative;
+        }
+
+        .leftMenu input {
+            vertical-align: -2px;
+            *vertical-align: middle;
+        }
+
+        .leftMenu span {
+            display: inline-block;
+            padding-left: 10px;
+        }
+
+        /* .rightTable {
+            height: 400px;
+            width: 100%;
+        } */
+        .rightTable {
+            height: 480px;
+        }
+
+        .rightTable h3 {
+            height: 31px;
+            line-height: 31px;
+            text-align: center;
+            border-bottom: 1px solid #C7CACD;
+        }
+
+        .rightTable h3 a {
+            font-size: 12px;
+            left: 10px;
+            *top: 0;
+        }
+
+        .rightTable h4 {
+            padding: 15px 0 0 15px;
+        }
+
+        .rightTable p {
+            padding: 15px 15px;
+        }
+
+        .rightTable h5 {
+            padding: 20px 0 10px 15px;
+        }
+
+        .status_low {
+            color: green;
+        }
+
+        .status_high {
+            color: red;
+        }
+
+        .iconfont.check_goEchart {
+            color: #888888;
+        }
+
+        iframe {
+            position: relative;
+            border: none;
+            width: 100%;
+            height: 100%;
+            margin-top: 50px;
+            border-top: 1px solid #ccc;
+            transform-origin: 0 top 0;
+        }
+
+        #recordTypeContent {
+            height: calc(100% - 29px);
+        }
+        .clearfix:after {
+            display: block;
+            height: 0;
+            content: ".";
+            clear: both;
+            visibility: hidden;
+        }
+        .report_description1{
+            display: flex;
+        }
+        .content_title1{
+            white-space: nowrap;
+            color: #8B3B46;
+        }
+        .hide{
+            display: none;
+        }
+
+        #patient-info{
+            position: absolute;
+            right: 0;
+            top: -2px;
+        }
+        .collect{
+           
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0px 10px;
+            border: 1px solid #d81e06;
+            border-radius: 16px;
+            color: #d81e06;
+        }
+        .collect img{
+            width: 12px;
+            height: 12px;
+            margin-right: 2px;
+        }
+        .cancel{
+            color: #cdcdcd;
+            border: 1px solid #cdcdcd;
+        }
+        
+        .tools{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #8C3A47 !important;
+        }
+        .cover{
+            width: 18px;
+            height: 18px;
+            margin-right: 2px;
+            background: url("/ccd/static/images/more-history.png") no-repeat 100% 100%;
+            background-size: cover;
+        }
+        .back-list{
+            width: 18px;
+            height: 18px;
+            margin-right: 2px;
+            background: url("/ccd/static/images/back-list.png") no-repeat 100% 100%;
+            background-size: cover;
+        }
+        .hide{
+            display: none;
+        }
+        .text_gray{
+            color: #777;
+        }
+        .tableNowrap tbody td {
+            padding: 0 3px 3px 0;
+            word-break: break-all;
+        }
+        .pi-info{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            color: #555555;
+            border-bottom: 1px solid #E6E6E6;
+        }
+        .pi-info:first-child{
+            margin-top: 10px;
+        }
+        .pi-info > div:nth-child(2){
+            flex: 1;
+            word-break: break-all;
+        }
+        .pi-info > div:first-child{
+            width: 100px;
+            padding-right: 5px;
+        }
+        .pi-info .phone{
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .pi-info .phone .icon{
+            width: 20px;
+            height: 20px;
+        }
+
+        .care-contianer #type_btn_group a, .care-contianer .recordItem .recordType{
+            font-size: 16px;
+        }
+
+        .care-contianer #patientInfo,
+        .care-contianer #recordTypeContent .btn-group a,
+        .care-contianer .recordItem .recordDate,
+        .care-contianer .recordItem .recordDate .iconfont,
+        .care-contianer .report_main,
+        .care-contianer .check_main,
+        .care-contianer .font12, 
+        .care-contianer .viewPDF,
+         .care-contianer .reportPart{
+            font-size: 18px;
+        }
+    </style>
+
+    <style>
+        .care-mode{
+            position: fixed;
+            top: 65%;
+            right: 1.1%;
+            width: 55px;
+            height: 65px;
+            background: url(/ccd/static/images/btn_care1.png) center center no-repeat;
+            background-size: cover;
+            z-index: 999;
+        }
+        .is-care-mode{
+            background: url(/ccd/static/images/btn_care2.png) center center no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+
+    
+        
+        <header class="common-header">
+        
+            <div class="left">
+                <div class="weui-icon-back"></div>
+            </div>
+        
+
+        <div class="title ellipsis">全景电子病历</div>
+        <div class="tools">
+            <div class='cover'></div>更多
+        </div>
+        
+    </header>
+    
+    <div class="contianer" style="display: flex;flex-direction: column;">
+        <div class="weui-flex waterMarkHome">
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+        </div>
+        <div id="patientInfo">
+            <div class="weui-flex flex-user" style="margin-bottom:10px;">
+                <div class="weui-flex__item"  style="position: relative;">
+                    <span id="patient_name"></span>
+                    <span id="patient_age_sex"></span>
+                    <div id="patient-info"></div>
+                </div>
+            </div>
+            <div id="type_btn_group">
+            </div>
+        </div>
+        <div id="yz_title" style="background: #F5F5F5;z-index: 2;"></div>
+        <div id="contentDiv" class="content-page" style="position: static;height: 100%;">
+            <div class="weui-pull-to-refresh__layer" style="padding:10px">
+                <div class='weui-pull-to-refresh__arrow'></div>
+                <div class='weui-pull-to-refresh__preloader'></div>
+                <div class="down">下拉刷新</div>
+                <div class="up">释放刷新</div>
+                <div class="refresh">正在刷新</div>
+            </div>
+            <div id="recordTypeContent"></div>
+            
+            
+            
+            
+            
+            
+            
+        </div>
+
+    </div>
+
+<!-- 关怀模式 -->
+<div class="care-mode"></div>
+<script src="/ccd/static/js/fastclick.js?v=4"></script>
+<script src="/ccd/static/js/vconsole.min.js?v=11"></script>
+<script type="text/javascript">
+    // var vConsole = new VConsole();// 初始化
+    var navRoot = "/ccd";
+    (function () {
+        FastClick.attach(document.body);
+    }());
+</script>
+<!-- <script src='https://cdn.bootcss.com/vConsole/3.2.2/vconsole.min.js' type="text/javascript" charset="utf-8"></script>
+<script>
+	window.vConsole = new window.VConsole()
+</script> -->
+
+    
+    <script src="/ccd/static/js/jquery-1.11.3.min.js?v=17"></script>
+    <script src="/ccd/static/js/jquery-weui.min.js?v=17"></script>
+    <script src="/ccd/static/js/jsBridge.js?v=17"></script>
+    <script src="/ccd/static/js/common.js?v=21"></script>
+    <script src="/ccd/static/js/careMode.js?v=1" type="text/javascript"></script>
+    <script type="text/javascript">
+            $(function(){
+                if (jsBridge ) {
+                    setTimeout(function(){
+                        jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                            if (data) {
+                                localStorage.setItem('jsBridgeHeaders', data); // 缓存设备信息
+                            }
+                        })
+                        jsBridge.callAppRouter("JS_IsCareMode", "", function (data) {
+                            if (data) {
+                                const careMode = JSON.parse(data)?JSON.parse(data).careMode : 0;
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').addClass('care-contianer');
+                                }
+                                sessionStorage.setItem('userCareMode', careMode);
+                            } else {
+                                const careMode = sessionStorage.getItem('userCareMode');
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').removeClass('care-contianer');
+                                }
+                            }
+                        })
+                    },500)
+                    
+                    if(!sessionStorage.getItem('isHomePage')){
+                        sessionStorage.setItem('isHomePage',window.location.href);// 储存首次进来的路径
+                    }
+                    $(".weui-icon-back").parent().click(function () {
+                        // 没有历史记录，可以执行其他逻辑，比如返回首页或者其他操作
+                        if(jsBridge && sessionStorage.getItem('isHomePage') === window.location.href){
+                            jsBridge.callAppRouter("JS_backToHomePage", '', function (data) {})
+                        }
+                    });
+                }
+
+
+            });
+
+    </script>
+
+    <script src="/ccd/static/js/config.js?v=12"></script>
+    <script src="/ccd/static/js/template.js?v=62"></script>
+
+    <script src="/ccd/static/js/echarts.min.js?v=1"></script>
+    <script src="/ccd/static/js/template2.js?v=60"></script>
+    <script src="/ccd/static/js/initEchats.js?v=122"></script>
+    <script src="/ccd/static/js/jsBridge.js?v=17"></script>
+    <script type="text/javascript">
+        if ("") {
+            $(".left").hide();
+            $(".notools").hide();
+        }
+        var pageNo = 0;
+        var cacheDataList = null;
+        var isEnd = false;
+        var loading = false;  //状态标记
+        var curSelectedType = "";
+        var urlParams = {};
+        var types = [];//根据类别进行分类
+        var personInfo = {};
+        var payLoadTypeList = [];
+        var cacheInit = { type: false, record: false };
+
+        const deptName = common.getQueryString("deptName"); // 科室
+        
+        $(function () {
+            var empi = common.getQueryString("empi");
+            var admitDate = common.getQueryString("admitDate");
+            var domain = common.getQueryString("domain");
+            var flowId = common.getQueryString("id");
+            var mzbl = common.getQueryString("mzbl");
+            var pageType = common.getQueryString("type");
+            var cost = common.getQueryString("cost");
+            var inStart = common.getQueryString("inStart"); // 判断是否有值，右上角返回列表
+            var encrypted_access_token_t = common.getQueryString("encrypted_access_token_t"); // 判断是否有值，右上角返回列表
+
+            urlParams = {
+                empi: empi,
+                admitDate: admitDate,
+                domain: domain,
+                id: flowId
+            };
+            if(!pageType && !cost){
+                if(inStart == "I"){
+                    $(".common-header>.tools").html(`<div class='back-list'></div>列表`);
+                }else{
+                    $(".common-header>.tools").html(``);
+                }
+            }
+            $(".common-header>.tools").click(function () {
+                const deptCode = common.getQueryString("deptCode");
+                const tName = decodeURIComponent(pageType);
+                if(!pageType && !cost && inStart == "I"){
+                    history.go(-3);
+                    return;
+                } 
+                location.href = navRoot + `/record?id=${empi}&type=${encodeURIComponent(tName)}&cost=${cost}&deptCode=${deptCode}&inStart=${inStart}`;
+            })
+            $("#contentDiv").pullToRefresh({
+                onRefresh: function () { /* 当下拉刷新触发的时候执行的回调 */
+                    pageNo = 0;
+                    isEnd = false;
+                    types = [];
+                    cacheDataList = null;
+                    $(".weui-loadmore").remove();
+                    if (curSelectedType == "yizhu") {
+                        $("#recordTypeContent").empty();
+                        yz_search();
+                    } else if (curSelectedType == "payLoadType.JianYan") {
+                        $("#jy_table").empty();
+                        jy_getPage();
+                    } else if (curSelectedType == "payLoadType.JianCha") {
+                        sessionStorage.setItem('info-selected_record_table_index','[]');
+                        $("#jc_table").empty();
+                        jc_getPage();
+                    } else if(curSelectedType =='patientInfos'){
+                        isEnd = true;
+                        $("#contentDiv").pullToRefreshDone();
+                        return;
+                    } else {
+                        $("#recordTypeContent").empty();
+                        getContentList();
+                    }
+                    $("#contentDiv").pullToRefreshDone();
+                },
+                distance: 50 /* 下拉刷新的触发距离， 注意，如果你重新定义了这个值，那么你需要重载一部分CSS才可以，请参考下面的自定义样式部分 */
+            });
+            $("#contentDiv").infinite(100);
+            $("#contentDiv").on("infinite", function () {
+                if (loading == true) return;
+                if (isEnd == true) return;
+                loading = true;
+                pageNo++;
+                $(".weui-loadmore").remove();
+                console.log("加载第%s页", pageNo);
+                var loadMoreBtn = $('<div class="weui-loadmore loadMoreBtn"><i class="weui-loading"/><span class="weui-loadmore__tips">正在加载</span></div>');
+                $("#recordTypeContent").append(loadMoreBtn);
+                if (curSelectedType == "yizhu") {
+                    
+                    yz_search();
+                } else {
+                    
+                    getContentList();
+                }
+            });
+            $.post(navRoot + "/api/inpatient/info", urlParams, function (data) {
+                    if (data["code"] == 200) {
+                        personInfo = data["data"]["personInfo"];
+                        $("#patient_name").text(personInfo["name"]);
+                        $("#patient_age_sex").text("（" + personInfo["age"] + "岁," + (personInfo["genderCd"] == "M" ? "男" : "女") + "）");
+                        // $("#patient-info").html(`<div class="collect cancel" collect="2"><img src="/ccd/static/images/ncollect.png" alt=""> <span>收藏</span></div>`)
+                        
+                        if (!encrypted_access_token_t){
+	                        getCollect(); // 查看收藏状态
+						}
+                        
+                        payLoadTypeList = data["data"]["payLoadTypeList"];
+                        for (var i in payLoadTypeList) {
+                            if (payLoadTypeList[i]["name"] == "医嘱") continue;
+                            if (payLoadTypeList[i]["name"] == "病案首页") continue;
+                            var item = $('<a href="javascript:" type="button" class="weui-btn weui-btn_mini">' + payLoadTypeList[i]["name"] + '</a>');
+                            if (payLoadTypeList[i]["name"] == "病程记录") {
+                                item.addClass("")
+                            }
+                            item.data("data", payLoadTypeList[i]);
+                            item.click(function () {
+                                pageNo = 0;
+                                types = [];
+                                isEnd = false;
+                                $(this).siblings(".selected").removeClass("selected");
+                                $(this).addClass("selected");
+                                $("#yz_title").empty();
+                                $(".contianer iframe").remove();
+                                $(".weui-pull-to-refresh__layer").show();
+                                
+                                var loadMoreBtn = $('<div class="weui-loadmore loadMoreBtn"><i class="weui-loading"/><span class="weui-loadmore__tips">正在加载</span></div>');
+                                $("#recordTypeContent").append(loadMoreBtn);
+                                $("#recordTypeContent").empty();
+                                $(".loadMoreBtn").remove();
+                                $('meta[name="viewport"]').attr('content', "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
+                                if ($(this).data("data")["type"] == "payLoadType.JianYan") {
+                                    jy_getPage();
+                                } else if ($(this).data("data")["type"] == "payLoadType.JianCha") {
+                                    jc_getPage();
+                                } else {
+                                    getContentList();
+                                }
+                                saveSelectedItemIndex();
+                            });
+                            
+                            $("#type_btn_group").append(item);
+                            
+                        }
+                        if (mzbl == "false") {
+                            var item = $('<a href="javascript:" type="button" class="weui-btn weui-btn_mini">护理记录</a>');
+                            item.click(function () {
+                                types = [];
+                                pageNo = 0;
+                                isEnd = true;
+                                $(".contianer iframe").remove();
+                                $(".loadMoreBtn").remove();
+                                $(this).siblings(".selected").removeClass("selected");
+                                $(this).addClass("selected");
+                                $('meta[name="viewport"]').attr('content', "width=device-width, initial-scale=1;minimum-scale=1.0");
+                                hljl_getPage();
+                                saveSelectedItemIndex();
+                            });
+                            $("#type_btn_group").append(item);
+                            item = $('<a href="javascript:" type="button" class="weui-btn weui-btn_mini">医嘱</a>');
+                            item.click(function () {
+                                types = [];
+                                pageNo = 0;
+                                isEnd = false;
+                                $(".loadMoreBtn").remove();
+                                $(".contianer iframe").remove();
+                                $(".weui-pull-to-refresh__layer").show();
+                                
+                                $(this).siblings(".selected").removeClass("selected");
+                                $(this).addClass("selected");
+                                $('meta[name="viewport"]').attr('content', "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
+                                yz_getPage();
+                                saveSelectedItemIndex();
+                            });
+                            $("#type_btn_group").append(item);
+                        }
+                       
+                        const patientItem = $('<a href="javascript:" type="button" class="weui-btn weui-btn_mini">基本信息</a>');
+                        patientItem.click(function () {
+                            isEnd = true;
+                            $(".loadMoreBtn").remove();
+                            $(".contianer iframe").remove();
+                            $(".weui-pull-to-refresh__layer").show();
+                            $(this).siblings(".selected").removeClass("selected");
+                            $(this).addClass("selected");
+                            $('meta[name="viewport"]').attr('content', "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
+                            patientInfo_getPage();
+                            saveSelectedItemIndex();
+                        });
+
+                        $("#type_btn_group").append(patientItem);
+
+
+                        var selectedIndex = sessionStorage.getItem('info-selected_index');
+                        if(selectedIndex){
+                            $("#type_btn_group").find("a:nth(" + selectedIndex + ")").trigger("click");
+                        } else if ($("#type_btn_group").find(".CA").text() != "") {
+                            $("#type_btn_group").find(".CA").trigger("click");
+                        } else {
+                            $("#type_btn_group").find("a:first").trigger("click");
+                        }
+
+                    } else {
+                        $.alert(data["errmsg"]);
+                    }
+                },
+                "json"
+            )
+            // 查看收藏状态
+            function getCollect(){
+                const params = {
+                    empi: common.getQueryString("empi"),
+                    manageType: 0,
+                }
+                const navUrl = navRoot.split('/ccd');
+                $.post(navUrl[0] + "/portal/collect", params, function (res) {
+                    if (res["code"] == 200) {
+                        $("#patient-info").html(`<div class="collect" collect="2"><img src="/ccd/static/images/collect.png" alt=""> <span>已收藏</span></div>`);
+                    } else {
+                        $("#patient-info").html(`<div class="collect cancel" collect="1"><img src="/ccd/static/images/ncollect.png" alt=""> <span>收藏</span></div>`);
+                    }
+                });
+            }
+            // 取消/收藏患者
+            $("#patient-info").click(function(){
+                const type = $(".collect").attr('collect');
+                if(type == 1){
+                    // 打开收藏夹
+                    getCollectuser(type);
+                }else{
+                    $.confirm({
+                        title: '提示',
+                        text: '确认取消收藏该患者吗？',
+                        onOK: function () {
+                            getCollectuser(type);
+                        },
+                        onCancel: function () { }
+                    });
+                }
+            })
+
+            function getCollectuser(manageType){
+                const param = {
+                    empi: common.getQueryString("empi"),
+                    manageType,
+                }
+                //点击确认
+                const navUrl = navRoot.split('/ccd');
+                $.post(navUrl[0] + "/portal/collect", param, function (res) {
+                    if (res && res["code"] == 200) {
+                        $.toast(`操作成功`, "text");
+                        getCollect();
+                    } else {
+                        $.toast(`操作失败`, "text");
+                    }
+                });
+            }
+            
+        })
+
+        function getContentList() {
+            var parentDiv = $("#recordTypeContent");
+            $targetDiv = $("#type_btn_group").find("a.selected");
+            if (!loading) {
+                $.showLoading();
+            }
+            $.showLoading();
+            var data = $targetDiv.data("data");
+            curSelectedType = data["type"];
+            var params = {
+                "empi": urlParams.empi,
+                "id": urlParams.id,
+                "domain": urlParams.domain,
+                "admitDate": urlParams.admitDate,
+                "payLoadType": data["value"],
+                "type": data["type"],
+                "pageNo": pageNo
+            };
+            ;
+            if (curSelectedType == "payLoadType.JianYan") {
+                parentDiv = $("#jy_table");
+                if ($(".jianyanSearchType .selected").length > 0) {
+                    searchType = $(".jianyanSearchType .selected").attr("data-value");
+                    params = {
+                        "empi": urlParams.empi,
+                        "domain": urlParams.domain,
+                        "admitDate": urlParams.admitDate,
+                        "payLoadType": data["value"],
+                        "type": data["type"],
+                        "searchType": searchType,
+                        "pageNo": pageNo
+                    };
+                }
+            } else if (curSelectedType == "payLoadType.JianCha") {
+                parentDiv = $("#jc_table");
+                if ($(".jianchaSearchType .selected").length > 0) {
+                    jcSearchType = $(".jianchaSearchType .selected").attr("data-value");
+                    params = {
+                        "empi": urlParams.empi,
+                        "id": urlParams.id,
+                        "domain": urlParams.domain,
+                        "admitDate": urlParams.admitDate,
+                        "payLoadType": data["value"],
+                        "type": data["type"],
+                        "jcSearchType": jcSearchType,
+                        "pageNo": pageNo
+                    };
+                }
+            }
+            function versionCompare(v1, v2) {
+                // 1: v1 > v2; 0: equl; -1: v1 < v2
+                var sv1 = +(v1).toString().replace('.', '');
+                var sv2 = +(v2).toString().replace('.', '');
+                if (sv1 > sv2) return 1;
+                if (sv1 === sv2) return 0;
+                if (sv1 < sv2) return -1;
+            }
+            const phoneInfo = localStorage.getItem('jsBridgeHeaders')? JSON.parse(localStorage.getItem('jsBridgeHeaders')) : null
+            var startTime = new Date();
+            $.post(navRoot + "/api/inpatient/data", params, function (data) {
+                var endTime = new Date();
+                var timeInterval = endTime - startTime;
+                
+                if (data["code"] == 200) {
+                    if (data["data"]["list"].length > 0) {
+                        var documentList = data["data"]["list"][0]["documentList"];
+                        var pageData = data["data"]["page"];
+                        if (documentList.length > 0) {
+                            for (var m in documentList) {
+                                var docDesc = documentList[m];
+                                //根据时间类别进行分类
+                                var typeName = "";
+                                if (curSelectedType == "payLoadType.JianYan") {
+                                    typeName = docDesc["profileDesc"];
+                                } else if (curSelectedType == "payLoadType.JianCha") {
+                                    typeName = docDesc["modality"];
+                                    if (typeName == null) {
+                                        typeName = "其他报告";
+                                    }
+                                } else {
+                                    if (docDesc["dicomStudyTime"] && typeof docDesc["dicomStudyTime"] === "string") {
+                                        typeName = docDesc["dicomStudyTime"].split(" ")[0].replace('-', '年').replace('-', '月') + '日';
+                                    } else {
+                                        // 忽略报告
+                                        console.error('[error] get error data for no `dicomStudyTime` filed. ', docDesc);
+                                        continue
+                                    }
+                                }
+                                if (types.indexOf(typeName) == -1) {
+                                    var typeItem = $('<div class="recordItem">\
+                                    <div class="recordDate  text-common">\
+                                        <span class="first point"></span>\
+                                        <i class="iconfont">&#xe600;</i>\
+                                        <span class="recordDesc"></span>\
+                                    </div>\
+                                    <div class="recordListParent" style="display:block;"></div>\
+                                      </div>');
+                                    typeItem.addClass("type" + types.length);
+                                    typeItem.find(".recordDesc").text(typeName);
+                                    types.push(typeName);
+                                    
+                                    
+                                    typeItem.click(function () {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        var thisIndex = $(this).index();
+                                        var selectedIndex = JSON.parse(sessionStorage.getItem('info-selected_record_table_index')) || [];
+                                        selectedIndex = selectedIndex.filter(function(el){ return el !== thisIndex });
+                                        if ($(this).find(".recordListParent").css("display") == "none") {
+                                            $(this).find(".recordDate>.iconfont").html("&#xe600;");
+                                            selectedIndex.push(thisIndex);
+                                        } else {
+                                            $(this).find(".recordDate>.iconfont").html("&#xe602;");
+                                        }
+                                        $(this).find(".recordListParent").slideToggle("fast");
+                                        sessionStorage.setItem('info-selected_record_table_index', JSON.stringify(selectedIndex));
+                                    })
+                                    if (curSelectedType == "payLoadType.JianCha" || curSelectedType == "payLoadType.JianYan") {
+                                        typeItem.find(".recordDate>.iconfont").html("&#xe602;");
+                                        typeItem.find(".recordListParent").css("display", "none");
+                                    }
+                                    parentDiv.append(typeItem);
+                                }
+                                var typeItem = parentDiv.find(".recordItem.type" + types.indexOf(typeName));
+                                var docItem = $('<div class="recordList">\
+                                            <div class="recordType">\
+                                                <div class="weui-flex__item weui-well well-print">\
+                                                    <div class="weui-well__title weui-cell weui-cell_access">\
+                                                        <div class="weui-cell__bd">\
+                                                        </div>\
+                                                        <div class="weui-cell__ft"></div>\
+                                                    </div>\
+                                                    ' + (docDesc["modality"] == null ? '<div class="docNamePart text-center"></div>\
+                                                    ' : '')
+                                                    + '<div class="examPart text-center"></div>\
+                                                    <div class="weui-well__content"><div class="content"></div>\
+                                                </div>\
+                                            </div>\
+                                        </div>');
+
+                                // 判断是否存在pdf   历次病例
+                                if (docDesc["pdfPath"] && docDesc["pdfPath"] != "") {
+                                    var pdfDiv = $('<div class="weui-well__footer text-center weui-flex">' +
+                                        '<div class="viewPDF weui-flex__item">查看PDF文件</div>' +
+                                        '' +
+                                        '</div>');
+                                    pdfDiv.find(".viewPDF").data("data", docDesc["pdfPath"]);
+                                    pdfDiv.find(".viewPDF").data("title", docDesc["docName"] || "无标题");
+                                    pdfDiv.find(".viewPDF").click(function () {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        var ppath = $(this).data("data");
+                                        var title = $(this).data("title");
+                                        $.showLoading();
+                                        $.post(navRoot + "/api/inpatient/openpdf", {"pdfPath": ppath}, function (data) {
+                                            $.hideLoading();
+                                            if (data["code"] == 200) {
+                                                
+                                                if (data['data'].length>1) {
+                                                    var a_relation = [];
+                                                    for(let i =0 ; i<data['data'].length; i++){
+                                                        var a_item = {
+                                                            text: `PDF ${i+1}`,
+                                                            onClick: function () {
+                                                                
+                                                                const pdf_url = 'http://10.168.199.147:9875/CCD' + "/pdf/" + data["data"][i];
+                                                                const jsPdfUrl = navRoot + "/showPDF?pdf_url=" + pdf_url + "&title=" + title;
+                                                                if(versionCompare(phoneInfo? phoneInfo.version : '0', '4.1.0') == 1){
+                                                                    if(jsBridge){
+                                                                        jsBridge.callAppRouter("JS_UserDataPDF", JSON.stringify({url: window.location.origin +navRoot +"/getPdfFile?url=" + pdf_url + '&token=34aabcd4-b230-4da2-aa86-12a6fea3d93a', title}), function(data){
+                                                                            if (data != null) {
+                                                                                console.log(data);
+                                                                            } else {
+                                                                                location.href = jsPdfUrl;
+                                                                            }
+                                                                        })
+                                                                    }
+                                                                }else{
+                                                                    location.href = jsPdfUrl;
+                                                                }
+                                                            }
+                                                        }
+                                                        a_relation.push(a_item);
+                                                    }
+                                                    $.actions({
+                                                        actions: a_relation
+                                                    })
+                                                } else {
+                                                    var pdfUrl = 'http://10.168.199.147:9875/CCD' + "/pdf/" + data["data"][0];
+                                                    const jsPdfUrl = navRoot + "/showPDF?pdf_url=" + pdfUrl + "&title=" + title;
+                                                    if(versionCompare(phoneInfo? phoneInfo.version : '0', '4.1.0') == 1){
+                                                         if(jsBridge){
+                                                            jsBridge.callAppRouter("JS_UserDataPDF", JSON.stringify({url: window.location.origin +navRoot +"/getPdfFile?url=" + pdfUrl + '&token=34aabcd4-b230-4da2-aa86-12a6fea3d93a', title}), function(data){
+                                                                if (data != null) {
+                                                                    console.log(data);
+                                                                } else {
+                                                                    location.href = jsPdfUrl;
+                                                                }
+                                                            })
+                                                        }else{
+                                                            location.href = jsPdfUrl;
+                                                        }
+                                                        
+                                                    }else {
+                                                        location.href = jsPdfUrl;
+                                                    }
+                                                }
+                                            }
+                                        })
+                                    });
+                                    
+                                        if (docDesc["studyUids"] && ["DR", "CT", "MR", "PET"].indexOf(docDesc["modality"]) != -1) {
+                                            var imgDiv = $('<div class="viewIMG weui-flex__item">查看影像</div>');
+                                            imgDiv.data("data", docDesc["studyUids"].split(",")[0]);
+                                            imgDiv.data("date", docDesc["dicomStudyTime"]);
+                                            var _date = ''
+                                            if(docDesc["dicomStudyTime"]){
+                                                // 审核日期
+                                                _date = docDesc["dicomStudyTime"].split(' ')[0];
+                                            }
+                                            imgDiv.data("date", _date);
+                                            imgDiv.click(function () {
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                                var studyUid = $(this).data("data");
+                                                var date = $(this).data("date");
+                                                
+                                                
+                                                $.post(navRoot + "/api/dsite/encrypt", {studyUid: studyUid, date: date}, function (data) {
+                                                    if(data["errmsg"]){
+                                                        $.alert(data["errmsg"]);
+                                                        return;
+                                                    }
+                                                    location.href = data["data"];
+                                                    /**
+                                                    jsBridge.callAppRouter("openRsite", JSON.stringify({"rsiteUrl": data["data"]}), function (data) {
+                                                        console.log(data);
+                                                    })
+                                                    **/
+                                                }, 'json')
+                                            });
+                                            pdfDiv.append(imgDiv);
+                                        }
+                                    
+                                    docItem.find(".weui-well__content").append(pdfDiv);
+                                }
+
+                                if (curSelectedType == "payLoadType.JianCha") {
+                                    docItem.find(".weui-well__title .weui-cell__bd").html("<div>" + docDesc["dicomStudyTime"] + "</div>");
+                                    
+                                    docItem.find(".weui-well__title .weui-cell__ft").text(docDesc["dicomNum"] ? ("检查号:" + docDesc["dicomNum"]) : "");
+                                    if (docDesc["modality"] == "ECG") {
+                                        docItem.find(".examPart").text("ECG");
+                                    } else {
+                                        if (!docDesc["bodyPart"] || docDesc["bodyPart"]  == null || docDesc["bodyPart"]  == 'null') {
+                                            docItem.find(".examPart").remove();
+                                        } else {
+                                            docItem.find(".examPart").text(docDesc["bodyPart"]);
+                                        }
+                                    }
+                                    docItem.find(".docNamePart").text(docDesc["docName"] ? docDesc["docName"] : 'null')
+
+                                } else if (curSelectedType == "payLoadType.JianYan") {
+                                    docItem.find(".weui-well__title .weui-cell__bd").text(docDesc["dicomStudyTime"]);
+                                    docItem.find(".weui-well__title .weui-cell__ft").text("标本号:" + docDesc["documentUniqueId"]);
+                                } else {
+                                    docItem.find(".weui-well__title .weui-cell__bd").text(docDesc["docName"] || $("#type_btn_group").find("a.selected").data("data")["name"]);
+                                    
+                                }
+                                docItem.find(".weui-well__content").click(function () {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                });
+                                docItem.find(".weui-well__title").data("data", docDesc);
+                                docItem.find(".weui-well__title").click(function () {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    var $selfTitle = $(this);
+                                    if (!$selfTitle.hasClass("done")) {
+                                        $.showLoading();
+                                        var docData = $(this).data("data");
+                                        var plt = docData.payLoadType;
+                                        if (plt.indexOf("XDS.ProgressNote") >= 0) {
+                                            plt = "XDS.ProgressNote";
+                                        } else if (plt.indexOf("XDS.ABW") >= 0) {
+                                            plt = "XDS.ABW";
+                                        }
+                                        var pltArr = plt.split('.');
+                                        pltArr.shift();
+
+                                        var payLoadType = pltArr.join('_');
+                                        var postUrl = navRoot + "/api/inpatient/showinfo/plt";
+                                        var param = {};
+                                        if (curSelectedType == "payLoadType.JianCha" || curSelectedType == "payLoadType.JianYan") {
+                                            postUrl = navRoot + "/api/inpatient/showinfo";
+                                            param = {
+                                                documentuniqueid: (docData["documentuniqueid"] || ""),
+                                                filepath: (docData["filepath"] || ""),
+                                                fileSystemFk: (docData["fileSystemFk"] || ""),
+                                                dicomNum: (docData["dicomNum"] || ""),
+                                                reportStatus: (docData["reportStatus"] || ""),
+                                                modality: (docData["modality"] || ""),
+                                                dicomStudyTime: (docData["dicomStudyTime"] || ""),
+                                                document_unique_id: (docData["documentUniqueId"] || ""),
+                                                payLoadType: (docData["payLoadType"] || ""),
+                                                checkType: (curSelectedType.split(".")[1]),
+                                                reportStatus: (docData["reportStatus"] || ""),
+                                                name: personInfo["name"]
+                                            };
+                                        } else {
+                                            var reportProps = Const.reportProps[payLoadType] || {};
+                                            console.log("========payLoadType:", payLoadType)
+                                            var postObj = {
+                                                documentuniqueid: (docData["documentuniqueid"] || ""),
+                                                filepath: (docData["filepath"] || ""),
+                                                fileSystemFk: (docData["fileSystemFk"] || ""),
+                                                dicomNum: (docData["dicomNum"] || ""),
+                                                reportStatus: (docData["reportStatus"] || ""),
+                                                modality: (docData["modality"] || ""),
+                                                dicomStudyTime: (docData["dicomStudyTime"] || ""),
+                                                nodes: (reportProps.nodes || ["//ClinicalDocument"]),
+                                                parseModel: (reportProps.parseModel || "0"),
+                                                imageNode: (docData["imageNode"] || ""),
+                                                name: personInfo["name"]
+                                            };
+                                            param = {
+                                                "documentVO_2_paramData": JSON.stringify(postObj)
+                                            };
+                                        }
+                                        var startTime = new Date();
+                                        $.getJSON(postUrl, param, function (data) {
+                                            var endTime = new Date();
+                                            var timeInterval = endTime - startTime;
+                                            if (data["code"] == 200) {
+                                                var data = data["data"];
+                                                if (payLoadType == 'RECIPE' || payLoadType == 'QF_RECIPE' || payLoadType == 'OutpatientVisitRecords') {
+                                                    _html = Module.report.everyday1(data, payLoadType, postObj.documentuniqueid);
+                                                } else if (payLoadType == 'KT_RECIPE') {
+                                                    _html = Module.report[payLoadType](data, postObj.documentuniqueid);
+                                                    
+                                                } else if (curSelectedType == "payLoadType.JianCha") {
+                                                    var _report_flag = data.reportFlag === 'true' ? true : false;
+                                                    _html = Module.report.jianCha(data, param.payLoadType, _report_flag, param.reportStatus, Module.getValue(data.custom3)) || '<<div class="weui-loadmore weui-loadmore_line"><span class="weui-loadmore__tips">该患者没有对应的信息</span></div>';
+                                                } else if (curSelectedType == "payLoadType.JianYan") {
+                                                    var _report_flag = data.reportFlag === 'true' ? true : false;
+                                                    _html = Module.report.jianYan(data, _report_flag, payLoadType, param.reportStatus, param.document_unique_id);
+                                                    
+                                                    
+                                                } else {
+                                                    _html = Module.report[payLoadType] ? Module.report[payLoadType](data) : Module.report.everyday(data);
+                                                }
+                                                if (_html === undefined || !_html) {
+                                                    _html = '<div style="text-align: center;color:#888">暂无数据</div>';
+                                                }
+                                                
+                                                $selfTitle.siblings(".weui-well__content").find(".content").html(_html);
+                                                
+                                                $selfTitle.addClass("done");
+                                                if (curSelectedType == "payLoadType.JianYan" && param.payLoadType != "XDS.BacteriaLISBG") {
+                                                    var chartsmonth = Module.getValue(docData.dicomStudyTime).substring(0, 4) + Module.getValue(docData.dicomStudyTime).substring(5, 7); // charts图当月
+                                                    var chartsyear = Module.getValue(docData.dicomStudyTime).substring(0, 4); // charts图当
+                                                    initCheckBoxEvent($selfTitle.parent(), personInfo.empi, param.payLoadType, param.document_unique_id, chartsmonth, chartsyear);
+                                                    initLisHistory($selfTitle.parent(), personInfo.empi, param.payLoadType, param.document_unique_id, chartsmonth, chartsyear);
+                                                }
+                                                //todo 调用点击记录接口
+                                                var recordParams = {
+                                                    'documentuniqueid': docData["documentuniqueid"],
+                                                    'patientId': personInfo.patientId,
+                                                    'patientDomainId': urlParams.domain,
+                                                    'event': '2',
+                                                    'personId': personInfo.empi,
+                                                    'patientName': personInfo.name,
+                                                    'payLoadType': curSelectedType,
+                                                    'timeInterval': timeInterval,
+                                                    'urlFromDomainId': null
+                                                };
+                                                $.post(navRoot + "/api/clickRecord", recordParams, function (data) {
+                                                    console.log(data);
+                                                }, 'json')
+                                            } else {
+                                                $.alert(data["errmsg"]);
+                                            }
+                                            $.hideLoading();
+                                        })
+                                    }
+                                    $(this).siblings(".weui-well__content").slideToggle("fast");
+                                    $(this).toggleClass("selected");
+                                });
+                                typeItem.find(".recordListParent").append(docItem);
+                            }
+                            loading = false;
+                            if (curSelectedType == "payLoadType.JianCha"){
+                                var selectedIndex = JSON.parse(sessionStorage.getItem('info-selected_record_table_index')) || [];
+                                if (selectedIndex.length > 0 && pageNo === 0) {
+                                    for (let i = 0; i < selectedIndex.length; i++) {
+                                        $("#jc_table").find(".type" + selectedIndex[i]).trigger("click");
+                                    }
+                                }
+                            }
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            //else {
+                            $(".loadMoreBtn").remove();
+                            //}
+                            if (["payLoadType.JianCha", "payLoadType.JianYan"].includes(curSelectedType)) {
+                                var loadMoreBtn = $('<div class="weui-loadmore weui-loadmore_line loadMoreBtn"><span class="weui-loadmore__tips">点击查看更多数据</span></div>');
+                                loadMoreBtn.click(function () {
+                                    $(".loadMoreBtn").remove();
+                                    if (loading == true) return;
+                                    if (isEnd == true) return;
+                                    loading = true;
+                                    pageNo++;
+                                    console.log("加载第%s页", pageNo);
+                                    if (curSelectedType == "yizhu") {
+                                        $(".weui-infinite-scroll").show();
+                                        yz_search();
+                                    } else {
+                                        $(".weui-infinite-scroll").show();
+                                        getContentList();
+                                    }
+                                });
+                                $("#recordTypeContent").append(loadMoreBtn);
+                            }
+                        } else {
+                            isEnd = true;
+                            $(".loadMoreBtn").remove();
+                            parentDiv.append('<div class="weui-loadmore weui-loadmore_line"><span class="weui-loadmore__tips">没有更多数据</span></div>');
+                        }
+
+                    } else {
+                        isEnd = true;
+                        $(".loadMoreBtn").remove();
+                        parentDiv.append('<div class="weui-loadmore weui-loadmore_line"><span class="weui-loadmore__tips">没有更多数据</span></div>');
+                    }
+                    //todo 调用点击记录接口
+                    var recordParams = {
+                        'patientId': personInfo.patientId,
+                        'patientDomainId': urlParams.domain,
+                        'event': '1',
+                        'personId': personInfo.empi,
+                        'patientName': personInfo.name,
+                        'payLoadType': params.type,
+                        'timeInterval': timeInterval,
+                        'urlFromDomainId': null
+                    };
+                    $.post(navRoot + "/api/clickRecord", recordParams, function (data) {
+                        console.log(data);
+                    }, 'json')
+                } else {
+                    $.alert(data["errmsg"]);
+                }
+                loading = false;
+                
+                $.hideLoading();
+            }, "json")
+
+
+        }
+
+        //检验页面
+        function jy_getPage() {
+            var selected = $('.btn-group').find('a.selected').data('value');
+            $("#recordTypeContent").empty();
+            pageNo = 0;
+            isEnd = false;
+            var jy_item = $('<div class="jianyanSearchType">\
+                                            <div class="btn-group" style="margin:15px;">\
+                                                <a href="javascript:void(0)" data-value="0" class="'+ (selected === 0 ? 'selected' : '') +'">所有检验</a>\
+                                                <a href="javascript:void(0)" data-value="1" class="'+ (selected === 1 || selected === undefined ? 'selected' : '') +'">最近一周</a>\
+                                            </div>\
+                                            <div id="jy_table"></div>\
+                                        </div>');
+            $("#recordTypeContent").append(jy_item);
+            jy_item.find("a").click(function () {
+                $(this).parent().find(".selected").removeClass("selected");
+                $(this).addClass("selected");
+                $("#jy_table").empty();
+                pageNo = 0;
+                types = [];
+                isEnd = false;
+                getContentList();
+            });
+            getContentList();
+        }
+
+        //检查页面
+        function jc_getPage() {
+            $("#recordTypeContent").empty();
+            pageNo = 0;
+            isEnd = false;
+            var jc_item = $('<div class="jianchaSearchType">\
+                                            <div class="btn-group" style="margin:15px;">\
+                                                <a href="javascript:void(0)" data-value="1" class="">所有检查</a>\
+                                                <a href="javascript:void(0)" data-value="0" class="selected">本次检查</a>\
+                                            </div>\
+                                            <div id="jc_table"></div>\
+                                        </div>');
+            $("#recordTypeContent").append(jc_item);
+            jc_item.find("a").click(function () {
+                $(this).parent().find(".selected").removeClass("selected");
+                $(this).addClass("selected");
+                $("#jc_table").empty();
+                pageNo = 0;
+                types = [];
+                isEnd = false;
+                sessionStorage.setItem('info-selected_record_index', $(this).index());
+                if (cacheInit.record) {
+                    sessionStorage.setItem('info-selected_record_table_index','[]');
+                }
+                getContentList();
+            })
+            var selectedIndex = sessionStorage.getItem('info-selected_record_index');
+            if (selectedIndex) {
+                jc_item.find("a:nth(" + selectedIndex + ")").trigger("click");
+            } else {
+                getContentList();
+            }
+            cacheInit.record = true;
+        }
+
+        //护理记录
+        function hljl_getPage() {
+            $("#yz_title").empty();
+            $("#recordTypeContent").empty();
+            $(".weui-pull-to-refresh__layer").hide();
+            
+            curSelectedType = "hulijilu";
+            var mrn = common.getQueryString("id");
+            var wardCode = "1201";
+            // var hl_item = $('<iframe id="fr1" src="https://yihu.gzsums.net/tmp1/Default.aspx?wardCode=' + wardCode + '&mrn=' + mrn + '"/>');
+            // var hl_item = $('<iframe id="fr1" src="https://yihu.gzsums.net/common/index_sheet.html#!/views/html/pageThird?patientId=' + mrn + '"/>');
+            var hl_item = $('<iframe id="fr1" src="https://yihu.gzsums.net/tmp2/?wardCode=' + wardCode + '&mrn=' + mrn + '"/>');
+            $("#contentDiv").prepend(hl_item[0]);
+        }
+
+        //医嘱页面
+        function yz_getPage() {
+            $("#yz_title").empty();
+            $("#recordTypeContent").empty();
+            curSelectedType = "yizhu";
+            pageNo = 0;
+            isEnd = false;
+            var yz_item = $('<div style="margin:15px;">\
+                                            <div class="btn-group">\
+                                                <a href="javascript:void(0)" data-value="0" class="selected">长期医嘱</a>\
+                                                <a href="javascript:void(0)" data-value="1" class="">临时医嘱</a>\
+                                            </div>\
+                                            <div class="text-common line-gap"> 医嘱时间区间：</div>\
+                                            <div class="weui-flex line-gap">\
+                                                <input id="start_date" type="text" class="weui-input">\
+                                                <span style="width: 2em;text-align: center">-</span>\
+                                                <input id="end_date" type="text" class="weui-input">\
+                                            </div>\
+                                        </div>');
+            yz_item.find("#start_date").datetimePicker({
+                "yearSplit": "-",
+                "monthSplit": "-",
+                "value": (common.getNextDay(-7) + " "),
+                years: (function () {
+                    var arr = [];
+                    for (var i = 1900; i <= 2030; i++) {
+                        arr.push(i);
+                    }
+                    return arr;
+                })(),
+                "times": function () {
+                    return []
+                }, "onClose": function () {
+                    types = [];
+                    pageNo = 0;
+                    isEnd = false;
+                    $("#recordTypeContent").empty();
+                    yz_search();
+                }
+            });
+            yz_item.find("#end_date").datetimePicker({
+                "yearSplit": "-",
+                "monthSplit": "-",
+                "value": (common.getNextDay(0) + " "),
+                years: (function () {
+                    var arr = [];
+                    for (var i = 1900; i <= 2030; i++) {
+                        arr.push(i);
+                    }
+                    return arr;
+                })(),
+                "times": function () {
+                    return []
+                },
+                "onClose": function () {
+                    types = [];
+                    pageNo = 0;
+                    isEnd = false;
+                    $("#recordTypeContent").empty();
+                    yz_search();
+                }
+            });
+            yz_item.find(".btn-group>a").click(function () {
+                $(this).parent().find(".selected").removeClass("selected");
+                $(this).addClass("selected");
+                clinic_type = $(this).attr("data-value");
+                types = [];
+                pageNo = 0;
+                isEnd = false;
+                $("#recordTypeContent").empty();
+                yz_search();
+            });
+            $("#yz_title").append(yz_item);
+            $("#recordTypeContent").empty();
+            yz_search();
+        }
+
+        function yz_search() {
+            if (!loading) {
+                $.showLoading();
+            }
+            var id = common.getQueryString("id");
+            var status = "";
+            var type = $(".btn-group>a.selected").attr("data-value");
+            var start_date = $("#start_date").val().trim();
+            var end_date = $("#end_date").val().trim();
+            var params = {
+                "id": id,
+                "type": type,
+                "status": status,
+                "start_date": start_date,
+                "end_date": end_date,
+                "page": pageNo
+            };
+            var start_time = new Date();
+            $.post(navRoot + "/api/inpatient/medicaladvice", params, function (data) {
+                    
+                    $(".weui-loadmore").remove();
+                    var end_time = new Date();
+                    var timeInterval = end_time = start_time;
+                    if (data["code"] == 200) {
+                        if (data["data"]["list"].length > 0) {
+                            for (var i in data["data"]["list"]) {
+                                var dataItem = data["data"]["list"][i];
+                                var isInvalid = dataItem["moStat"];
+                                var isInvalidText = "";
+                                if (isInvalid == "0") {
+                                    isInvalidText = "开立";
+                                } else if (isInvalid == "1") {
+                                    isInvalidText = "审核";
+                                } else if (isInvalid == "2") {
+                                    isInvalidText = "执行";
+                                } else if (isInvalid == "3") {
+                                    isInvalidText = "作废";
+                                } else if (isInvalid == "4") {
+                                    isInvalidText = "调整";
+                                }
+                                //屏蔽耗材类医嘱
+                                if (dataItem["subtblFlag"] != "1") {
+                                    //如果是中药处方则归类
+                                    if (dataItem["classCode"] == "PCC") {
+                                        if (types.indexOf(dataItem["combNo"]) == -1) {
+                                            types.push(dataItem["combNo"]);
+                                            var yzItem = $('<div class="weui-well well-print font13 type' + dataItem["combNo"] + '" data="' + dataItem["yzdm"] + '" style="margin:5px 0">\
+                                        <div class="weui-well__title weui-cell">\
+                                            <div class="weui-cell__bd weui-flex">\
+                                                <div class=" weui-flex__item">\
+                                                    <span class="font16"></span>\
+                                                </div>\
+                                                <div class=" weui-flex__item">\
+                                                    <div>\
+                                                        <span class="jl font12 text-small">剂数</span>\
+                                                        <span class="pinlu font12 text-small">频率</span>\
+                                                    </div>\
+                                                    <div>\
+                                                        <span class="kssj_title font12 text-small"></span>到\
+                                                        <span class="tzsj_title font12 text-small"></span>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                         </div>\
+                                        <div class="weui-well__content">\
+                                            <div class="zycfList"></div>\
+                                            <div style="display:block">\
+                                                <div class="weui-flex">\
+                                                    <div class="jl weui-flex__item"></div>\
+                                                    <div class="zl weui-flex__item"></div>\
+                                                </div>\
+                                                <div class="weui-flex">\
+                                                    <div class="pinlu weui-flex__item"></div>\
+                                                    <div class="guige weui-flex__item"></div>\
+                                                </div>\
+                                                <div>\
+                                                    <div class="weui-flex">\
+                                                        <div class="kssj weui-flex__item"></div>\
+                                                        <div class="tzsj weui-flex__item"></div>\
+                                                    </div>\
+                                                    <div class="weui-flex">\
+                                                        <div class="ysgh weui-flex__item"></div>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                        </div>\
+                                    </div>');
+                                            if (isInvalid == "3") {
+                                                yzItem.addClass("text_gray");
+                                            }
+                                            yzItem.find(".font16").text("中药处方");
+                                            yzItem.find(".desc").text("组：" + (dataItem["yzzh"] || ""));
+                                            
+                                            yzItem.find(".jl").text("剂数：" + (dataItem["useDays"] || ""));
+                                            yzItem.find(".zl").text("执行状态：" + isInvalidText);
+                                            yzItem.find(".pinlu").text("频率：" + (dataItem["sypc"] || ""));
+                                            yzItem.find(".guige").text("用法：" + (dataItem["useName"] || ""));
+                                            if (dataItem['kssjStr'] != null && dataItem['kssjStr'].indexOf("0001-01") == -1) {
+                                                yzItem.find(".kssj").text("开始时间：" + (dataItem["kssjStr"] || ""));
+                                                yzItem.find(".kssj_title").text(dataItem["kssjStr"] || "");
+                                            } else {
+                                                yzItem.find(".kssj").text("开始时间：");
+                                            }
+                                            if (params["type"] == "1") {
+                                                yzItem.find(".ysgh").text("开立医生：" + (dataItem["ysgh"] || ""));
+                                                if (dataItem['executeDateStr'] != null && dataItem['executeDateStr'].indexOf("0001-01") == -1) {
+                                                    yzItem.find(".tzsj").text("执行时间：" + (dataItem['executeDateStr'] || ""));
+                                                } else {
+                                                    yzItem.find(".tzsj").text("执行时间：");
+                                                }
+                                            } else {
+                                                if (dataItem['tzsjStr'] != null && dataItem['tzsjStr'].indexOf("0001-01") == -1) {
+                                                    yzItem.find(".tzsj").text("停止时间：" + (dataItem["tzsjStr"] || ""));
+                                                    yzItem.find(".tzsj_title").text(dataItem["tzsjStr"] || "");
+                                                } else {
+                                                    yzItem.find(".tzsj").text("停止时间：");
+                                                }
+                                                yzItem.find(".ysgh").text("下达人：" + (dataItem["ysgh"] || ""));
+                                            }
+                                            yzItem.click(function () {
+                                                $(this).find(".weui-well__content").slideToggle("fast");
+                                            });
+                                            $("#recordTypeContent").append(yzItem);
+                                        }
+                                        var yzTypeItem = $("#recordTypeContent").find(".weui-well.type" + dataItem["combNo"]);
+                                        yzTypeItem.find(".zycfList").append($('<div class="zycf_item">' + (dataItem["yzmc"] || "") + (dataItem["qtyTot"] || "") + (dataItem["minUnit"] || "") + '</div>'));
+                                        //组合输液医嘱
+                                    } else if (dataItem["classCode"] == "P") {
+                                        var useName = 'string' === typeof dataItem["useName"] ? dataItem["useName"].replace('(配)', '_pei').replace('(泵)', '_beng').replace('.', '_') : '-';
+                                        var syType = dataItem["combNo"] + useName;
+                                        var yzItem = $('<div class="weui-well well-print font13 type' + syType + '" data="' + dataItem["yzdm"] + '" style="margin:5px 0">\
+                                        <div class="weui-well__title weui-cell">\
+                                            <div class="weui-cell__bd weui-flex">\
+                                                <div class=" weui-flex__item">\
+                                                <span class="leftIcon"></span>\
+                                                    <span class="font16"></span>\
+                                                </div>\
+                                                <div class=" weui-flex__item">\
+                                                    <div>\
+                                                        <span class="jl font12 text-small">剂量</span>\
+                                                        <span class="pinlu font12 text-small">频率</span>\
+                                                    </div>\
+                                                    <div>\
+                                                        <span class="kssj_title font12 text-small"></span>到\
+                                                        <span class="tzsj_title font12 text-small"></span>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                         </div>\
+                                        <div class="weui-well__content">\
+                                            <div style="display:block">\
+                                                <div class="weui-flex">\
+                                                    <div class="jl weui-flex__item"></div>\
+                                                    <div class="zl weui-flex__item"></div>\
+                                                </div>\
+                                                <div class="weui-flex">\
+                                                    <div class="pinlu weui-flex__item"></div>\
+                                                    <div class="guige weui-flex__item"></div>\
+                                                </div>\
+                                                <div>\
+                                                    <div class="weui-flex">\
+                                                        <div class="kssj weui-flex__item"></div>\
+                                                        <div class="tzsj weui-flex__item"></div>\
+                                                    </div>\
+                                                    <div class="weui-flex">\
+                                                        <div class="ysgh weui-flex__item"></div>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                        </div>\
+                                    </div>');
+                                        if (isInvalid == "3") {
+                                            yzItem.addClass("text_gray");
+                                        }
+                                        yzItem.find(".font16").text(dataItem["yzmc"] || "");
+                                        yzItem.find(".desc").text("组：" + (dataItem["yzzh"] || ""));
+                                        yzItem.find(".jl").text("剂量：" + (dataItem["ycjl"] || "") + (dataItem["jldw"] || ""));
+                                        yzItem.find(".zl").text("执行状态：" + isInvalidText);
+                                        yzItem.find(".pinlu").text("频率：" + (dataItem["sypc"] || ""));
+                                        yzItem.find(".guige").text("用法：" + (dataItem["useName"] || ""));
+                                        if (dataItem['kssjStr'] != null && dataItem['kssjStr'].indexOf("0001-01") == -1) {
+                                            yzItem.find(".kssj").text("开始时间：" + (dataItem["kssjStr"] || ""));
+                                            yzItem.find(".kssj_title").text(dataItem["kssjStr"] || "");
+                                        } else {
+                                            yzItem.find(".kssj").text("开始时间：");
+                                        }
+                                        if (params["type"] == "1") {
+                                            yzItem.find(".ysgh").text("开立医生：" + (dataItem["ysgh"] || ""));
+                                            if (dataItem['executeDateStr'] != null && dataItem['executeDateStr'].indexOf("0001-01") == -1) {
+                                                yzItem.find(".tzsj").text("执行时间：" + (dataItem['executeDateStr'] || ""));
+                                            } else {
+                                                yzItem.find(".tzsj").text("执行时间：");
+                                            }
+                                        } else {
+                                            if (dataItem['tzsjStr'] != null && dataItem['tzsjStr'].indexOf("0001-01") == -1) {
+                                                yzItem.find(".tzsj").text("停止时间：" + (dataItem["tzsjStr"] || ""));
+                                                yzItem.find(".tzsj_title").text(dataItem["tzsjStr"] || "");
+                                            } else {
+                                                yzItem.find(".tzsj").text("停止时间：");
+                                            }
+                                            yzItem.find(".ysgh").text("下达人：" + (dataItem["ysgh"] || ""));
+                                        }
+                                        yzItem.click(function () {
+                                            $(this).find(".weui-well__content").slideToggle("fast");
+                                        });
+                                        if (types.indexOf(syType) == -1) {
+                                            types.push(syType);
+                                            
+                                        } else {
+                                            
+                                            var yzItems = $("#recordTypeContent").find(".weui-well.type" + syType);
+                                            if (yzItems.length > 1) {
+                                                for (var y = 1; y < yzItems.length; y++) {
+                                                    yzItems.eq(y).find(".leftIcon").html("");
+                                                }
+                                            }
+                                            yzItems.eq(0).find(".leftIcon").html("┏");
+                                            yzItem.find(".leftIcon").html("┗");
+                                        }
+                                        $("#recordTypeContent").append(yzItem);
+
+                                    } else if (dataItem["classCode"] == "PCZ") {
+                                        var yzItem = $('<div class="weui-well well-print font13" data="' + dataItem["yzdm"] + '" style="margin:5px 0">\
+                                        <div class="weui-well__title weui-cell">\
+                                            <div class="weui-cell__bd weui-flex">\
+                                                <div class=" weui-flex__item">\
+                                                    <span class="font16"></span>\
+                                                </div>\
+                                                <div class=" weui-flex__item">\
+                                                    <div>\
+                                                        <span class="jl font12 text-small">剂量</span>\
+                                                        <span class="pinlu font12 text-small">频率</span>\
+                                                    </div>\
+                                                    <div>\
+                                                        <span class="kssj_title font12 text-small"></span>到\
+                                                        <span class="tzsj_title font12 text-small"></span>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                         </div>\
+                                        <div class="weui-well__content">\
+                                            <div style="display:block">\
+                                                <div class="weui-flex">\
+                                                    <div class="jl weui-flex__item"></div>\
+                                                    <div class="zl weui-flex__item"></div>\
+                                                </div>\
+                                                <div class="weui-flex">\
+                                                    <div class="pinlu weui-flex__item"></div>\
+                                                    <div class="guige weui-flex__item"></div>\
+                                                </div>\
+                                            </div>\
+                                            <div>\
+                                                <div class="weui-flex">\
+                                                    <div class="kssj weui-flex__item"></div>\
+                                                    <div class="tzsj weui-flex__item"></div>\
+                                                </div>\
+                                                <div class="weui-flex">\
+                                                    <div class="ysgh weui-flex__item"></div>\
+                                                </div>\
+                                            </div>\
+                                        </div>\
+                                    </div>');
+                                        if (isInvalid == "3") {
+                                            yzItem.addClass("text_gray");
+                                        }
+                                        yzItem.find(".font16").text(dataItem["yzmc"] || "");
+                                        yzItem.find(".desc").text("组：" + (dataItem["yzzh"] || ""));
+                                        yzItem.find(".jl").text("剂量：" + (dataItem["ycjl"] || "") + (dataItem["jldw"] || ""));
+                                        yzItem.find(".zl").text("执行状态：" + isInvalidText);
+                                        yzItem.find(".pinlu").text("频率：" + (dataItem["sypc"] || ""));
+                                        yzItem.find(".guige").text("用法：" + (dataItem["useName"] || ""));
+                                        if (dataItem['kssjStr'] != null && dataItem['kssjStr'].indexOf("0001-01") == -1) {
+                                            yzItem.find(".kssj").text("开始时间：" + (dataItem["kssjStr"] || ""));
+                                            yzItem.find(".kssj_title").text(dataItem["kssjStr"] || "");
+                                        } else {
+                                            yzItem.find(".kssj").text("开始时间：");
+                                        }
+                                        if (params["type"] == "1") {
+                                            yzItem.find(".ysgh").text("开立医生：" + (dataItem["ysgh"] || ""));
+                                            if (dataItem['executeDateStr'] != null && dataItem['executeDateStr'].indexOf("0001-01") == -1) {
+                                                yzItem.find(".tzsj").text("执行时间：" + (dataItem['executeDateStr'] || ""));
+                                            } else {
+                                                yzItem.find(".tzsj").text("执行时间：");
+                                            }
+                                        } else {
+                                            if (dataItem['tzsjStr'] != null && dataItem['tzsjStr'].indexOf("0001-01") == -1) {
+                                                yzItem.find(".tzsj").text("停止时间：" + (dataItem["tzsjStr"] || ""));
+                                                yzItem.find(".tzsj_title").text(dataItem["tzsjStr"] || "");
+                                            } else {
+                                                yzItem.find(".tzsj").text("停止时间：");
+                                            }
+                                            yzItem.find(".ysgh").text("下达人：" + (dataItem["ysgh"] || ""));
+                                        }
+                                        
+                                        
+                                        yzItem.click(function () {
+                                            $(this).find(".weui-well__content").slideToggle("fast");
+                                        });
+                                        $("#recordTypeContent").append(yzItem);
+                                    } else {
+                                        var yzItem = $('<div class="weui-well well-print font13" data="' + dataItem["yzdm"] + '" style="margin:5px 0">\
+                                        <div class="weui-well__title weui-cell">\
+                                            <div class="weui-cell__bd weui-flex">\
+                                                <div class=" weui-flex__item">\
+                                                    <span class="font16"></span>\
+                                                </div>\
+                                                <div class=" weui-flex__item">\
+                                                    <div>\
+                                                    </div>\
+                                                    <div>\
+                                                        <span class="kssj_title font12 text-small"></span>到\
+                                                        <span class="tzsj_title font12 text-small"></span>\
+                                                    </div>\
+                                                </div>\
+                                            </div>\
+                                         </div>\
+                                        <div class="weui-well__content">\
+                                            <div style="display:block">\
+                                                <div class="weui-flex">\
+                                                    <div class="zl weui-flex__item"></div>\
+                                                </div>\
+                                            </div>\
+                                            <div>\
+                                                <div class="weui-flex">\
+                                                    <div class="kssj weui-flex__item"></div>\
+                                                    <div class="tzsj weui-flex__item"></div>\
+                                                </div>\
+                                                <div class="weui-flex">\
+                                                    <div class="ysgh weui-flex__item"></div>\
+                                                </div>\
+                                            </div>\
+                                        </div>\
+                                    </div>');
+                                        if (isInvalid == "3") {
+                                            yzItem.addClass("text_gray");
+                                        }
+                                        yzItem.find(".font16").text(dataItem["yzmc"] || "");
+                                        yzItem.find(".desc").text("组：" + (dataItem["yzzh"] || ""));
+                                        yzItem.find(".zl").text("执行状态：" + isInvalidText);
+                                        if (dataItem['kssjStr'] != null && dataItem['kssjStr'].indexOf("0001-01") == -1) {
+                                            yzItem.find(".kssj").text("开始时间：" + (dataItem["kssjStr"] || ""));
+                                            yzItem.find(".kssj_title").text(dataItem["kssjStr"] || "");
+                                        } else {
+                                            yzItem.find(".kssj").text("开始时间：");
+                                        }
+                                        if (params["type"] == "1") {
+                                            yzItem.find(".ysgh").text("开立医生：" + (dataItem["ysgh"] || ""));
+                                            if (dataItem['executeDateStr'] != null && dataItem['executeDateStr'].indexOf("0001-01") == -1) {
+                                                yzItem.find(".tzsj").text("执行时间：" + (dataItem['executeDateStr'] || ""));
+                                            } else {
+                                                yzItem.find(".tzsj").text("执行时间：");
+                                            }
+                                        } else {
+                                            if (dataItem['tzsjStr'] != null && dataItem['tzsjStr'].indexOf("0001-01") == -1) {
+                                                yzItem.find(".tzsj").text("停止时间：" + (dataItem["tzsjStr"] || ""));
+                                                yzItem.find(".tzsj_title").text(dataItem["tzsjStr"] || "");
+                                            } else {
+                                                yzItem.find(".tzsj").text("停止时间：");
+                                            }
+                                            yzItem.find(".ysgh").text("下达人：" + (dataItem["ysgh"] || ""));
+                                        }
+                                        yzItem.click(function () {
+                                            $(this).find(".weui-well__content").slideToggle("fast");
+                                        });
+                                        $("#recordTypeContent").append(yzItem);
+                                    }
+                                }
+                            }
+                            var loadMoreBtn = $('<div class="weui-loadmore weui-loadmore_line loadMoreBtn"><span class="weui-loadmore__tips">点击查看更多数据</span></div>');
+                            loadMoreBtn.click(function () {
+                                $(".loadMoreBtn").remove();
+                                if (loading == true) return;
+                                if (isEnd == true) return;
+                                loading = true;
+                                pageNo++;
+                                console.log("加载第%s页", pageNo);
+                                if (curSelectedType == "yizhu") {
+                                    $(".weui-infinite-scroll").show();
+                                    yz_search();
+                                } else {
+                                    $(".weui-infinite-scroll").show();
+                                    getContentList();
+                                }
+                            })
+                            $("#recordTypeContent").append(loadMoreBtn);
+                        } else {
+                            isEnd = true;
+                            $(".weui-loadmore").remove();
+                            $("#recordTypeContent").append('<div class="weui-loadmore weui-loadmore_line"><span class="weui-loadmore__tips">暂无数据</span></div>');
+                        }
+                        //todo 调用点击记录接口
+                        var recordParams = {
+                            'patientId': personInfo.patientId,
+                            'patientDomainId': urlParams.domain,
+                            'event': '4',
+                            'personId': personInfo.empi,
+                            'patientName': personInfo.name,
+                            'timeInterval': timeInterval,
+                            'urlFromDomainId': null
+                        };
+                        $.post(navRoot + "/api/clickRecord", recordParams, function (data) {
+                            console.log(data);
+                        }, 'json')
+                    } else {
+                        $.alert(data["errmsg"]);
+                    }
+                    loading = false;
+                    $.hideLoading();
+                },
+                "json"
+            )
+        }
+
+
+        // 手机脱敏
+        const judgePhone = (val) => {
+        if (!val) return val;
+        const reg = /^(.{3}).*(.{4})$/;
+        return val.replace(reg, '$1****$2');
+        };
+
+        // 身份证脱敏
+        const judgeCard = (val) => {
+        if (!val) return val;
+        const reg = /^(.{3}).*(.{2})$/;
+        return val.replace(reg, '$1**********$2');
+        };
+
+        // 地址脱敏
+        const maskLastSixChars = (str) =>{
+            if (!str) return str;
+            return str.slice(0, -4) + '*'.repeat(4);
+        } 
+
+        // 信息
+        function patientInfo_getPage(){
+            $("#yz_title").empty();
+            $("#recordTypeContent").empty();
+            curSelectedType = "patientInfos";
+            const patientInfo = [
+                {title: '姓名', value: personInfo.name},
+                {title: '出生日期', value: personInfo.dateOfBirth},
+                {title: '现住址', value: maskLastSixChars(personInfo.homeAddress) , type:'homeAddress'},
+                {title: '现住址电话', value: judgePhone(personInfo.homeNumber), tel: personInfo.homeNumber, type:'phone'},
+                {title: '联系人电话', value: judgePhone(personInfo.contactPhone), tel: personInfo.contactPhone, type:'phone'},
+                {title: personInfo.patCategoryName + '号', value: personInfo.patientId},
+            ]
+            if(personInfo.patCategoryName.indexOf('门诊') > -1){
+                patientInfo.splice(5, 0, 
+                    {title: '就诊科室', value: decodeURIComponent(deptName)}
+                );
+            }
+            if(personInfo.patCategoryName.indexOf('住院') > -1){
+                patientInfo.splice(5, 0, 
+                    {title: '床位号', value: personInfo.patCurrentBed},
+                    {title: '病区', value: decodeURIComponent(deptName)}
+                );
+            }
+
+            for (let i in patientInfo) {
+                const itemData = patientInfo[i];
+                const pi_items = $(`<div class="pi-info bg-white">\
+                            <div>${itemData.title}</div>\
+                            <div class="text-right ${itemData.type || ''}"></div>\
+                            </div>`);
+                if(itemData.type === 'phone'){
+                    const phoneIcon = `<img src="/ccd/static/images/phone.png" class="icon">`;
+                    if (itemData.tel) {
+                        pi_items.find('.text-right').html(`${phoneIcon}${itemData.value}`);
+                    }
+                    if (!itemData.tel || itemData.tel === null) {
+                        pi_items.hide();
+                    }
+                }else{
+                    pi_items.find('.text-right').text(itemData.value);
+                }
+                pi_items.find('.phone').click(function(){
+                    window.location.href = 'tel:' + itemData.tel;                  
+                })
+                $("#recordTypeContent").append(pi_items);
+            }
+            // 判断是否有诊断
+            const listParams = payLoadTypeList.filter(v=>v.type === 'payLoadType.Incharge')[0];
+            if(listParams){
+                var params = {
+                    "empi": urlParams.empi,
+                    "id": urlParams.id,
+                    "domain": urlParams.domain,
+                    "admitDate": urlParams.admitDate,
+                    "payLoadType": listParams["value"] || '',
+                    "type": listParams["type"],
+                    "pageNo": '0'
+                };
+                $.showLoading();
+                $.post(navRoot + "/api/inpatient/data", params, function (data) {
+                    $.hideLoading();
+                    if (data["code"] == 200) {
+                        const pDocumentList = data.data.list[0].documentList[0];
+                        var plt = pDocumentList.payLoadType;
+                        if (plt.indexOf("XDS.ProgressNote") >= 0) {
+                            plt = "XDS.ProgressNote";
+                        } else if (plt.indexOf("XDS.ABW") >= 0) {
+                            plt = "XDS.ABW";
+                        }
+                        var pltArr = plt.split('.');
+                        pltArr.shift();
+
+                        var payLoadType = pltArr.join('_');
+                        var reportProps = Const.reportProps[payLoadType] || {};
+                        var postObj = {
+                            documentuniqueid: (pDocumentList["documentuniqueid"] || ""),
+                            filepath: (pDocumentList["filepath"] || ""),
+                            fileSystemFk: (pDocumentList["fileSystemFk"] || ""),
+                            dicomNum: (pDocumentList["dicomNum"] || ""),
+                            reportStatus: (pDocumentList["reportStatus"] || ""),
+                            modality: (pDocumentList["modality"] || ""),
+                            dicomStudyTime: (pDocumentList["dicomStudyTime"] || ""),
+                            nodes: (reportProps.nodes || ["//ClinicalDocument"]),
+                            parseModel: (reportProps.parseModel || "0"),
+                            imageNode: (pDocumentList["imageNode"] || ""),
+                            name: personInfo["name"]
+                        };
+                        $.showLoading();
+                        $.getJSON(navRoot + "/api/inpatient/showinfo/plt", {"documentVO_2_paramData": JSON.stringify(postObj)}, function (res) {
+                            $.hideLoading();
+                            if (res["code"] == 200) {
+                                const diagnosis = res.data.nameValueMap.contentList.filter(v=>v.name.indexOf('初步诊断')>-1)[0].text || '';
+                                const pi_items = $(`<div class="pi-info bg-white">\
+                                <div>诊断</div>\
+                                <div class="text-right">${diagnosis}</div>\
+                                </div>`);
+                                $("#recordTypeContent").append(pi_items);
+                            } else {
+                                $.alert(res["errmsg"]);
+                            }
+                        })
+                    }else{
+                        $.alert(data["errmsg"]);
+                    }
+                })
+            }
+            
+
+
+            
+        }
+
+        /**
+         * 缓存已选择的类型
+         */
+        function saveSelectedItemIndex () {
+            var index = $("#type_btn_group").find("a.selected").index();
+            sessionStorage.setItem('info-selected_index', index);
+            if (cacheInit.type) {
+                sessionStorage.removeItem('info-selected_record_index');
+                sessionStorage.setItem('info-selected_record_table_index','[]');
+            }
+            cacheInit.type = true;
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Server: nginx/1.14.2
+Date: Mon, 24 Mar 2025 16:35:05 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 107
+Connection: keep-alive
+Set-Cookie: yihu-portal=2c0fdb597f9ff5cb1a80629937a6b4ed848d76eccf3ad290.9PUXtvY5rEJ04iyetxakYEJ_9mQ; Expires=Wed, 23 Apr 2025 16:35:05 GMT; HttpOnly; Path=/
+X-XSS-Protection: 1; mode=block
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+
+{"code": 200, "data": {"access_token": "273c8360-a923-47a7-b1c9-2d1934d77021", "user_code": "zhangsy224g"}}

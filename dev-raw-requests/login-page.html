@@ -1,0 +1,1346 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+
+<head>
+    
+    
+        <meta charset="UTF-8">
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"> -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <meta http-equiv="Cache-Control" content="max-age=7200"/>
+        <meta http-equiv="Expires" content="Mon, 20 Jul 2013 23:00:00 GMT"/>
+        <title>登录</title>
+        <link rel="stylesheet" href="/portal/static/css/weui.1.1.2.min.css">
+        <link rel="stylesheet" href="/portal/static/css/jquery-weui.min.css">
+        
+        <link rel="stylesheet" href="/portal/static/css/ihealth.css?v=36">
+        <link rel="stylesheet" href="/portal/static/css/iconfont.css?v=12">
+    
+    <style>
+        .weui-cells_form .weui-cells > .weui-cell {
+            padding: 13px;
+        }
+
+        .weui-btn_default {
+            font-size: 13px;
+            padding-left: 8px;
+            padding-right: 8px;
+            line-height: 2.1;
+        }
+
+        .weui-tab {
+            height: auto;
+        }
+
+        .weui-btn_plain-default {
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
+            box-sizing: border-box;;
+            margin: 0 45px;
+
+        }
+
+        .weui-navbar {
+            margin: 0 45px;
+            left: 0;
+            right: 0;
+            width: auto;
+        }
+        .biometric-mbox {
+
+        }
+        .biometric-icon {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 100px;
+            top: 19px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .biometric-icon strong{
+            font-size: 14px;
+            position: relative;
+            white-space: nowrap;
+            top: 49px;
+            right: 9px;
+            font-weight: 400;
+        }
+        .face {
+            background-image: url(/portal/static/images/faceID.png);
+        }
+        .finger {
+            background-image: url(/portal/static/images/touchID.png);
+        }
+        .weui-tab {
+            height: auto;
+            padding: 15px;
+            padding-bottom: 0;
+            background: #ffffff;
+        }
+
+        .weui-navbar+.weui-tab__bd {
+            padding-top: 30px;
+            height: auto;
+        }
+
+        .weui-navbar {
+            position: static;
+        }
+
+        .weui-navbar__item:first-child {
+            border-left: 1px solid #8B3B46;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .weui-navbar__item:last-child {
+            border-right: 1px solid #8B3B46;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .weui-navbar__item {
+            color: #8B3B46;
+            background-color: #ffffff;
+            border-top: 1px solid #8B3B46;
+            border-bottom: 1px solid #8B3B46;
+            line-height: 1;
+            padding: 0.8em;
+            font-size: 13px;
+        }
+
+        .weui-navbar__item:after {
+            border-color: #8B3B46;
+            transform: scale(1);
+        }
+
+        .weui-navbar__item.weui-bar__item--on {
+            color: #fff;
+            background-color: #8B3B46;
+        }
+
+        @media screen and (max-width: 370px) {
+            .weui-navbar+.weui-tab__bd {
+                padding-top: 10px;
+                height: auto;
+            }
+            .weui-cells_form .weui-cells > .weui-cell {
+                padding: 8px;
+            }
+            .weui-navbar__item {
+                padding: 0.6em;
+            }
+            body {
+                font-size: 14px;
+            }
+            .imageLogo {
+                width: 4em;
+                height: 4em;
+            }
+            .weui-cells {
+                font-size: 14px;
+            }
+            .header {
+                min-height: 10em;
+            }
+            .biometric-icon {
+                width: 36px;
+                height: 36px;
+                top: -20px;
+            }
+            .biometric-icon strong {
+                font-size: 12px;
+                top: 36px;
+                right: 6px;
+            }
+            #footer>p {
+                line-height: 28px !important;
+            }
+        }
+        .login-page{
+            height: 100VH;
+        }
+        .fast-text{
+            position: relative;
+            margin: 0px 40px;
+        }
+        .fast-text::before, .fast-text::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 26%; 
+            height: 1px;
+            background-color: #d9d9d9;
+        }
+
+        .fast-text::before {
+            left: 0;
+            transform: translateX(0%);
+        }
+
+        .fast-text::after {
+            right: 0;
+            transform: translateX(0%);
+        }
+        .fast-login{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0px 10px;
+
+        }
+        .fast-item, .biometric-mbox {
+            margin: 0 30px;   
+        }
+        .fast-item{
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            height: 100px;
+        }
+        .fast-item strong{
+            position: relative;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+        .fast-item > img{
+            display: block;
+            width: 45px;
+            height: auto;
+            margin: 12px 0;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="container login-page bg-white">
+        <div class="header text-common" style="flex-direction:column">
+            <div class="iconImage">
+                <img src="/portal/static/images/logo2.png" class="imageLogo">
+            </div>
+            <p class="font18">中山一院</p>
+
+            <p>医护管理平台</p>
+
+        </div>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            
+            
+        
+            
+            
+        
+            
+            
+        
+            
+            
+        
+
+            
+            
+            
+            
+            <div class="weui-navbar" id="login-tab">
+                <a class="weui-navbar__item weui-bar__item--on" href="#login3">
+                    账号登录
+                </a>
+                <a class="weui-navbar__item" href="#login4">
+                    验证码登录
+                </a>
+            </div>
+            <div class="weui-tab__bd">
+                <div id="login3"
+                     class="weui-tab__bd-item weui-tab__bd-item--active"
+                     style="text-align: center">
+                    
+                    <form class="weui-cells_form" id="form-login3">
+                        <input type="hidden" name="scheme" value="login3">
+
+                        <div class="weui-cells">
+                            
+                                <div class="weui-cell">
+                                    <div class="weui-cell__bd">
+                                        <input class="weui-input required" name="userName" type="text"
+                                               datatype="/\S/"
+                                               placeholder="请输入4~5位工号" dataerr="输入的格式不正确">
+                                    </div>
+                                </div>
+                            
+                            
+                            
+                            
+                            
+                                <div class="weui-cell">
+                                    <div class="weui-cell__bd">
+                                        <input class="weui-input required" name="passWord" type="password" value=""
+                                               placeholder="请输入密码" dataerr="密码的格式不正确">
+                                    </div>
+                                    <div class="weui-cell__ft">
+                                        <i class="switchSee iconfont" onclick="switchSeeFun(event)"
+                                           style="font-size: 17px">
+                                            &#xe625;</i>
+                                    </div>
+                                </div>
+                            
+                            
+                                <div class="weui-cell">
+                                    <div class="weui-cell__bd">
+                                        <input class="weui-input required" name="verifycode" type="text" value=""
+                                               datatype="/^.{4,}$/"
+                                               placeholder="请输入图形验证码" dataerr="图形验证码的格式不正确">
+                                    </div>
+                                    <div class="weui-cell__ft">
+                                        <img class="getBackVerifyCode" src="" width="60px" height="30px" alt="获取验证码"
+                                             onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC'"
+                                             onclick="getVerifyCodeFun(this)">
+                                    </div>
+                                </div>
+                            
+                            
+                        </div>
+
+
+
+                        <div class="weui-btn-area">
+                            <button type="submit" class="weui-btn weui-btn_primary">登录</button>
+                        </div>
+                    </form>
+                    <p class="weui-cell_link" style="line-height: 3; padding: 0 3em;display: flex;align-items: center;justify-content: space-between;margin-bottom: 10px;">
+                        <span>
+                            <input id="remember_checkbox" type="checkbox" style="vertical-align: middle;margin-right: 5px;width: 1.5em;height: 1.5em;" checked>
+                            记住密码
+                        </span>
+                        <a class="weui-cell_link text-right" href="/portal/forget_pwd">忘记密码?</a>
+                    </p>
+                
+                <!-- <div id="biometric-mbox" class="biometric-mbox" style="text-align: center; display: none;">
+                    <div id="biometric-icon" class="biometric-icon">
+                        <strong class="text-common">脸部登录</strong>
+                    </div>
+                </div> -->
+            </div>
+
+            <div id="login4" class="weui-tab__bd-item">
+                <div class="weui-cells_form">
+                <form class="" id="form-phone-login">
+                    <div class="weui-cells">
+                        <div class="weui-cell">
+                            <div class="weui-cell__bd">
+                                国家/地区
+                            </div>
+                            <div class="weui-cell__ft">
+                                中国
+                            </div>
+                        </div>
+                            <input type="hidden" name="scheme" value="login3">
+                            <div class="weui-cell">
+                                <div class="weui-cell__hd">
+                                    <span style="margin-right:5px; ">+86</span>
+                                </div>
+                                <div class="weui-cell__bd">
+                                    <input class="weui-input required" id="phone_no" name="Phone" type="text"
+                                               datatype="/(^1[3|4|5|6|7|8|9][0-9]{9}$)/"
+                                               placeholder="请输入您的手机号" dataerr="手机号的格式不正确"/>
+                                </div>
+                            </div>
+                            <div class="weui-cell">
+                                <div class="weui-cell__bd">
+                                    <input id="sms_code" class="weui-input required" name="shortMessageCheckCode" type="text"
+                                               value=""
+                                               datatype="/^\w{4,}$/" dataerr="手机验证码的格式不正确"
+                                               placeholder="请输入手机验证码"/>
+                                </div>
+                                <div class="weui-cell__ft">
+                                    <button class="weui-btn weui-vcode verify-code weui-btn_default" style="width: 7em;height: 31px;">获取验证码</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="weui-btn-area" style="margin-bottom: 30px;">
+                            <button type="submit" class="weui-btn weui-btn_primary">登录</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+
+            <div class="fast-text text-center text-common font14" style="display: none;">使用以下快捷登录</div>
+            <div class="fast-login" >
+                <div id="weComLogin" class="fast-item font14" style="display: none;">
+                    <img src="/portal/static/images/icon-wecom.png" alt="">
+                    <strong class="text-common ">企业微信</strong>
+                </div>
+                <div id="biometric-mbox" class="biometric-mbox" style="text-align: center; display: none;">
+                    <div id="biometric-icon" class="biometric-icon">
+                        <strong class="text-common">脸部登录</strong>
+                    </div>
+                </div>
+            </div>
+
+        <div class="weui-footer" id="footer">
+            <p class="weui-footer__text weui-footer__link" style="line-height:50px;">
+                <input id="privacy_checkbox" type="checkbox" style="vertical-align: middle;margin-right: 5px;width: 1.5em;height: 1.5em;">
+                我已阅读并同意
+                <a href="/portal/privacy">
+                    《隐私政策与用户协议》
+                </a>
+            </p>
+        </div>
+    </div>
+
+<script src="/portal/static/js/jquery-1.11.3.min.js?v=7"></script>
+<script src="/portal/static/js/jsBridge.js?v=3.6.0"></script>
+<script src="/portal/static/js/jsBridgeMethod.js?v=3.6.0"></script>
+<script src="/portal/static/js/fastclick.js?v=4"></script>
+
+<script type="text/javascript">
+    var navRoot = "/portal";
+    if (navRoot.indexOf("https") < 0) {
+        navRoot = navRoot.replace("http:", "https:");
+    }
+    if (jsBridge && window.isAndroid) {
+        var path = document.location.href;
+        const isScreenshot = {
+            is_screenshot: path.indexOf('login') > -1 ? 0 : 0,
+        }
+        jsBridge.callAppRouter("JS_canScreenshot", JSON.stringify(isScreenshot), function(data){
+            if (data != null) {
+                console.log('通知成功');
+            } else {
+                'function' === typeof callback && callback(data);
+            }
+        })
+    }
+    if(jsBridge){
+        // 获取app 当前用户是否关怀模式状态
+        jsBridge.callAppRouter("JS_IsCareMode", "", function(data){
+            if (data) {
+                localStorage.setItem('userCareMode', JSON.parse(data)?JSON.parse(data).careMode : 0); // 缓存设备信息
+            }else{
+                localStorage.setItem('userCareMode', localStorage.getItem("userCareMode") || 0);
+            }
+        })
+    }
+    window.addEventListener('resize', function() {
+        var event = new Event('resize');
+        document.dispatchEvent(event);
+    });
+</script>
+
+    
+    <script src="/portal/static/js/jquery-1.11.3.min.js"></script>
+    <script src="/portal/static/js/jquery-weui.min.js?v=10"></script>
+    <script src="/portal/static/js/jsBridge.js?v=3.6.0"></script>
+    <script src="/portal/static/js/jsBridgeMethod.js?v=3.6.0"></script>
+    <script src="/portal/static/js/common.js?v=10"></script>
+    <script src="/portal/static/js/jquery.cookie.js?v=10"></script>
+    
+    
+    <script src="/portal/static/js/jsbn.js"></script>
+    <script src="/portal/static/js/jsbn2.js"></script>
+    <script src="/portal/static/js/utils.js"></script>
+    <script src="/portal/static/js/sm4.js"></script>
+
+    <script type="text/javascript">
+
+        var localCityInfo = "未知";
+        var mobileIp = "12.12.12.12";
+        var phoneModel = "未知";
+        var needverifycode = true;
+        var hasShowAD = sessionStorage.getItem("hasShowAD");
+        var hasShowADNew = sessionStorage.getItem("hasShowADNew");
+        var requestFlag = 0;
+        if(!!hasShowADNew && !!hasShowAD){
+            requestFlag = 0
+        } else if (!!hasShowAD ^ !!hasShowADNew) {
+            requestFlag = 1
+        } else {
+            requestFlag = 2
+        }
+        var u = navigator.userAgent,
+        isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1;
+        // 请求广告
+        // 仿照promise 格式回调处理方法 
+        // @param resolve   请求成功处理完事务回调
+        //        reject    请求失败处理完事务回调
+        function requestAD(resolve, reject){
+                $.getJSON(navRoot + "/window", function (data) {
+                    if (data && data["code"] == 200) {
+                        data = data["data"];
+                        if (data && data["is_show"]) {
+                            var floatAD = $('<div style="position:absolute;display: flex;align-items: center;justify-content: center;width: 100%;height: 100%;z-index: 2001;">' +
+                                '<div class="weui-mask weui-mask--visible" style="background: rgba(140,4,16);"></div>' +
+                                '<div style="text-align:center;max-width:100%;max-height:100%;z-index: 1050;">' +
+                                '<img class="windowAD" style="max-width:100%;max-height:100%;" src="' + data["img_url"] + '">' +
+                                '</div>' +
+                                '</div>');
+                            floatAD.find('img').on('load', function(){
+                                $("body").append(floatAD);
+                                setTimeout(function () {
+                                    floatAD.fadeOut();
+                                }, 2500);
+                            })
+                            sessionStorage.setItem("hasShowAD", "true");
+                            resolve && resolve()
+                        }
+                    } else {
+                        reject && reject()
+                    }
+                    requestFlag--
+                });
+        }
+        // 新版请求广告
+        function requestADNew(resolve, reject){
+            $.getJSON(navRoot + "/richtext?code=yihu_home_notice", function (data) {
+                if (data && data["code"] == 200) {
+                    data = data["data"];
+                    if (data && data["is_show"]) {
+                        var AD = data["content"];
+                        var floatAD = '<div style="text-align: left">' + AD + '</div>';
+                        $.confirm({
+                            title: data['title'] || '温馨提示',
+                            text: floatAD,
+                            onOK: function () {
+                            },
+                        });
+                        sessionStorage.setItem("hasShowADNew", "true");
+                        resolve && resolve()
+                    }
+                } else {
+                    console.log(JSON.stringify(data))
+                    reject && reject()
+                }
+                requestFlag--
+            })
+        }
+        function checkVerifyCodeRequestable(){
+            return requestFlag === 0;
+        }
+        // 删除cookie
+        $.removeCookie("yihu-portal")
+        
+        !hasShowAD && requestAD(checkVerifyCodeRequestable);
+        !hasShowADNew && requestADNew(checkVerifyCodeRequestable);
+
+        // 记住密码
+        function rememberPwd(params) {
+            $('#remember_checkbox').prop('checked'); 
+        }
+
+
+        //表单验证
+        //点击下一步事件
+        function checkForm($form) {
+            var success = true;
+            $form.find("input").each(function () {
+                var $that = $(this);
+                if ($that.val() == "") {
+                    success = false;
+                    $.toast($that.attr("placeholder"), "text");
+                    
+                    return false;
+                } else {
+                    var dataType = eval($that.attr("datatype"));
+                    if (dataType != undefined) {
+                        if ($that.val().match(dataType)) {
+                        } else {
+                            $.toast($that.attr("dataerr"), "text");
+                            success = false;
+                            
+                            return false;
+                        }
+                    }
+                }
+            });
+            if (!$('#privacy_checkbox').prop('checked')) {
+                $.alert('请先同意用户隐私协议');
+                return false;
+            }
+            return success;
+        }
+
+        //给每个带有datatype属性的标签绑定blur focus事件
+        $(document).on("blur", "input", function () {
+            var $that = $(this);
+            if ($that.val() == "") {
+                
+                
+            } else {
+                var dataType = eval($that.attr("datatype"));
+                if (dataType != undefined) {
+                    if ($that.val().match(dataType)) {
+                    } else {
+                        $.toast($that.attr("dataerr"), "text");
+                        
+                    }
+                }
+            }
+        })
+
+        // 切换密码可视
+        function switchSeeFun(event) {
+            $that = $(event.currentTarget);
+            var passwordInput = $that.parents(".weui-cell").find("input");
+            var type = passwordInput.attr("type");
+            if (type == "password") {
+                $that.html("&#xe624;");
+                passwordInput.attr("type", "text");
+            } else {
+                $that.html("&#xe625;");
+                passwordInput.attr("type", "password");
+            }
+        }
+
+        // 检查用户是否激活
+        function checkUserFlag() {
+            $.getJSON(navRoot + "/userinfo/data", function (data) {
+                if (data && data["code"] == 200) {
+                    userInfo = data["data"];
+                    if (userInfo["userFlag"] == 2) {
+                        $.modal({
+                            title: "温馨提示",
+                            text: "该账号暂未激活, 请先激活再进行登录",
+                            buttons: [
+                                {
+                                    text: "取消",
+                                    className: "default",
+                                    onClick: function () {
+                                        $.closeModal();
+                                        $.post(navRoot + "/loginout", function (data) {
+                                            sessionStorage.clear();
+                                            localStorage.clear();
+                                            }, "json");
+                                        location.href = navRoot + "/login";
+                                    }
+                                },
+                                {
+                                    text: "去激活",
+                                    className: "primary",
+                                    onClick: function () {
+                                        localStorage.setItem("activating", "1");
+                                        location.href = navRoot + "/userinfo";
+                                    }
+                                }
+                            ],
+                            autoClose: true
+                        })
+                        ;
+                    } else {
+                        localStorage.setItem("activating", "0");
+                        location.href = navRoot;
+                    }
+                } else {
+                    location.href = navRoot + "/login";
+                }
+            })
+        }
+
+        function getVerifyCodeFun(target) {
+            var time = new Date();
+            var getImage = "./getVerifyCode?type=1&time=" + time.getTime();
+            $(target).attr("src", getImage);
+
+        }
+
+        // 获取短信验证码
+        function getMessageCodeFun(event) {
+            event.preventDefault();
+            $this = $(event.currentTarget);
+            if ($this[0].hasAttribute("disabled")) {
+                return;
+            }
+            var phone_no = $("#phone_no").val();
+            var verify_code = $("#verifycode").val();
+            if (/^1[0-9]{10}$/.test(phone_no)) {
+                $.post(navRoot + "/sendSMS", {phone_no: phone_no, func_type: 'login', verify_code:verify_code}, function (data) {
+                    if (data["code"] != 200) {
+                        $.toast(data.errmsg, "text");
+                    } else {
+                        util.hsTime(".weui-vcode");
+                    }
+                }, "json");
+            } else {
+                $.toast("手机格式不正确", "text");
+                this[0].removeAttribute('disabled').removeAttr('disabled');
+            }
+        }
+        
+        $(function () {
+            
+            var secretKey = "466839534E5355324953774439665770"; //新版的密码加密密钥
+            var s4 = new SM4Util();
+            if ($("input[name='userName']").length > 0 && localStorage.getItem("userName")) {
+                $("input[name='userName']").val(localStorage.getItem("userName"));
+            }
+            if ($("input[name='employeeNumber']").length > 0 && localStorage.getItem("employeeNumber")) {
+                $("input[name='employeeNumber']").val(localStorage.getItem("employeeNumber"));
+            }
+            if ($("input[name='passWord']").length > 0 && localStorage.getItem("passWord")) {
+                $("input[name='passWord']").val(localStorage.getItem("passWord"));
+            }
+
+            if(!isAndroid || (isAndroid && $('#privacy_checkbox').prop('checked'))){
+                // ios直接获取设备信息，安卓先判断时候勾选隐私协议，未勾选时先不获取
+                jsPhoneInfo();
+            }
+
+            // 获取版本号
+            if(isAndroid && !$('#privacy_checkbox').prop('checked')){
+                if (jsBridge) {
+                    jsBridge.callAppRouter("JS_getAppVersionInfo", "", function (data) {
+                        if (data) {
+                            const params = JSON.parse(data);
+                            const compareVersion = (v1, v2) => v1.split('.').map(Number).reduce((a, b, i) => a || (b - (v2.split('.')[i] || 0)), 0);
+                            if( !(compareVersion('3.4.0' , params.versionName) > -1)){
+                                $("#weComLogin").show();
+                                $(".fast-text").show();
+                            }
+                        } else{
+                            jsPhoneInfo()
+                        }
+                    })
+                }
+            }
+
+            $('#privacy_checkbox').change(function(){
+                if(this.checked && isAndroid) {
+                    jsPhoneInfo();
+                }
+            });
+            
+            // 设备信息
+            function jsPhoneInfo(){
+                if (jsBridge) {
+                    jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                        if (data) {
+                            const params = JSON.parse(data);
+                            localStorage.setItem('jsBridgeHeaders', data); // 缓存设备信息
+                            mobileIp = params["ip"];
+                            phoneModel = params["equipmentType"];
+                            
+
+                            const compareVersion = (v1, v2) => v1.split('.').map(Number).reduce((a, b, i) => a || (b - (v2.split('.')[i] || 0)), 0);
+
+                            if( !(compareVersion('3.4.0' , params.version) > -1)){
+                                $("#weComLogin").show();
+                                $(".fast-text").show();
+                            }
+                        }
+                    })
+                }
+            }
+
+            if (jsBridge) {
+                // jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                //     if (data) {
+                //         const params = JSON.parse(data);
+                //         localStorage.setItem('jsBridgeHeaders', data); // 缓存设备信息
+                //         mobileIp = params["ip"];
+                //         phoneModel = params["equipmentType"];
+                //         
+
+                //         const compareVersion = (v1, v2) => v1.split('.').map(Number).reduce((a, b, i) => a || (b - (v2.split('.')[i] || 0)), 0);
+
+                //         if( !(compareVersion('3.4.0' , params.version) > -1)){
+                //             $("#weComLogin").show();
+                //             $(".fast-text").show();
+                //         }
+                //     }
+                // })
+                // get user info
+                jsBridge.callAppRouter("JS_getUserInfo", '', function(data){
+                    if (data != null) {
+                        callbackGetUserInfo(data, s4, secretKey);
+                    } else {
+                        'function' === typeof callback && callback(data);
+                    }
+                })
+            }
+            getLocaltionFun();
+
+            if ($(".getBackVerifyCode").length > 0) {
+                $(".getBackVerifyCode").each(function (i) {
+                    // 100 秒内，每隔 0.2 秒检测能否请求验证码
+                    (function(count, el){
+                        if(checkVerifyCodeRequestable()) return getVerifyCodeFun($(el));
+                        if(count) return setTimeout(function(callee) { callee(--count, el) }, 200, arguments.callee);
+                    })(500, this)
+                })
+            }
+
+            var redirect_url = common.getQueryString("redirect_url");
+            if (redirect_url != "") {
+                $.alert("验证失败，请重新登录！");
+            }
+            /** 验证文件是否导入成功  */
+            function phoneLogin($form){
+                var params = {};
+                params["Phone"] = $('#phone_no').val();
+                params["ip"] = mobileIp;
+                params["equipmentType"] = phoneModel;
+                // 表单登录 必须
+                params['needverifycode'] = 1;
+                params['shortMessageCheckCode'] = $('#sms_code').val();
+                params['schema'] = 'mobile-smsCheckCode';
+                $.showLoading('登录中...');
+                $.post(navRoot + "/login", params, function (data) {
+                    $.hideLoading();
+                    if (data["code"] == 200) {
+                        if (params["userName"]) {
+                            localStorage.setItem("userName", params["userName"]);
+                        }
+                        if (params["employeeNumber"]) {
+                            localStorage.setItem("employeeNumber", params["employeeNumber"]);
+                        }
+                        if (params["passWord"]) {
+                            localStorage.setItem("passWord", $("input[name='passWord']").val());
+                        }
+                        console.log(data["data"]);
+                        var payload = {
+                            "user_id": '',
+                            "user_code": data["data"]["user_code"],
+                            "user_password": '',
+                            "isRemember": '0',
+                        };
+                        var token = data["data"];
+                        // 加载用户信息
+                        $.getJSON(navRoot + "/userinfo/data", function (data) {
+                            if (data && data["code"] == 200) {
+                                userInfo = data["data"];
+                                payload['user_id'] = userInfo['loginName'];
+                                if (jsBridge) {
+                                    jsBridge.callAppRouter("yhlogin", JSON.stringify(payload), function (data) {
+                                        checkUserFlag();
+                                    });
+                                } else {
+                                    checkUserFlag();
+                                }
+                                localStorage.setItem('loginType', 'phone');
+                                if (redirect_url != "") {
+                                    var url = decodeURIComponent(redirect_url) + "?token=" + token;
+                                    location.href = url;
+                                    return true;
+                                }
+                            } else {
+                                location.href = navRoot + "/login";
+                            }
+                        })
+                    } else if (data['code'] == 505) {
+                        location.href = data["errmsg"];
+                    } else {
+                        // wrong password
+                        if (data['code'] == 501 && !needverifycode) {
+                            needverifycode = true;
+                            $('#biometric-mbox').css('display', 'none')
+                        }
+                        $.alert(data["errmsg"]);
+                    }
+                }, "json");
+            }
+            function accountLogin($form){
+                var params = {};
+                $form.serializeArray().map(function (x) {
+                    params[x.name] = x.value;;
+                    if (x.name == "passWord") {
+                        params["passWord"] = s4.sm4Encrypt(secretKey, x.value);
+                    }
+                });
+
+                params["city"] = localCityInfo;
+                params["ip"] = mobileIp;
+                params["equipmentType"] = phoneModel;
+                // 表单登录 必须
+                params['needverifycode'] = 1;
+                $.showLoading('登录中...');
+                $.post(navRoot + "/login", params, function (data) {
+                    $.hideLoading();
+                    if (data["code"] == 200) {
+                        localStorage.setItem('loginType', 'password');
+                        if (params["userName"]) {
+                            localStorage.setItem("userName", params["userName"]);
+                        }
+                        if (params["employeeNumber"]) {
+                            localStorage.setItem("employeeNumber", params["employeeNumber"]);
+                        }
+                        if (params["passWord"]) {
+                            localStorage.setItem("passWord", $("input[name='passWord']").val());
+                        }
+                        if (redirect_url != "") {
+                            var url = decodeURIComponent(redirect_url) + "?token=" + data["data"];
+                            location.href = url;
+                            return true;
+                        }
+                        var payload = {
+                            "user_id": params["userName"],
+                            "user_code": data["data"]["user_code"],
+                            "user_password": params["passWord"],
+                            "isRemember": $('#remember_checkbox').prop('checked') ? '1' : '0',
+                        };
+                        if (jsBridge) {
+                                jsBridge.callAppRouter("yhlogin", JSON.stringify(payload), function (data) {
+                                checkUserFlag();
+                            });
+                        }
+                        checkUserFlag();
+                        
+                    } else if (data['code'] == 505) {
+                        location.href = data["errmsg"];
+                    } else if(data['code'] == 402){
+                        $.modal({
+                            title: "温馨提示",
+                            text: data["errmsg"],
+                            buttons: [{
+                                text: '去修改',
+                                onClick: function () {
+                                    location.href = navRoot + "/forget_pwd";
+                                }
+                            }]
+                        });
+                    } else {
+                        // wrong password
+                        if (data['code'] == 501 && !needverifycode) {
+                            needverifycode = true;
+                            $('#biometric-mbox').css('display', 'none')
+                        }
+                        // 更新图形验证码
+                        getVerifyCodeFun($('.getBackVerifyCode'))
+                        $.alert(data["errmsg"]);
+                    }
+                }, "json");
+            }
+            $('#form-login3').submit(function(e) {
+            // $('#form-mobile-employeeNumber').submit(function(e) {
+                e.preventDefault();
+                if (checkForm($(this))) {
+                    accountLogin($(this));
+                }
+            });
+            $('#form-phone-login').submit(function(e){
+                e.preventDefault();
+                if (checkForm($(this))) {
+                    phoneLogin($(this))
+                }
+            });
+            // 企业微信快捷登录
+            $("#weComLogin").click(function(){
+
+                if (!$('#privacy_checkbox').prop('checked')) {
+                    $.alert('请先同意用户隐私协议');
+                    return false;
+                }
+                if (jsBridge) {
+                    jsBridge.callAppRouter("JS_thirdLogin", JSON.stringify({loginType:'1'}), function(data){
+                        if (data != null) { console.log(data); } else { }
+                    })
+                } else {
+                    $.alert('打开企业微信出错，请重新点击或使用账号密码登录');
+                }
+            })
+
+        });
+
+        // 监听window的resize事件，简单的讲就是在整个document的高度变化时将底部的footer隐藏掉
+        // var oHeight = $(document).height();     // 屏幕当前的高度
+        // $(window).resize(function(){
+        //     if($(document).height() < oHeight){
+        //         console.log("hidden");
+        //         $("#footer").attr("hidden","hidden");
+        //     }else{
+        //         console.log("remove--hidden");
+        //         $("#footer").removeAttr("hidden");
+        //     }
+        // });
+        // 解决H5页面ios软键盘收回页面卡半屏问题
+        // const ua = navigator.userAgent;
+        // if (ua.indexOf('iPhone') > -1) {
+        //     $("input").blur(function() {
+        //         setTimeout(() => {
+        //             $("#footer").removeAttr("hidden");
+        //         }, 100);
+        //     })
+        //     $('input').focus(function(){
+        //         setTimeout(() => {
+        //             $("#footer").attr("hidden","hidden");
+        //         }, 100);
+        //     })
+        // }
+
+        !(function(w, d) {
+            /*获取验证码*/
+            var bindCountDown = (function() {
+                var _wait = 60, _c = {
+                    domInnerText: '', domInnerTextFormat: '%text(%s)',
+                    getFormatStr: function(format, text, time) {
+                        return format.replace('%text', text).replace(new RegExp('%s','g'), time);
+                    }
+                }
+                return function(dom, wait, hander) {
+                    function interHander(n){
+                        if (n) _wait = n;
+                        if ('function' === typeof _c.countHander) {
+                            _c.countHander(_wait);
+                        } else {
+                            dom.innerText = _c.getFormatStr(_c.domInnerTextFormat, _c.domInnerText, _wait);
+                        }
+                        if(_wait > 0) {
+                            _wait--;
+                            _c._timer = setTimeout(interHander, 1000);
+                            return;
+                        }
+                        if ('function' === typeof _c.countEndHander) {
+                            _c.countEndHander(_wait);
+                        } else {
+                            dom.innerText = _c.domInnerText;
+                            dom.removeAttribute('disabled'); // 2024-10-15 改
+                            // dom.removeAttribute('disabled').removeAttr('disabled');
+                        }
+                        if ('function' === typeof hander) hander(dom);
+                        _wait = wait || _wait;
+                    }
+                    _wait = wait || _wait;
+                    _c.domInnerText = dom.innerText;
+                    dom.addEventListener('click', function(e){
+                        e.preventDefault();
+                        if (dom.hasAttribute('disabled')) return;
+                        ('function' === typeof _c.beforeStart) ? _c.beforeStart() ? interHander() : dom.removeAttribute('disabled') : interHander();
+                        dom.setAttribute('disabled', true);
+                    });
+                    return {
+                        reset: function(n) {
+                            clearTimeout(_c._timer);
+                            n && interHander(n);
+                        },
+                        bindHook: function(hook, fn) {
+                            _c[hook] = fn;
+                        },
+                        start: function() {
+                            interHander();
+                        }
+                    }
+                }
+            })();
+
+            function sendSMS(phone_no, code){
+                $.post(navRoot + "/sendSMS", {phone_no: phone_no, verifycode: code, func_type: 'login'}, function (data) {
+                        if (data.hasOwnProperty("extra")) {
+                            try {
+                                var infos = JSON.parse(data['extra']);
+                                infos.ttl !== undefined && couter.reset(+infos.ttl);
+                                $.toast(data.errmsg, "text");
+                            } catch (e) {
+                                $.toast(data.errmsg, "text");
+                            }
+                        } else if (data.hasOwnProperty("errmsg")) {
+                            $.toast(data.errmsg, "text");
+                        } else {
+                        }
+                    }, "json");
+            }
+            function getVerifyCodeFun(target) {
+                var time = new Date();
+                var getImage = "./getVerifyCode?type=1&time=" + time.getTime();
+                $(target).attr("src", getImage);
+            }
+
+            // 切换tab修改验证码
+            var tab_id;
+            $('#login-tab').bind('click', function(el){
+                var _id = el.target.href.match(/#login\d/);
+                if(tab_id == _id) return;
+                $('.weui-tab__bd-item--active').removeClass('weui-tab__bd-item--active');
+                if(_id && _id[0] && tab_id !== _id){
+                    tab_id = _id[0];
+                    getCaptcha($(tab_id).find('.getBackVerifyCode')[0])
+                }
+            })
+            function getCaptcha(target) {
+                if(!target) return;
+                $.getJSON(navRoot + "/user/captcha", function (data) {
+                    if (data["code"] == 200) {
+
+                        $(target).attr("src", data["data"]["img_base64"]);
+                        $(target.parentNode).find('input[name="_uuid"]').val(data['data']['uuid']);
+                    } else {
+                        $.alert('获取图片验证码失败')
+                        console.error('[err] get /api/captcha return : ',data)
+                    }
+                });
+            }
+
+            function popupVerifyCode(phone_no, success, fail){
+                var content = $('<div class="weui-cells"><div class="weui-cell">\n' +
+                    '                    <div class="weui-cell__bd" style="border-bottom: 1px solid black; margin-right: 5px;">\n' +
+                    '                        <input class="weui-input required" name="verifycode" id="verifycode" type="text" value=""' +
+                    '                               datatype="/^.{4,}$/"' +
+                    '                               placeholder="请输入图形验证码" dataerr="图形验证码的格式不正确">' +
+                    '                    </div>' +
+                    '                    <div class="weui-cell__ft">' +
+                    '                        <img class="getBackVerifyCode" src="" width="60px" height="30px" alt="获取验证码"' +
+                    '                             onerror="this.src=\'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC\'"' +
+                    '                             onclick="getVerifyCodeFun(this)">' +
+                    '                    </div>' +
+                    '                    </div>' +
+                    '                </div>');
+                var time = new Date();
+                content.find("img").attr("src", "./getVerifyCode?type=1&time=" + time.getTime());
+                $.modal({
+                    title: "请输入图形验证码",
+                    text: content.html(),
+                    buttons: [{
+                        text: "取消",
+                        onClick: function () {
+                            $.closeModal();
+                            $(".weui-vcode").removeAttr('disabled')
+                        }
+                    }, {
+                        text: "确认",
+                        className: "default",
+                        onClick: function () {
+                            var verify_code = $("#verifycode").val();
+                            if (verify_code == "") {
+                                $.toast("图形验证码不能为空", "text");
+                                $(".weui-vcode").removeAttr('disabled');
+                                // $(".weui-vcode").removeAttribute('disabled');
+                                return;
+                            }
+                            sendSMS(phone_no, verify_code);
+                            couter.start();
+                        }}]
+                    });
+                $('#verifycode').focus();
+            }
+
+            var couter = bindCountDown($(".weui-vcode")[0], 60);
+            couter.bindHook('domInnerTextFormat', '%ss')
+            couter.bindHook('beforeStart', function(){
+                var phone_no = $("#phone_no").val();
+                if ($(".weui-vcode").attr('disabled')) return;
+                if (/^1[0-9]\d{9}$/.test(phone_no)) {
+                    popupVerifyCode(phone_no);
+                } else {
+                    $.toast("手机格式不正确", "text");
+                    $(".weui-vcode, .verify-code").removeAttribute('disabled');
+                    
+                }
+                return;
+            });
+        }(this, document))
+
+        
+        !(function(w, d) {
+            var isOnDev = true;
+            w.callbackGetUserInfo = function(data, s4, secretKey) {
+                                        if ('string' === typeof data) {
+                                            data = JSON.parse(data);
+                                            if (data['isRemember'] === '1') {
+                                                $('#remember_checkbox').prop('checked', !0);
+                                                $('input[name=passWord]').val(s4.sm4Decrypt(secretKey, data['password']))
+                                            }
+                                            $('input[name=userName]').val(data['account'])
+                                        }
+                                    };
+            w.callbackBiometericInfo = function(data) {
+                if (isOnDev) console.log('[debug] get BiometericInfo from app: ', data);
+                if (data) {
+                    if ('string' === typeof data) {
+                        if (isOnDev) console.log('[debug] get BiometericInfo from app response a string type data.');
+                        data = JSON.parse(data);
+                    }
+                    if ('string' === typeof data['account'] && data['account'] != '') {
+                        // fingerprint
+                        if (data['isOpen'] == '1') {
+                            if (data['biometricType'] == '1') {
+                                needverifycode = false;
+                                $('#biometric-mbox').css('display', '')
+                                $('#biometric-icon').attr('class', 'biometric-icon finger')
+                                $('#biometric-icon strong').text('指纹登录')
+                                activeBiometric({"isOpen": '1', page: '1'});
+                            // face
+                            } else if (data['biometricType'] == '2') {
+                                needverifycode = false;
+                                $('#biometric-mbox').css('display', '')
+                                $('#biometric-icon').attr('class', 'biometric-icon face')
+                                $('#biometric-icon strong').text('脸部登录')
+                                activeBiometric({"isOpen": '1', page: '1'});
+                            }
+
+                            $(".fast-text").show();
+                
+                        }
+                    }
+                }
+            }
+            w.callbackToLogin = function(data) {
+                if (isOnDev) console.log('[debug] get toLoginInfo from app: ', data);
+                if ('string' === typeof data) {
+                    if (isOnDev) console.log('[debug] get BiometericInfo from app response a string type data.');
+                    data = JSON.parse(data);
+                }
+                if (isOnDev && needverifycode) console.log('[debug] cat call needless verify login');
+                if (needverifycode) return;
+                var loginForm = {
+                    "userName": data['account'],
+                    "passWord": data['password'],
+                    "schema": $('input[name=scheme]').val(),
+                    "city": localCityInfo,
+                    "ip": mobileIp,
+                    "verifycode": '8888',
+                    "equipmentType": phoneModel,
+                    'needverifycode': needverifycode ? 1 : 0,
+                }
+                if (isOnDev) console.log('[debug] send login data: ',loginForm);
+                var redirect_url = common.getQueryString("redirect_url");
+                $.post(navRoot + "/login", loginForm, function (resData) {
+                        if (resData["code"] == 200) {
+                            if (loginForm["userName"]) {
+                                localStorage.setItem("userName", loginForm["userName"]);
+                            }
+                            if (loginForm["employeeNumber"]) {
+                                localStorage.setItem("employeeNumber", loginForm["employeeNumber"]);
+                            }
+                            if (loginForm["passWord"]) {
+                                localStorage.setItem("passWord", $("input[name='passWord']").val());
+                            }
+                            console.log(resData["data"]);
+                            if (redirect_url != "") {
+                                var url = decodeURIComponent(redirect_url) + "?token=" + resData["data"];
+                                location.href = url;
+                                return true;
+                            }
+                            console.log("密码登录后传递用户信息");
+                            checkUserFlag();
+                        } else if (resData['code'] == 505) {
+                            location.href = resData["errmsg"];
+                        } else {
+                            // wrong password
+                            if (resData['code'] == 501 && !needverifycode) {
+                                needverifycode = true;
+                                $('#biometric-mbox').css('display', 'none')
+                            }
+                            $.alert(resData["errmsg"]);
+                        }
+                    }, "json");
+            }
+            
+            w.callbackPostWeComCode = function(data){
+
+                if (isOnDev) console.log('[debug] get postWeComCode from app: ', data);
+
+                if ('string' === typeof data) {
+                    data = JSON.parse(data);
+                }
+                $.showLoading('登录中...');
+                var redirect_url = common.getQueryString("redirect_url");
+
+                $.post(navRoot + "/login", { wechatWork:data.code }, function (resData) {
+                    $.hideLoading();
+                    if (resData["code"] == 200) {
+                        localStorage.setItem('isWeComLogin', data["isPasswordLogin"]); // 标识
+                        var payload = {
+                            "user_id": '',
+                            "user_code": resData["data"]["user_code"],
+                            "user_password": '',
+                            "isRemember": '0',
+                        };
+                        // 加载用户信息
+                        $.getJSON(navRoot + "/userinfo/data", function (result) {
+                            if (result && result["code"] == 200) {
+                                userInfo = result["data"];
+                                payload['user_id'] = userInfo['loginName'];
+                                if (jsBridge) {
+                                    jsBridge.callAppRouter("yhlogin", JSON.stringify(payload), function (data) {
+                                        checkUserFlag();
+                                    });
+                                } else {
+                                    checkUserFlag();
+                                }
+                                if (redirect_url != "") {
+                                    var url = decodeURIComponent(redirect_url) + "?token=" + resData["data"]['access_token'];
+                                    location.href = url;
+                                    return true;
+                                }
+                            } else {
+                                location.href = navRoot + "/login";
+                            }
+                        })
+                    } else if (resData['code'] == 505) {
+                        location.href = resData["errmsg"];
+                    } else {                   
+                        $.alert(resData["errmsg"]);
+                    }
+                }, "json");
+
+            }
+
+            function checkForBiometric(callback) {
+                if (jsBridge) {
+                    jsBridge.callAppRouter("JS_getBiometricInfo", '', function(data){
+                        if (data != null) {
+                            console.log(data);
+                        } else {
+                            'function' === typeof callback && callback(data);
+                        }
+                    })
+                }
+            }
+            // 启用|检查生物认证授权状态
+            // {"isOpen": 1|0,”page”: 1|0 【登录页|个人中心】}
+            function activeBiometric(params) {
+                if (jsBridge) {
+                    jsBridge.callAppRouter("JS_getBiometricState", JSON.stringify(params), function(data){
+                        if (isOnDev) console.log('[debug] active biometric...', data);
+                        if (data != null) {
+                            console.log(data);
+                        } else {
+                        }
+                    })
+                }
+            }
+            checkForBiometric();
+            $('#biometric-icon').on('click', function(evt) {
+                activeBiometric({"isOpen": '1', page: '1'});
+            });
+
+        })(this, document);
+
+        
+        function getLocaltionFun() {
+            
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+        }
+    </script>
+    
+
+</body>
+</html>

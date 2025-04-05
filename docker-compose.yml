@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  medical-helper-frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - medical-helper-backend
+    restart: unless-stopped
+    networks:
+      - medical-helper-net
+
+  medical-helper-backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql://medical:medical@medical-helper-db/medical
+    depends_on:
+      - medical-helper-db
+    restart: unless-stopped
+    networks:
+      - medical-helper-net
+
+  medical-helper-db:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=medical
+      - POSTGRES_PASSWORD=medical
+      - POSTGRES_DB=medical
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - medical-helper-net
+
+  medical-helper-nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - medical-helper-frontend
+      - medical-helper-backend
+    restart: unless-stopped
+    networks:
+      - medical-helper-net
+
+  medical-helper-crawler:
+    build: ./crawler
+    volumes:
+      - ./crawler:/app
+      - ./crawler/.env:/app/.env
+    working_dir: /app
+    tty: true
+    stdin_open: true
+    command: /bin/bash
+    restart: unless-stopped
+    networks:
+      - medical-helper-net
+
+volumes:
+  postgres_data:
+
+networks:
+  medical-helper-net:
+    driver: bridge
