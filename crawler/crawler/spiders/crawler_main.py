@@ -13,7 +13,7 @@ class CrawlerMainSpider(scrapy.Spider):
         load_dotenv()
         login_url = os.getenv('LOGIN_URL')
         self.allowed_domains = [login_url.split('://')[1].split('/')[0]]
-        self.start_urls = [login_url.rsplit('/', 2)[0]]  # 移除/portal/login部分
+        self.user_info_url = os.getenv('USER_INFO_URL')
         
         # 检查数据库结构
         db_checker = DatabaseInitializer()
@@ -30,25 +30,11 @@ class CrawlerMainSpider(scrapy.Spider):
         
         # 使用会话中的cookies发起请求
         yield scrapy.Request(
-            url=self.start_urls[0],
+            url=self.user_info_url,
             cookies=session['cookies'],
             callback=self.parse
         )
 
     def parse(self, response):
-        """解析页面数据"""
-        # 检查会话是否有效
-        if 'login' in response.url:
-            self.logger.warning("会话已过期，需要重新登录")
-            session = self.login_handler.get_session()
-            yield scrapy.Request(
-                url=self.start_urls[0],
-                cookies=session['cookies'],
-                callback=self.parse,
-                dont_filter=True
-            )
-            return
-            
-        # 登录成功，输出响应并退出
-        self.logger.info(f"登录成功，响应内容: {response.text}")
+        pass
         return

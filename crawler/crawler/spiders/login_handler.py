@@ -40,6 +40,40 @@ class LoginHandler:
         except Exception as e:
             raise ValueError(f"密码加密失败: {str(e)}")
 
+    def invalidate_session(self):
+        """作废当前用户的会话"""
+        db_session = self.Session()
+        try:
+            db_session.query(SpiderSession)\
+                .filter_by(user_id=self.username)\
+                .delete()
+            db_session.commit()
+            self.logger.info(f"已作废用户 {self.username} 的会话")
+            return True
+        except Exception as e:
+            db_session.rollback()
+            self.logger.error(f"作废会话失败: {str(e)}")
+            return False
+        finally:
+            db_session.close()
+
+    def _verify_session(self, cookies):
+        """验证会话是否有效"""
+        import requests
+        try:
+            response = requests.get(
+                "https://yihu.gzsums.net/portal/userinfo/data",
+                cookies=cookies,
+                timeout=10
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data', {}).get('loginName') == self.username
+            return False
+        except Exception as e:
+            self.logger.warning(f"会话验证失败: {str(e)}")
+            return False
+
     def get_session(self):
         """获取有效会话，优先从数据库获取"""
         db_session = self.Session()
@@ -51,7 +85,13 @@ class LoginHandler:
                 .first()
                 
             if session:
-                self.logger.debug(f"使用现有会话 - 用户: {session.user_id}, 过期时间: {session.expires_at}")
+                # 验证会话有效性
+                if not self._verify_session(session.cookies):
+                    self.logger.warning("会话已失效，执行重新登录")
+                    self.invalidate_session()
+                    return self._perform_login()
+                    
+                self.logger.debug(f"使用有效会话 - 用户: {session.user_id}, 过期时间: {session.expires_at}")
                 return {
                     'user_id': session.user_id,
                     'cookies': session.cookies,
@@ -103,7 +143,6 @@ class LoginHandler:
             self.logger.debug(f"登录响应: {response}")
             if response.status_code == 200:
                 result = response.json()
-                print("##########",result)
                 if result.get('code') == 200:
                     # 构造会话数据
                     expires = None
