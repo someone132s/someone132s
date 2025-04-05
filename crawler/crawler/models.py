@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, JSON, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timedelta
 
 Base = declarative_base()
@@ -9,7 +10,7 @@ class SpiderSession(Base):
     
     id = Column(Integer, primary_key=True)
     user_id = Column(String(50), unique=True)
-    cookies = Column(JSON)
+    cookies = Column(JSONB)
     access_token = Column(String(255))
     user_code = Column(String(50))
     created_at = Column(DateTime, default=datetime.now)
@@ -17,3 +18,12 @@ class SpiderSession(Base):
 
     def is_valid(self):
         return self.expires_at > datetime.now()
+
+class UserInfo(Base):
+    __tablename__ = 'user_infos'
+    
+    login_name = Column(String(50), primary_key=True)
+    user_code = Column(String(50))
+    raw_data = Column(JSONB)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)

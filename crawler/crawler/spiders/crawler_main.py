@@ -5,6 +5,8 @@ import json
 from dotenv import load_dotenv
 import os
 import sys
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 class CrawlerMainSpider(scrapy.Spider):
     name = "crawler-main"
@@ -36,5 +38,53 @@ class CrawlerMainSpider(scrapy.Spider):
         )
 
     def parse(self, response):
-        pass
-        return
+        """解析用户信息并存储"""
+        from crawler.models import UserInfo
+        from sqlalchemy.orm import sessionmaker
+        
+        try:
+            data = json.loads(response.text)
+            if data.get('code') == 200:
+                user_data = data.get('data', {})
+                login_name = user_data.get('loginName')
+                user_code = user_data.get('code')
+                
+                if not login_name:
+                    self.logger.error("用户信息中缺少loginName字段")
+                    return
+                
+                # 创建数据库会话
+                engine = create_engine(os.getenv('DATABASE_URI'))
+                Session = sessionmaker(bind=engine)
+                db_session = Session()
+                
+                try:
+                    # 检查是否已有记录
+                    user_info = db_session.query(UserInfo)\
+                        .filter_by(login_name=login_name)\
+                        .first()
+                    
+                    if user_info:
+                        # 更新现有记录
+                        user_info.user_code = user_code
+                        user_info.raw_data = user_data
+                    else:
+                        # 创建新记录
+                        user_info = UserInfo(
+                            login_name=login_name,
+                            user_code=user_code,
+                            raw_data=user_data
+                        )
+                        db_session.add(user_info)
+                    
+                    db_session.commit()
+                    self.logger.info(f"成功保存用户信息: {login_name}")
+                except Exception as e:
+                    db_session.rollback()
+                    self.logger.error(f"保存用户信息失败: {str(e)}")
+                finally:
+                    db_session.close()
+            else:
+                self.logger.error(f"获取用户信息失败: {data.get('message')}")
+        except json.JSONDecodeError:
+            self.logger.error("用户信息响应不是有效的JSON格式")
