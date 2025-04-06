@@ -29,22 +29,23 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 2
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = True
+COOKIES_DEBUG = True
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
-#    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-#    "Accept-Language": "en",
-#}
+DEFAULT_REQUEST_HEADERS = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+}
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
@@ -65,14 +66,18 @@ ROBOTSTXT_OBEY = False
 #}
 
 # Database configuration
-from os import getenv
-#DATABASE_URI = getenv('DATABASE_URI')
-DATABASE_URI = "postgresql://medical:medical@medical-helper-db:5432/medical"
+#from os import getenv
+import os
+from dotenv import load_dotenv
+load_dotenv()
+DATABASE_URI = os.getenv('DATABASE_URI')
+#DATABASE_URI = "postgresql://medical:medical@medical-helper-db:5432/medical"
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     "crawler.pipelines.SessionManagerPipeline": 100,
 }
+##这里也许有更好的解决方案，使用getenv会获取不到数据库地址，因为env文件在上一级目录。
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -98,3 +103,7 @@ ITEM_PIPELINES = {
 # Set settings whose default value is deprecated to a future-proof value
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+# set log levels
+LOG_LEVEL = 'DEBUG'
+#似乎不是这么设置的，要看看手册

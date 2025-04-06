@@ -4,8 +4,8 @@ from .models import Base
 from .settings import DATABASE_URI
 
 class DatabaseInitializer:
-    print(DATABASE_URI)
-    print(Base)
+    #print(DATABASE_URI)
+    #print(Base)
     def __init__(self):
         self.engine = create_engine(DATABASE_URI)
         self.Session = sessionmaker(bind=self.engine)

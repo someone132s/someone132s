@@ -62,7 +62,7 @@ class LoginHandler:
         import requests
         try:
             response = requests.get(
-                "https://yihu.gzsums.net/portal/userinfo/data",
+                os.getenv('USER_INFO_URL'),
                 cookies=cookies,
                 timeout=10
             )
@@ -129,7 +129,7 @@ class LoginHandler:
 
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36"
+    #        "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36"
         }
         
         try:

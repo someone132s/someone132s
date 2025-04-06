@@ -27,3 +27,12 @@ class UserInfo(Base):
     raw_data = Column(JSONB)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
+
+class Department(Base):
+    __tablename__ = 'departments'
+    
+    dept_code = Column(String(100), primary_key=True)
+    dept_name = Column(String(100))
+    raw_data = Column(JSONB)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)

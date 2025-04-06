@@ -1,0 +1,366 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    
+    
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <title>全景电子病历</title>
+        <link rel="stylesheet" href="/ccd/static/css/weui.1.1.2.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/jquery-weui.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/ihealth.css?v=29">
+        <link rel="stylesheet" href="/ccd/static/css/iconfont.css?v=11">
+    
+    <style>
+        #patientInfo {
+            background: #FFFFFF;
+            padding: 10px;
+            font-size: 13px;
+            position: relative;
+            left: 0;
+            right: 0;
+            z-index: 11;
+        }
+
+        .record_container {
+            padding: 15px 5px;
+        }
+
+        #type_btn_group > a {
+            margin-right: 3px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <style>
+        .care-mode{
+            position: fixed;
+            top: 65%;
+            right: 1.1%;
+            width: 55px;
+            height: 65px;
+            background: url(/ccd/static/images/btn_care1.png) center center no-repeat;
+            background-size: cover;
+            z-index: 999;
+        }
+        .is-care-mode{
+            background: url(/ccd/static/images/btn_care2.png) center center no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+
+    
+        
+        <header class="common-header">
+        
+            <div class="left">
+                <div class="weui-icon-back"></div>
+            </div>
+        
+
+        <div class="title ellipsis">全景电子病历</div>
+        <div class="notools">
+            
+        </div>
+        
+    </header>
+    
+    <div class="contianer">
+        <div class="weui-flex waterMarkHome">
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+                <div class="waterMark weui-flex__itm" data-content="张帅源 224G">
+
+                </div>
+            
+        </div>
+        <div id="patientInfo" class="text-blank">
+            <div class="weui-flex">
+                <div class="weui-flex__item">
+                    <span id="patient_name"></span>
+                    <span id="patient_age_sex"></span>
+                </div>
+                <div id="sfyb" class="text-common">自费</div>
+            </div>
+            <div class="weui-flex">
+                余额：<span id="jy_cost"></span>
+            </div>
+        </div>
+        <div class="info-page" style="top: 3.2em;">
+            <div class="weui-pull-to-refresh__layer" style="padding:7px;">
+                <div class='weui-pull-to-refresh__arrow'></div>
+                <div class='weui-pull-to-refresh__preloader'></div>
+                <div class="down">下拉刷新</div>
+                <div class="up">释放刷新</div>
+                <div class="refresh">正在刷新</div>
+            </div>
+            <div class="record_container">
+            </div>
+        </div>
+    </div>
+
+
+    </div>
+
+<!-- 关怀模式 -->
+<script src="/ccd/static/js/fastclick.js?v=4"></script>
+<script src="/ccd/static/js/vconsole.min.js?v=11"></script>
+<script type="text/javascript">
+    // var vConsole = new VConsole();// 初始化
+    var navRoot = "/ccd";
+    (function () {
+        FastClick.attach(document.body);
+    }());
+</script>
+<!-- <script src='https://cdn.bootcss.com/vConsole/3.2.2/vconsole.min.js' type="text/javascript" charset="utf-8"></script>
+<script>
+	window.vConsole = new window.VConsole()
+</script> -->
+
+    
+    <script src="/ccd/static/js/jquery-1.11.3.min.js?v=17"></script>
+    <script src="/ccd/static/js/jquery-weui.min.js?v=17"></script>
+    <script src="/ccd/static/js/jsBridge.js?v=17"></script>
+    <script src="/ccd/static/js/common.js?v=21"></script>
+    <script src="/ccd/static/js/careMode.js?v=1" type="text/javascript"></script>
+    <script type="text/javascript">
+            $(function(){
+                if (jsBridge ) {
+                    setTimeout(function(){
+                        jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                            if (data) {
+                                localStorage.setItem('jsBridgeHeaders', data); // 缓存设备信息
+                            }
+                        })
+                        jsBridge.callAppRouter("JS_IsCareMode", "", function (data) {
+                            if (data) {
+                                const careMode = JSON.parse(data)?JSON.parse(data).careMode : 0;
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').addClass('care-contianer');
+                                }
+                                sessionStorage.setItem('userCareMode', careMode);
+                            } else {
+                                const careMode = sessionStorage.getItem('userCareMode');
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').removeClass('care-contianer');
+                                }
+                            }
+                        })
+                    },500)
+                    
+                    if(!sessionStorage.getItem('isHomePage')){
+                        sessionStorage.setItem('isHomePage',window.location.href);// 储存首次进来的路径
+                    }
+                    $(".weui-icon-back").parent().click(function () {
+                        // 没有历史记录，可以执行其他逻辑，比如返回首页或者其他操作
+                        if(jsBridge && sessionStorage.getItem('isHomePage') === window.location.href){
+                            jsBridge.callAppRouter("JS_backToHomePage", '', function (data) {})
+                        }
+                    });
+                }
+
+
+            });
+
+    </script>
+
+    <script type="text/javascript">
+        $("#type_btn_group>a").click(function () {
+            $(this).siblings(".selected").removeClass("selected");
+            $(this).addClass("selected");
+        })
+        $(function () {
+            $(".info-page").pullToRefresh({
+                onRefresh: function () { /* 当下拉刷新触发的时候执行的回调 */
+                    $(".record_container").empty();
+                    getRecordList();
+                    $(".info-page").pullToRefreshDone();
+                },
+                onPull: function (percent) { /* 用户下拉过程中会触发，接收一个百分比表示用户下拉的比例 */
+                },
+                distance: 50 /* 下拉刷新的触发距离， 注意，如果你重新定义了这个值，那么你需要重载一部分CSS才可以，请参考下面的自定义样式部分 */
+            });
+            getRecordList();
+        })
+
+        function getRecordList() {
+            $.showLoading();
+            var id = common.getQueryString("id");
+            var type = common.getQueryString("type");
+            var cost = common.getQueryString("cost");
+            var inStart = common.getQueryString("inStart"); // 判断是否有值，右上角返回列表
+            $.get(navRoot + "/api/inpatient/record", {"id": id}, function (data) {
+                if (data["code"] == 200) {
+                    var patientTimeLine = data["data"]["patientTimeLine"];
+                    var jyCost = data["data"]["jyCost"];
+                    for (var i in patientTimeLine) {
+                        var timelines = patientTimeLine[i];
+                        var personInfo = timelines["personInfo"];
+                        $("#patient_name").text(personInfo["name"]);
+                        //添加背景调用这个方法即可
+                        
+                        $("#patient_age_sex").text("（" + personInfo["age"] + "岁," + (personInfo["genderCd"] == "M" ? "男" : "女") + "）");
+
+                        
+
+                        
+                        
+                        $("#sfyb").text(decodeURIComponent(type) || "");
+                        if (cost) {
+                            $("#jy_cost").text(cost || "");
+                        }
+                        var listDept = timelines["listDept"];
+                        var timeLine = timelines["timeLine"];
+                        var types = [];
+                        //反转数组
+                        timeLine.reverse();
+                        for (var j in timeLine) {
+                            //根据住院门诊等类别进行分类
+                            if (types.indexOf(timeLine[j]["clinicTypeName"]) == -1) {
+                                var typeItem = $('<div class="recordItem">\
+                                    <div class="recordDate  text-common">\
+                                        <span class="first point"></span>\
+                                        <i class="iconfont">&#xe600;</i>\
+                                        <span class="recordDesc"></span>\
+                                    </div>\
+                                    <div class="recordListParent" style="display:block"></div>\
+                                      </div>');
+                                typeItem.addClass("type" + types.length);
+                                typeItem.find(".recordDesc").text(timeLine[j]["clinicTypeName"]);
+                                types.push(timeLine[j]["clinicTypeName"]);
+                                typeItem.click(function () {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    if ($(this).find(".recordListParent").css("display") == "none") {
+                                        $(this).find(".recordDate>.iconfont").html("&#xe600;");
+                                    } else {
+                                        $(this).find(".recordDate>.iconfont").html("&#xe602;");
+                                    }
+                                    $(this).find(".recordListParent").slideToggle("fast");
+                                });
+                                if (timeLine[j]["clinicTypeName"] == "门诊") {
+                                    typeItem.find(".recordDate>.iconfont").html("&#xe602;");
+                                    typeItem.find(".recordListParent").css("display", "none");
+                                }
+                                $(".record_container").append(typeItem);
+                            }
+                            var typeItem = $(".record_container").find(".recordItem.type" + types.indexOf(timeLine[j]["clinicTypeName"]));
+
+                            var item = $('<div class="recordList">\
+                                        <div class="recordTime">\
+                                            <span class="point"></span>\
+                                            <small class="">\
+                                            </small>\
+                                        </div>\
+                                        <div class="recordType">\
+                                            <div class="weui-flex__item weui-cell weui-cell_access" style="">\
+                                                <div class="weui-cell__bd">\
+                                                </div>\
+                                                <div class="weui-cell__ft"></div>\
+                                            </div>\
+                                        </div>\
+                                    </div>');
+                            if (timeLine[j]["clinicTypeName"] == "门诊") {
+                                
+                                item.find(".recordTime small").text(timeLine[j]["deptName"] || "门诊记录");
+                                if (timeLine[j]["admitDate"]) {
+                                    item.find(".recordType .weui-cell__bd").text(common.dateFormart(timeLine[j]["admitDate"], 'yyyy-MM-dd'));
+                                }
+                                item.find(".recordType .weui-cell__ft").text(timeLine[j]["visitFlowId"]);
+                            } else {
+                                
+                                item.find(".recordTime small").text(timeLine[j]["deptName"] || "入院记录");
+                                item.find(".recordType .weui-cell__bd").text(timeLine[j]["visitDate"]);
+                                item.find(".recordType .weui-cell__ft").text(timeLine[j]["visitFlowId"]);
+                            }
+                            item.data("empi", personInfo["empi"]);
+                            item.data("data", timeLine[j]);
+                            item.click(function () {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                var empi = $(this).data("empi");
+                                var admitDate = $(this).data("data")["admitDate"];
+                                var domain = $(this).data("data")["visitFlowDomain"];
+                                var id = $(this).data("data")["visitFlowId"];
+                                var deptCode = $(this).data("data")["deptCode"];
+                                var mzbl = $(this).data("data")["clinicTypeName"] === "门诊";
+
+                                location.href = navRoot + "/info?" + $.param({
+                                    empi: empi,
+                                    admitDate: admitDate,
+                                    domain: domain,
+                                    mzbl: mzbl,
+                                    id: id,
+                                    deptCode: deptCode || common.getQueryString("deptCode"),
+                                    inStart: inStart || 'O',
+                                    deptName:$(this).data("data")['deptName'],
+                                    access_channel: common.getQueryString("access_channel") || '',
+                                });
+                            })
+                            typeItem.find(".recordListParent").append(item);
+                        }
+                    }
+                } else {
+                    $.alert(data["errmsg"]);
+                }
+                $.hideLoading();
+            })
+        }
+    </script>
+
+</body>
+</html>

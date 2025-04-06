@@ -7,6 +7,7 @@ import os
 import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from urllib.parse import urlencode
 
 class CrawlerMainSpider(scrapy.Spider):
     name = "crawler-main"
@@ -16,6 +17,7 @@ class CrawlerMainSpider(scrapy.Spider):
         login_url = os.getenv('LOGIN_URL')
         self.allowed_domains = [login_url.split('://')[1].split('/')[0]]
         self.user_info_url = os.getenv('USER_INFO_URL')
+        self.dept_url = os.getenv('DEPT_URL')
         
         # 检查数据库结构
         db_checker = DatabaseInitializer()
@@ -39,7 +41,7 @@ class CrawlerMainSpider(scrapy.Spider):
 
     def parse(self, response):
         """解析用户信息并存储"""
-        from crawler.models import UserInfo
+        from crawler.models import UserInfo, Department
         from sqlalchemy.orm import sessionmaker
         
         try:
@@ -59,17 +61,15 @@ class CrawlerMainSpider(scrapy.Spider):
                 db_session = Session()
                 
                 try:
-                    # 检查是否已有记录
+                    # 保存用户信息
                     user_info = db_session.query(UserInfo)\
                         .filter_by(login_name=login_name)\
                         .first()
                     
                     if user_info:
-                        # 更新现有记录
                         user_info.user_code = user_code
                         user_info.raw_data = user_data
                     else:
-                        # 创建新记录
                         user_info = UserInfo(
                             login_name=login_name,
                             user_code=user_code,
@@ -77,14 +77,65 @@ class CrawlerMainSpider(scrapy.Spider):
                         )
                         db_session.add(user_info)
                     
-                    db_session.commit()
-                    self.logger.info(f"成功保存用户信息: {login_name}")
+                    # 获取科室列表
+                    dept_url = self.dept_url
+                    params = {
+                        'show_mod': 1,
+                        'dept_types': 'I,O,OP'
+                    }
+                    yield scrapy.Request(
+                        url=f"{dept_url}?{urlencode(params)}",
+                        cookies=response.request.cookies,
+                        callback=self.parse_departments,
+                        meta={'db_session': db_session}
+                    )
+                    
                 except Exception as e:
                     db_session.rollback()
-                    self.logger.error(f"保存用户信息失败: {str(e)}")
-                finally:
-                    db_session.close()
+                    self.logger.error(f"数据库操作失败: {str(e)}")
             else:
                 self.logger.error(f"获取用户信息失败: {data.get('message')}")
         except json.JSONDecodeError:
             self.logger.error("用户信息响应不是有效的JSON格式")
+
+    def parse_departments(self, response):
+        """解析科室列表并存储"""
+        from crawler.models import Department
+        db_session = response.meta['db_session']
+        
+        try:
+            data = json.loads(response.text)
+            if data.get('code') == 200:
+                dept_list = data.get('data', [{}])[0].get('deptList', [])
+                
+                for dept in dept_list:
+                    dept_code = dept.get('CODE')
+                    dept_name = dept.get('DEPT_NAME')
+                    
+                    if not dept_code or not dept_name:
+                        continue
+                    
+                    # 保存科室信息
+                    department = db_session.query(Department)\
+                        .filter_by(dept_code=dept_code)\
+                        .first()
+                    
+                    if department:
+                        department.dept_name = dept_name
+                        department.raw_data = dept
+                    else:
+                        department = Department(
+                            dept_code=dept_code,
+                            dept_name=dept_name,
+                            raw_data=dept
+                        )
+                        db_session.add(department)
+                
+                db_session.commit()
+                self.logger.info(f"成功保存{len(dept_list)}个科室信息")
+            else:
+                self.logger.error(f"获取科室列表失败: {data.get('message')}")
+        except json.JSONDecodeError:
+            self.logger.error("科室列表响应不是有效的JSON格式")
+        finally:
+            db_session.close()
