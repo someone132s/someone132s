@@ -45,6 +45,8 @@ COOKIES_DEBUG = True
 DEFAULT_REQUEST_HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    "Accept": "*/*",
+    "Connection": "keep-alive",
 }
 
 # Enable or disable spider middlewares

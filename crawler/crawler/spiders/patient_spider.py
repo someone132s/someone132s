@@ -42,9 +42,9 @@ class PatientSpider(scrapy.Spider):
         formdata = {
             'type': self.type,
             'dept_id': self.dept_id,
-            'patient_name': '',
-            'inpatient_no': '',
-            'inpatient_diagnose': ''
+            'patient_name': 'none',
+            'inpatient_no': 'none',
+            'inpatient_diagnose': 'none'
         }
         
         if self.type == 'O':
@@ -52,11 +52,15 @@ class PatientSpider(scrapy.Spider):
             formdata['end_date'] = self.end_date
 
         headers = {
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36"
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36",
+            "Accept": "*/*",
+            "Host": "yihu.gzsums.net",
+            "Connection": "keep-alive",
         }
 
         request = scrapy.FormRequest(
+            method='POST',
             url=self.patient_list_url,
             cookies=session['cookies'],
             formdata=formdata,
@@ -78,7 +82,7 @@ class PatientSpider(scrapy.Spider):
 
     def parse_patient_list(self, response):
         db_session = self.Session()
-        #print("########",response.text)
+        print("########",json.loads(response.text))
         try:
             data = json.loads(response.text)
             if data.get('code') == 200:
@@ -119,6 +123,6 @@ class PatientSpider(scrapy.Spider):
         except Exception as e:
             db_session.rollback()
             self.logger.error(f"保存患者信息失败: {str(e)}")
-            #self.logger.error(f"响应: {response.text}")
+            self.logger.error(f"响应: {response.text}")
         finally:
             db_session.close()

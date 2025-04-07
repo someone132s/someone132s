@@ -108,6 +108,89 @@ class LoginHandler:
         finally:
             db_session.close()
 
+    def refresh_access_token(self):
+        """刷新access_token"""
+        db_session = self.Session()
+        try:
+            session = db_session.query(SpiderSession)\
+                .filter_by(user_id=self.username)\
+                .filter(SpiderSession.expires_at > datetime.now())\
+                .first()
+                
+            if not session:
+                raise ValueError("没有有效的登录会话")
+                
+            import requests
+            url = "https://yihu.gzsums.net/portal/newtoken"
+            response = requests.get(url, cookies=session.cookies)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('code') == 200:
+                    session.access_token = data['data']['access_token']
+                    db_session.commit()
+                    return session.access_token
+                else:
+                    raise ValueError(f"获取新token失败: {data.get('message')}")
+            else:
+                raise ValueError(f"刷新token请求失败: HTTP {response.status_code}")
+        except Exception as e:
+            db_session.rollback()
+            raise ValueError(f"刷新access_token时出错: {str(e)}")
+        finally:
+            db_session.close()
+
+    def get_dept_cookie(self, dept_id):
+        """获取科室相关cookie"""
+        db_session = self.Session()
+        try:
+            # 获取当前有效会话
+            session = db_session.query(SpiderSession)\
+                .filter_by(user_id=self.username)\
+                .filter(SpiderSession.expires_at > datetime.now())\
+                .first()
+                
+            if not session:
+                raise ValueError("没有有效的登录会话")
+                
+            # 构造请求获取科室cookie
+            import requests
+            url = f"https://yihu.gzsums.net/ccd?token={session.access_token}&deptId={dept_id}"
+            response = requests.get(url, cookies=session.cookies)
+            
+            if response.status_code == 200:
+                # 合并新旧cookies
+                new_cookies = dict(response.cookies)
+                merged_cookies = {**session.cookies, **new_cookies}
+                
+                # 更新数据库中的cookies
+                session.cookies = merged_cookies
+                db_session.commit()
+                
+                return merged_cookies
+            elif response.status_code == 401:  # token失效
+                self.logger.warning("access_token失效，尝试刷新")
+                new_token = self.refresh_access_token()
+                if new_token:
+                    # 使用新token重试
+                    url = f"https://yihu.gzsums.net/ccd?token={new_token}&deptId={dept_id}"
+                    response = requests.get(url, cookies=session.cookies)
+                    if response.status_code == 200:
+                        new_cookies = dict(response.cookies)
+                        merged_cookies = {**session.cookies, **new_cookies}
+                        session.cookies = merged_cookies
+                        db_session.commit()
+                        return merged_cookies
+                    else:
+                        raise ValueError(f"使用新token获取科室cookie失败: HTTP {response.status_code}")
+            else:
+                raise ValueError(f"获取科室cookie失败: HTTP {response.status_code}")
+        except Exception as e:
+            db_session.rollback()
+            raise ValueError(f"获取科室cookie时出错: {str(e)}")
+        finally:
+            db_session.close()
+
     def _perform_login(self):
         """执行登录流程"""
         import requests
