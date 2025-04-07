@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timedelta
@@ -33,6 +33,18 @@ class Department(Base):
     
     dept_code = Column(String(100), primary_key=True)
     dept_name = Column(String(100))
+    raw_data = Column(JSONB)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+
+class Patient(Base):
+    __tablename__ = 'patients'
+    
+    empi = Column(String(50), primary_key=True)
+    patient_name = Column(String(100))
+    inpatient_no = Column(String(50))
+    patient_type = Column(String(10))  # I/O
+    dept_code = Column(String(100), ForeignKey('departments.dept_code'))
     raw_data = Column(JSONB)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
