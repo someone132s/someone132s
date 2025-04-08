@@ -152,9 +152,27 @@ class LoginHandler:
                 .first()
                 
             if not session:
-                #raise ValueError("没有有效的登录会话")
                 self.logger.warning("没有有效的登录会话，重新获取...")
-                self._perform_login()
+                session_data = self._perform_login()
+                if not session_data or not session_data.get('access_token'):
+                    raise ValueError("无法获取有效的登录会话")
+                # 从新会话创建数据库记录
+                session = SpiderSession(
+                    user_id=session_data['user_id'],
+                    cookies=session_data['cookies'],
+                    access_token=session_data['access_token'],
+                    user_code=session_data['user_code'],
+                    expires_at=session_data['expires_at']
+                )
+                db_session.add(session)
+                db_session.commit()
+
+            if not session.access_token:
+                self.logger.warning("会话中缺少access_token，尝试刷新...")
+                session.access_token = self.refresh_access_token()
+                if not session.access_token:
+                    raise ValueError("无法获取有效的access_token")
+                db_session.commit()
 
             # 构造请求获取科室cookie
             url = f"https://yihu.gzsums.net/ccd?token={session.access_token}&deptId={dept_id}"

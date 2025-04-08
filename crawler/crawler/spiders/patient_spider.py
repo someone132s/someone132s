@@ -83,18 +83,27 @@ class PatientSpider(scrapy.Spider):
 
     def parse_patient_list(self, response):
         db_session = self.Session()
-        print("########",json.loads(response.text))
+        print("########",response)
         try:
             data = json.loads(response.text)
             if data.get('code') == 200:
-                patients = data.get('data', {}).get('List', [])
+                patients = data.get('data', {}).get('List', {}).get('InPatientMainInfo', [])
+                #print("#####patients",patients)
+                if not isinstance(patients, list):
+                    self.logger.error(f"无效的患者数据格式: {type(patients)}")
+                    patients = []
                 
-                for patient in patients:
-                    empi = patient.get('empi')
+                for idx, patient in enumerate(patients, 1):
+                    empi = patient.get('EMPI')
                     if not empi:
+                        self.logger.warning(f"患者记录{idx}缺少EMPI，跳过")
                         continue
-                        
+                    
+                    # 打印诊断信息
+                    diag = patient.get('DIAG_NAME1')
+                    self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag}")
                     # 保存患者信息
+                    #print("#####patient",patient)
                     existing = db_session.query(Patient)\
                         .filter_by(empi=empi)\
                         .first()
@@ -108,16 +117,21 @@ class PatientSpider(scrapy.Spider):
                     else:
                         new_patient = Patient(
                             empi=empi,
-                            patient_name=patient.get('patient_name'),
-                            inpatient_no=patient.get('inpatient_no'),
+                            patient_name=patient.get('NAME'),
+                            inpatient_no=patient.get('PATIENT_NO'),
                             patient_type=self.type,
                             dept_code=self.dept_id,
                             raw_data=patient
                         )
                         db_session.add(new_patient)
                 
-                db_session.commit()
-                self.logger.info(f"成功保存{len(patients)}条患者记录")
+                try:
+                    db_session.commit()
+                    self.logger.info(f"成功保存{len(patients)}条患者记录")
+                except Exception as e:
+                    db_session.rollback()
+                    self.logger.error(f"提交事务失败: {str(e)}")
+                    raise
             else:
                 self.logger.error(f"获取患者列表失败: {data.get('message')}")
                 
