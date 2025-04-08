@@ -37,14 +37,15 @@ class PatientSpider(scrapy.Spider):
 
     def start_requests(self):
         """使用LoginHandler获取会话"""
+        self.login_handler.get_dept_cookie(self.dept_id)
         session = self.login_handler.get_session()
 
         formdata = {
             'type': self.type,
-            'dept_id': self.dept_id,
-            'patient_name': 'none',
-            'inpatient_no': 'none',
-            'inpatient_diagnose': 'none'
+            'dept_id\t': self.dept_id,  # 添加制表符编码
+            'patient_name': '',
+            'inpatient_no': '',
+            'inpatient_diagnose': ''
         }
         
         if self.type == 'O':
@@ -86,7 +87,7 @@ class PatientSpider(scrapy.Spider):
         try:
             data = json.loads(response.text)
             if data.get('code') == 200:
-                patients = data.get('data', [])
+                patients = data.get('data', {}).get('List', [])
                 
                 for patient in patients:
                     empi = patient.get('empi')

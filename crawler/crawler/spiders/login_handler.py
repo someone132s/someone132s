@@ -1,4 +1,5 @@
 import os
+import requests
 import logging
 from pysm4 import encrypt_ecb
 import base64
@@ -151,10 +152,11 @@ class LoginHandler:
                 .first()
                 
             if not session:
-                raise ValueError("没有有效的登录会话")
-                
+                #raise ValueError("没有有效的登录会话")
+                self.logger.warning("没有有效的登录会话，重新获取...")
+                self._perform_login()
+
             # 构造请求获取科室cookie
-            import requests
             url = f"https://yihu.gzsums.net/ccd?token={session.access_token}&deptId={dept_id}"
             response = requests.get(url, cookies=session.cookies)
             
