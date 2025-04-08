@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
 from transitions import Machine
 from crawler.models import SpiderSession
-from .session_repository import SessionRepository
+from .login_session_repository import LoginSessionRepository
 
 class LoginStateMachine:
     states = [
@@ -35,7 +35,7 @@ class LoginStateMachine:
         self.max_retries = 3
         self.context = {}
         
-        self.repo = SessionRepository(db_uri)
+        self.repo = LoginSessionRepository(db_uri)
         self._setup_state_machine()
 
     def _setup_state_machine(self):

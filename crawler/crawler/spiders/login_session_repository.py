@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any
 import logging
 from crawler.models import SpiderSession
 
-class SessionRepository:
+class LoginSessionRepository:
     def __init__(self, db_uri: str):
         self.engine = create_engine(db_uri)
         self.Session = sessionmaker(bind=self.engine)
