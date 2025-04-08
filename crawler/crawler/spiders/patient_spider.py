@@ -25,8 +25,8 @@ class PatientSpider(scrapy.Spider):
         self.dept_id = dept_id
         self.start_date = start_date if type == 'O' else None
         self.end_date = end_date if type == 'O' else None
-        
-        self.patient_list_url = "https://yihu.gzsums.net/ccd/api/inpatient/list"
+
+        self.patient_list_url = os.getenv('PATIENT_LIST_URL')
         self.allowed_domains = ["yihu.gzsums.net"]
         
         # 初始化数据库
@@ -54,9 +54,9 @@ class PatientSpider(scrapy.Spider):
 
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36",
+#            "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36",
             "Accept": "*/*",
-            "Host": "yihu.gzsums.net",
+#            "Host": "yihu.gzsums.net",
             "Connection": "keep-alive",
         }
 
@@ -103,7 +103,7 @@ class PatientSpider(scrapy.Spider):
                     diag = patient.get('DIAG_NAME1')
                     self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag}")
                     # 保存患者信息
-                    #print("#####patient",patient)
+                    print("#####patient",patient)
                     existing = db_session.query(Patient)\
                         .filter_by(empi=empi)\
                         .first()
