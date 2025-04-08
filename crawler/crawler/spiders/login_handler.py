@@ -60,7 +60,6 @@ class LoginHandler:
 
     def _verify_session(self, cookies):
         """验证会话是否有效"""
-        import requests
         try:
             response = requests.get(
                 os.getenv('USER_INFO_URL'),
@@ -121,9 +120,8 @@ class LoginHandler:
             if not session:
                 raise ValueError("没有有效的登录会话")
                 
-            import requests
-            url = "https://yihu.gzsums.net/portal/newtoken"
-            response = requests.get(url, cookies=session.cookies)
+            new_token_url = os.getenv('NEW_TOKEN_URL')
+            response = requests.get(new_token_url, cookies=session.cookies)
             
             if response.status_code == 200:
                 data = response.json()
@@ -213,7 +211,6 @@ class LoginHandler:
 
     def _perform_login(self):
         """执行登录流程"""
-        import requests
         from scrapy.http import TextResponse
         
         encrypted_pwd = self.encrypt_password(self.password)
