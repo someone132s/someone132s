@@ -42,7 +42,7 @@ class Patient(Base):
     
     empi = Column(String(50), primary_key=True)
     patient_name = Column(String(100))
-    inpatient_no = Column(String(50))
+    patient_no = Column(String(50))
     patient_type = Column(String(10))  # I/O
     dept_code = Column(String(100), ForeignKey('departments.dept_code'))
     raw_data = Column(JSONB)

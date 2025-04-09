@@ -121,7 +121,7 @@ class PatientSpider(scrapy.Spider):
                 # 打印诊断信息
                 diag = patient.get('DIAG_NAME1')
                 self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag}")
-                #调试，输出原始响应
+                #调试信息
                 #print("#####patient",patient)
                 # 保存患者信息
                 existing = db_session.query(Patient)\
@@ -131,7 +131,7 @@ class PatientSpider(scrapy.Spider):
                 if self.force_updatedb or not existing:
                     if existing:
                         existing.patient_name = patient.get('NAME')
-                        existing.inpatient_no = patient.get('PATIENT_NO')
+                        existing.patient_no = patient.get('PATIENT_NO')
                         existing.patient_type = self.type
                         existing.dept_code = self.dept_id
                         existing.raw_data = patient
@@ -140,7 +140,7 @@ class PatientSpider(scrapy.Spider):
                         new_patient = Patient(
                             empi=empi,
                             patient_name=patient.get('NAME'),
-                            inpatient_no=patient.get('PATIENT_NO'),
+                            patient_no=patient.get('PATIENT_NO'),
                             patient_type=self.type,
                             dept_code=self.dept_id,
                             raw_data=patient
