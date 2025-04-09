@@ -12,8 +12,9 @@ import json
 class PatientSpider(scrapy.Spider):
     name = "patient"
     
-    def __init__(self, type=None, dept_id=None, start_date=None, end_date=None, *args, **kwargs):
+    def __init__(self, type=None, dept_id=None, start_date=None, end_date=None, force_updatedb=False, *args, **kwargs):
         super(PatientSpider, self).__init__(*args, **kwargs)
+        self.redirect_count = 0  # 重定向计数器
         load_dotenv()
         
         if type not in ['I', 'O']:
@@ -25,6 +26,7 @@ class PatientSpider(scrapy.Spider):
         self.dept_id = dept_id
         self.start_date = start_date if type == 'O' else None
         self.end_date = end_date if type == 'O' else None
+        self.force_updatedb = force_updatedb  # 强制更新数据库标志
 
         self.patient_list_url = os.getenv('PATIENT_LIST_URL')
         self.allowed_domains = ["yihu.gzsums.net"]
@@ -82,32 +84,48 @@ class PatientSpider(scrapy.Spider):
         yield request
 
     def parse_patient_list(self, response):
+        # 状态码检查
+        if response.status == 302:
+            self.redirect_count += 1
+            if self.redirect_count > 1:  # 避免循环
+                raise ValueError("多次重定向，可能登录失败")
+                
+            self.logger.warning("会话失效，重新发起请求")
+            # 直接复用start_requests的逻辑
+            return self.start_requests()
+        
+        elif response.status != 200:
+            self.logger.error(f"无效响应状态码: {response.status}")
+            raise ValueError(f"请求失败，状态码: {response.status}")
+        
+        # 重置计数器
+        self.redirect_count = 0
+        
         db_session = self.Session()
-        print("########",response)
         try:
             data = json.loads(response.text)
-            if data.get('code') == 200:
-                patients = data.get('data', {}).get('List', {}).get('InPatientMainInfo', [])
-                #print("#####patients",patients)
-                if not isinstance(patients, list):
-                    self.logger.error(f"无效的患者数据格式: {type(patients)}")
-                    patients = []
+            patients = data.get('data', {}).get('List', {}).get('InPatientMainInfo', [])
+            #print("#####patients",patients)
+            if not isinstance(patients, list):
+                self.logger.error(f"无效的患者数据格式: {type(patients)}")
+                patients = []
+            
+            for idx, patient in enumerate(patients, 1):
+                empi = patient.get('EMPI')
+                if not empi:
+                    self.logger.warning(f"患者记录{idx}缺少EMPI，跳过")
+                    continue
                 
-                for idx, patient in enumerate(patients, 1):
-                    empi = patient.get('EMPI')
-                    if not empi:
-                        self.logger.warning(f"患者记录{idx}缺少EMPI，跳过")
-                        continue
+                # 打印诊断信息
+                diag = patient.get('DIAG_NAME1')
+                self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag} - EMPI: {empi}")
+                # 保存患者信息
+                #print("#####patient",patient)
+                existing = db_session.query(Patient)\
+                    .filter_by(empi=empi)\
+                    .first()
                     
-                    # 打印诊断信息
-                    diag = patient.get('DIAG_NAME1')
-                    self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag}")
-                    # 保存患者信息
-                    print("#####patient",patient)
-                    existing = db_session.query(Patient)\
-                        .filter_by(empi=empi)\
-                        .first()
-                        
+                if self.force_updatedb or not existing:
                     if existing:
                         existing.patient_name = patient.get('patient_name')
                         existing.inpatient_no = patient.get('inpatient_no')
@@ -124,17 +142,15 @@ class PatientSpider(scrapy.Spider):
                             raw_data=patient
                         )
                         db_session.add(new_patient)
-                
-                try:
-                    db_session.commit()
-                    self.logger.info(f"成功保存{len(patients)}条患者记录")
-                except Exception as e:
-                    db_session.rollback()
-                    self.logger.error(f"提交事务失败: {str(e)}")
-                    raise
-            else:
-                self.logger.error(f"获取患者列表失败: {data.get('message')}")
-                
+            
+            try:
+                db_session.commit()
+                self.logger.info(f"成功保存{len(patients)}条患者记录")
+            except Exception as e:
+                db_session.rollback()
+                self.logger.error(f"提交事务失败: {str(e)}")
+                raise    
+              
         except Exception as e:
             db_session.rollback()
             self.logger.error(f"保存患者信息失败: {str(e)}")
