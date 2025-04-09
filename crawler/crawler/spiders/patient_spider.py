@@ -110,6 +110,8 @@ class PatientSpider(scrapy.Spider):
                 self.logger.error(f"无效的患者数据格式: {type(patients)}")
                 patients = []
             
+            updated_count = 0
+            inserted_count = 0
             for idx, patient in enumerate(patients, 1):
                 empi = patient.get('EMPI')
                 if not empi:
@@ -118,20 +120,22 @@ class PatientSpider(scrapy.Spider):
                 
                 # 打印诊断信息
                 diag = patient.get('DIAG_NAME1')
-                self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag} - EMPI: {empi}")
-                # 保存患者信息
+                self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag}")
+                #调试，输出原始响应
                 #print("#####patient",patient)
+                # 保存患者信息
                 existing = db_session.query(Patient)\
                     .filter_by(empi=empi)\
                     .first()
                     
                 if self.force_updatedb or not existing:
                     if existing:
-                        existing.patient_name = patient.get('patient_name')
-                        existing.inpatient_no = patient.get('inpatient_no')
+                        existing.patient_name = patient.get('NAME')
+                        existing.inpatient_no = patient.get('PATIENT_NO')
                         existing.patient_type = self.type
                         existing.dept_code = self.dept_id
                         existing.raw_data = patient
+                        updated_count += 1
                     else:
                         new_patient = Patient(
                             empi=empi,
@@ -142,10 +146,11 @@ class PatientSpider(scrapy.Spider):
                             raw_data=patient
                         )
                         db_session.add(new_patient)
+                        inserted_count += 1
             
             try:
                 db_session.commit()
-                self.logger.info(f"成功保存{len(patients)}条患者记录")
+                self.logger.info(f"患者记录处理完成 - 本次返回: {len(patients)}条, 更新: {updated_count}条, 新增: {inserted_count}条")
             except Exception as e:
                 db_session.rollback()
                 self.logger.error(f"提交事务失败: {str(e)}")
