@@ -137,6 +137,32 @@ class LoginStateMachine:
             self.logger.error(f"会话验证失败: {str(e)}")
             self.error(error=e)
 
+    def _on_no_session(self):
+        """无会话回调"""
+        try:
+            self.logger.info("没有找到有效会话，开始登录流程")
+            self.start_login()
+        except Exception as e:
+            self.logger.error(f"无会话处理失败: {str(e)}")
+            self.error(error=e)
+
+    def encrypt_password(self, password):
+        """使用SM4加密密码"""
+        try:
+            if not self.sm4_key or len(self.sm4_key) != 32:
+                raise ValueError("SM4密钥必须是32字符的16进制字符串")
+            
+            key_bytes = bytes.fromhex(self.sm4_key)
+            if len(key_bytes) != 16:
+                raise ValueError("转换后的SM4密钥必须为16字节")
+            key_str = key_bytes.decode('latin1')
+            
+            encrypted_base64 = encrypt_ecb(password, key_str)
+            cipher_bytes = base64.b64decode(encrypted_base64)
+            return cipher_bytes.hex()
+        except Exception as e:
+            raise ValueError(f"密码加密失败: {str(e)}")
+
     def _on_encrypting(self):
         """密码加密回调"""
         try:
@@ -218,22 +244,6 @@ class LoginHandler:
             db_uri=os.getenv('DATABASE_URI')
         )
 
-    def encrypt_password(self, password):
-        """使用SM4加密密码"""
-        try:
-            if not self.sm4_key or len(self.sm4_key) != 32:
-                raise ValueError("SM4密钥必须是32字符的16进制字符串")
-            
-            key_bytes = bytes.fromhex(self.sm4_key)
-            if len(key_bytes) != 16:
-                raise ValueError("转换后的SM4密钥必须为16字节")
-            key_str = key_bytes.decode('latin1')
-            
-            encrypted_base64 = encrypt_ecb(password, key_str)
-            cipher_bytes = base64.b64decode(encrypted_base64)
-            return cipher_bytes.hex()
-        except Exception as e:
-            raise ValueError(f"密码加密失败: {str(e)}")
 
     def invalidate_session(self):
         """作废当前用户的会话(使用Repository版本)"""
@@ -290,14 +300,26 @@ class LoginHandler:
             if not session:
                 self.logger.warning("没有有效的登录会话，重新获取...")
                 session_data = self.get_session()
-                if not session_data or not session_data.get('access_token'):
+                if not session_data:
                     raise ValueError("无法获取有效的登录会话")
+                
+                # 保存新会话到数据库
+                self.state_machine.repo.save_session(session_data)
+                session = self.state_machine.repo.get_active_session(self.username)
+                if not session:
+                    raise ValueError("会话保存后仍无法获取")
 
-            if not session.access_token:
+            # 检查access_token
+            if not getattr(session, 'access_token', None):
                 self.logger.warning("会话中缺少access_token，尝试刷新...")
-                session.access_token = self.refresh_access_token()
-                if not session.access_token:
+                new_token = self.refresh_access_token()
+                if not new_token:
                     raise ValueError("无法获取有效的access_token")
+                session.access_token = new_token
+                self.state_machine.repo.save_session({
+                    'user_id': self.username,
+                    'access_token': new_token
+                })
 
             # 构造请求获取科室cookie
             url = f"{os.getenv('DEPT_COOKIE_URL')}?token={session.access_token}&deptId={dept_id}"

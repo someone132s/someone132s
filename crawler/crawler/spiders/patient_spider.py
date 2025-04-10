@@ -1,7 +1,7 @@
 import scrapy
 from urllib.parse import urlencode
 from datetime import datetime
-from crawler.models import Patient
+from crawler.models import Patient, VisitRecord
 from .login_handler import LoginHandler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -12,10 +12,12 @@ import json
 class PatientSpider(scrapy.Spider):
     name = "patient"
     
-    def __init__(self, type=None, dept_id=None, start_date=None, end_date=None, force_updatedb=False, *args, **kwargs):
+    def __init__(self, type=None, dept_id=None, start_date=None, end_date=None, 
+                 force_updatedb=False, fetch_records=True, *args, **kwargs):
         super(PatientSpider, self).__init__(*args, **kwargs)
         self.redirect_count = 0  # 重定向计数器
         load_dotenv()
+        self.fetch_records = fetch_records  # 控制是否获取就诊记录
         
         if type not in ['I', 'O']:
             raise ValueError("type参数必须是'I'或'O'")
@@ -118,6 +120,14 @@ class PatientSpider(scrapy.Spider):
                     self.logger.warning(f"患者记录{idx}缺少EMPI，跳过")
                     continue
                 
+                if self.fetch_records:
+                    yield scrapy.Request(
+                        url=f"https://yihu.gzsums.net/ccd/api/inpatient/record?id={empi}",
+                        cookies=response.request.cookies,
+                        callback=self.parse_visit_records,
+                        meta={'patient_empi': empi}
+                    )
+                
                 # 打印诊断信息
                 diag = patient.get('DIAG_NAME1')
                 self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag}")
@@ -160,5 +170,59 @@ class PatientSpider(scrapy.Spider):
             db_session.rollback()
             self.logger.error(f"保存患者信息失败: {str(e)}")
             self.logger.error(f"响应: {response.text}")
+        finally:
+            db_session.close()
+
+    def parse_visit_records(self, response):
+        empi = response.meta['patient_empi']
+        data = json.loads(response.text)
+        if data.get('code') != 200:
+            self.logger.error(f"获取就诊记录失败: {data.get('message')}")
+            return
+            
+        timeline = data.get('data', {}).get('patientTimeLine', [])
+        if not timeline:
+            self.logger.info(f"患者{empi}无就诊记录")
+            return
+            
+        db_session = self.Session()
+        try:
+            for record in timeline:
+                for visit in record.get('timeLine', []):
+                    visit_flow_id = visit.get('visitFlowId')
+                    if not visit_flow_id:
+                        continue
+                        
+                    admit_date_str = visit.get('admitDate')
+                    admit_date = datetime.strptime(admit_date_str, '%Y%m%d%H%M%S') if admit_date_str else None
+                    
+                    existing = db_session.query(VisitRecord)\
+                        .filter_by(visit_flow_id=visit_flow_id)\
+                        .first()
+                        
+                    if existing:
+                        existing.admit_date = admit_date
+                        existing.dept_code = visit.get('deptCode')
+                        existing.dept_name = visit.get('deptName')
+                        existing.clinic_type = visit.get('clinicTypeName')
+                        existing.raw_data = visit
+                    else:
+                        new_visit = VisitRecord(
+                            visit_flow_id=visit_flow_id,
+                            empi=empi,
+                            admit_date=admit_date,
+                            dept_code=visit.get('deptCode'),
+                            dept_name=visit.get('deptName'),
+                            clinic_type=visit.get('clinicTypeName'),
+                            raw_data=visit
+                        )
+                        db_session.add(new_visit)
+                        
+            db_session.commit()
+            self.logger.info(f"成功保存患者{empi}的{len(timeline)}条就诊记录")
+        except Exception as e:
+            db_session.rollback()
+            self.logger.error(f"保存就诊记录失败: {str(e)}")
+            self.logger.error(f"错误记录: {json.dumps(visit, ensure_ascii=False)}")
         finally:
             db_session.close()
