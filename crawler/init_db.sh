@@ -1,0 +1,1 @@
+python -c "from crawler.init_db import db_initializer; db_initializer.init_db()"

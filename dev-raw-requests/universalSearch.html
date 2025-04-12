@@ -1,0 +1,342 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    
+<meta HTTP-EQUIV="pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Cache-Control" CONTENT="no-store, must-revalidate">
+<meta HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
+<meta HTTP-EQUIV="expires" CONTENT="0">
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <title>病历检索</title>
+        <link rel="stylesheet" href="/ccd/static/css/weui.1.1.2.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/jquery-weui.min.css">
+        <link rel="stylesheet" href="/ccd/static/css/ihealth.css?v=29">
+        <link rel="stylesheet" href="/ccd/static/css/iconfont.css?v=11">
+    
+<style>
+    .weui-input {
+        height: 30px;
+        line-height: 30px;
+        border: 1px solid #8B3B46;
+        border-radius: 4px;
+        text-indent: 10px;
+    }
+
+    .line-gap {
+        margin: 5px 10px;
+    }
+
+    .weui-btn_default {
+        background: #bdbdbd;
+        color: #fff;
+    }
+</style>
+
+    <style>
+        .care-mode{
+            position: fixed;
+            top: 65%;
+            right: 1.1%;
+            width: 55px;
+            height: 65px;
+            background: url(/ccd/static/images/btn_care1.png) center center no-repeat;
+            background-size: cover;
+            z-index: 999;
+        }
+        .is-care-mode{
+            background: url(/ccd/static/images/btn_care2.png) center center no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+
+
+
+<header class="common-header">
+        
+            <div class="left">
+                <div class="weui-icon-back"></div>
+            </div>
+        
+
+        <div class="title ellipsis">病历检索</div>
+        <div class="notools">
+            
+        </div>
+        
+    </header>
+
+<div class="contianer">
+    <div class="mine-page">
+        <div class="weui-flex waterMarkHome">
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+            <div class="waterMark weui-flex__itm" data-content="张帅源 224G"></div>
+            
+        </div>
+        <div class="line-gap"> 时间区间：
+        </div>
+        <div class="weui-flex line-gap">
+            <input id="start_date" type="text" class="weui-input">
+            <span style="width: 2em;text-align: center">-</span>
+            <input id="end_date" type="text" class="weui-input">
+        </div>
+        <div class="line-gap"> 检索类型：
+        </div>
+        <div class="weui-flex line-gap">
+            <div id="select_type" class="weui-input" data="0">住院号</div>
+        </div>
+        <div class="line-gap"><span class="select_text">住院号：</span>
+        </div>
+        <div class="weui-flex line-gap">
+            <input id="select_no" type="text" class="weui-input" placeholder="请输入患者住院号">
+        </div>
+        <div class="line-gap line-id-no"> 证件号：
+        </div>
+        <div class="weui-flex line-gap line-id-no">
+            <input id="id_no" type="text" class="weui-input" placeholder="请输入患者证件号">
+        </div>
+        <div class="line-gap"> 患者姓名：
+        </div>
+        <div class="weui-flex line-gap">
+            <input id="patient_name" type="text" class="weui-input" placeholder="请输入患者姓名">
+        </div>
+        <div class="weui-flex line-gap ft">
+            <input id="cancelBtn" type="button" class="weui-btn weui-btn_default" value="重置"
+                style="margin: 50px 10px 0px 0px;">
+            <input id="searchBtn" type="button" class="weui-btn weui-btn_primary" style="margin: 50px 0px 0px 10px;"
+                value="检索">
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 关怀模式 -->
+<script src="/ccd/static/js/fastclick.js?v=4"></script>
+<script src="/ccd/static/js/vconsole.min.js?v=11"></script>
+<script type="text/javascript">
+    // var vConsole = new VConsole();// 初始化
+    var navRoot = "/ccd";
+    (function () {
+        FastClick.attach(document.body);
+    }());
+</script>
+<!-- <script src='https://cdn.bootcss.com/vConsole/3.2.2/vconsole.min.js' type="text/javascript" charset="utf-8"></script>
+<script>
+	window.vConsole = new window.VConsole()
+</script> -->
+
+
+    <script src="/ccd/static/js/jquery-1.11.3.min.js?v=17"></script>
+    <script src="/ccd/static/js/jquery-weui.min.js?v=17"></script>
+    <script src="/ccd/static/js/jsBridge.js?v=17"></script>
+    <script src="/ccd/static/js/common.js?v=21"></script>
+    <script src="/ccd/static/js/careMode.js?v=1" type="text/javascript"></script>
+    <script type="text/javascript">
+            $(function(){
+                if (jsBridge ) {
+                    setTimeout(function(){
+                        jsBridge.callAppRouter("phoneInfo", "", function (data) {
+                            if (data) {
+                                localStorage.setItem('jsBridgeHeaders', data); // 缓存设备信息
+                            }
+                        })
+                        jsBridge.callAppRouter("JS_IsCareMode", "", function (data) {
+                            if (data) {
+                                const careMode = JSON.parse(data)?JSON.parse(data).careMode : 0;
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').addClass('care-contianer');
+                                }
+                                sessionStorage.setItem('userCareMode', careMode);
+                            } else {
+                                const careMode = sessionStorage.getItem('userCareMode');
+                                if (careMode == 1) {
+                                    document.body.style.fontSize = '19px';
+                                    $('.care-mode').addClass('is-care-mode');
+                                    $('.contianer').removeClass('care-contianer');
+                                }
+                            }
+                        })
+                    },500)
+                    
+                    if(!sessionStorage.getItem('isHomePage')){
+                        sessionStorage.setItem('isHomePage',window.location.href);// 储存首次进来的路径
+                    }
+                    $(".weui-icon-back").parent().click(function () {
+                        // 没有历史记录，可以执行其他逻辑，比如返回首页或者其他操作
+                        if(jsBridge && sessionStorage.getItem('isHomePage') === window.location.href){
+                            jsBridge.callAppRouter("JS_backToHomePage", '', function (data) {})
+                        }
+                    });
+                }
+
+
+            });
+
+    </script>
+
+<script type="text/javascript">
+
+    history.replaceState(null, '', location.href.replace(/(op_code=.*?(&|$))|(dept_code=.*?(&|$))|(token=.*?(&|$))/g, ''));
+    $(function () {
+        const universalSearch = JSON.parse(sessionStorage.getItem('universalSearch'));
+        if (universalSearch) {
+            $("#select_type").attr("data", select_type).text(select_type === "0" ? "住院号" : "门诊号");
+            $("#select_no").attr("placeholder", select_type === "0" ? "请输入患者住院号" : "请输入患者门诊号").val(select_type === "0" ? universalSearch.inpatient_no : universalSearch.card_no);
+            $(".select_text").text(select_type === "0" ? "住院号" : "门诊号");
+            $('#id_no').val(universalSearch.id_no);
+            $('#patient_name').val(universalSearch.patient_name);
+        }
+
+        window.addEventListener('pageshow', function(event) {
+            // 移除页面缓存
+            sessionStorage.removeItem('list_universal_scrollTop');
+            sessionStorage.removeItem('list_universal_params');
+            sessionStorage.removeItem('universalSearch');
+        });
+
+        // 重置表单
+        $("#cancelBtn").click(function () {
+            $("#start_date").picker("setValue", common.getNextDay(-31).split("-"));
+            $("#end_date").picker("setValue", common.getNextDay(0).split("-"));
+            $("#patient_name").val("");
+            $("#inpatient_no").val("");
+            $("#id_no").val("");
+            $("#select_type").attr('data', '0').text('住院号');
+            $(".select_text").text('住院号');
+            $("#select_no").attr("placeholder", "请输入患者住院号").val("");
+            sessionStorage.removeItem('universalSearch');
+        });
+
+        $("#start_date").datetimePicker({
+            "yearSplit": "-",
+            "monthSplit": "-",
+            "value": universalSearch ? universalSearch.start_date + " " : (common.getNextDay(-31) + " "),
+            years: (function () {
+                var arr = [];
+                for (var i = 1900; i <= 2030; i++) {
+                    arr.push(i);
+                }
+                return arr;
+            })(),
+            "times": function () {
+                return []
+            },
+            onClose: function (e) { }
+        });
+
+        $("#end_date").datetimePicker({
+            "yearSplit": "-",
+            "monthSplit": "-",
+            "value": universalSearch ? universalSearch.end_date + " " : (common.getNextDay(0) + " "),
+            years: (function () {
+                var arr = [];
+                for (var i = 1900; i <= 2030; i++) {
+                    arr.push(i);
+                }
+                return arr;
+            })(),
+            "times": function () {
+                return []
+            },
+            onClose: function (e) { }
+        });
+
+        $("#select_no").focus(function(e){
+            if ($("#select_type").attr("data") === '0') {
+                const val = $(this).val();
+                const startText = "ZY01";
+                (val.indexOf(startText) === 0) || ($(this).val(startText));
+            }
+        })
+
+        $("#select_type").click(function () {
+            var actions = [
+                {
+                    text: "住院号",
+                    onClick: function () {
+                        $("#select_type").attr("data", "0").text("住院号");
+                        $("#select_no").attr("placeholder", "请输入患者住院号").val('');
+                        $(".select_text").text("住院号");
+                    }
+                },
+                {
+                    text: "门诊号",
+                    onClick: function () {
+                        $("#select_type").attr("data", "1").text("门诊号");
+                        $("#select_no").attr("placeholder", "请输入患者门诊号").val('');
+                        $(".select_text").text("门诊号");
+                    }
+                }
+            ]
+            $.actions({
+                actions: actions
+            })
+        })
+
+        $("#searchBtn").click(function () {
+            const patient_name = $("#patient_name").val().trim();
+            const select_no = $("#select_no").val().trim();
+            const id_no = $("#id_no").val().trim();
+            const start_date = $("#start_date").val().trim().split("-").join("") + "000000";
+            const end_date = $("#end_date").val().trim().split("-").join("") + "235959";
+            if (Number(start_date) > Number(end_date)) {
+                $.alert('开始时间不能大于结束时间');
+                return;
+            }
+            if (!patient_name && !select_no && !id_no) {
+                $.alert('当前条件必填一项');
+                return;
+            }
+            const params = {
+                patient_name,
+                inpatient_no: $("#select_type").attr("data") === '0' ? select_no : '',
+                card_no: $("#select_type").attr("data") === '1' ? select_no : '',
+                id_no,
+                start_date,
+                end_date
+            };
+            // 存储表单数据
+            sessionStorage.setItem('universalSearch', JSON.stringify({ ...params, start_date: $("#start_date").val().trim(), end_date: $("#end_date").val().trim(), select_type: $("#select_type").attr("data") }));
+            const queryString = Object.keys(params)
+                .filter(key => params[key])
+                .map(key => `${key}=${params[key]}`)
+                .join('&');
+            location.href = navRoot + '/universal/list?params=' + encodeURIComponent(queryString);
+        });
+    })
+</script>
+
+</body>
+</html>

@@ -124,7 +124,8 @@ class PatientSpider(scrapy.Spider):
                     continue
                 
                 patient_name = patient.get('NAME', '未知')
-                self.logger.info(f"正在处理患者 {patient_name}({empi}) [{idx}/{len(patients)}]")
+                diag = patient.get('DIAG_NAME1', '无诊断信息')
+                self.logger.info(f"正在处理患者 {patient_name}({empi}) - 诊断: {diag} [{idx}/{len(patients)}]")
                 
                 if self.fetch_records:
                     yield scrapy.Request(
@@ -138,12 +139,6 @@ class PatientSpider(scrapy.Spider):
                             'total_patients': len(patients)
                         }
                     )
-                
-                # 打印诊断信息
-                diag = patient.get('DIAG_NAME1')
-                self.logger.info(f"处理患者{idx}/{len(patients)}: {patient.get('NAME')} - 诊断: {diag}")
-                #调试信息
-                #print("#####patient",patient)
                 # 保存患者信息
                 existing = db_session.query(Patient)\
                     .filter_by(empi=empi)\
@@ -167,10 +162,11 @@ class PatientSpider(scrapy.Spider):
                             raw_data=patient
                         )
                         db_session.add(new_patient)
-                        inserted_count += 1
+                        inserted_count += 1              
             
             try:
                 db_session.commit()
+#                self.processed_count += len(patients)
                 self.logger.info(f"患者记录处理完成 - 本次返回: {len(patients)}条, 更新: {updated_count}条, 新增: {inserted_count}条")
             except Exception as e:
                 db_session.rollback()
@@ -216,6 +212,7 @@ class PatientSpider(scrapy.Spider):
                         existing.dept_code = visit.get('deptCode')
                         existing.dept_name = visit.get('deptName')
                         existing.clinic_type = visit.get('clinicTypeName')
+                        existing.visit_flow_domain = visit.get('visitFlowDomain')
                         existing.raw_data = visit
                     else:
                         new_visit = VisitRecord(
@@ -225,23 +222,31 @@ class PatientSpider(scrapy.Spider):
                             dept_code=visit.get('deptCode'),
                             dept_name=visit.get('deptName'),
                             clinic_type=visit.get('clinicTypeName'),
+                            visit_flow_domain=visit.get('visitFlowDomain'),
                             raw_data=visit
                         )
                         db_session.add(new_visit)
                         
             db_session.commit()
+            # 在保存记录时统计新增和更新数量
             new_count = sum(1 for r in timeline for v in r.get('timeLine', []) 
-                          if not db_session.query(VisitRecord)
-                                         .filter_by(visit_flow_id=v.get('visitFlowId'))
-                                         .first())
-            existing_count = len(timeline) * len(timeline[0].get('timeLine', [])) - new_count
-            total = new_count + existing_count
+                        if not db_session.query(VisitRecord)
+                                       .filter_by(visit_flow_id=v.get('visitFlowId'))
+                                       .first())
+            updated_count = sum(1 for r in timeline for v in r.get('timeLine', [])
+                             if db_session.query(VisitRecord)
+                                        .filter_by(visit_flow_id=v.get('visitFlowId'))
+                                        .first())
+            total_count = new_count + updated_count
             
             patient_name = response.meta.get('patient_name', '未知')
+#            current_idx = response.meta.get('current_patient_index', 0)
+            total_patients = response.meta.get('total_patients', 0)
+            
             self.logger.info(
                 f"已保存患者{patient_name}({empi})的就诊记录，"
-                f"新增{new_count}条，已有{existing_count}条，"
-                f"现共有{total}条"
+                f"新增{new_count}条，更新{updated_count}条，"
+                f"现共有{total_count}条"
             )
         except Exception as e:
             db_session.rollback()

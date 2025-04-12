@@ -1,0 +1,235 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": {
+      "name": "Firefox",
+      "version": "137.0"
+    },
+    "browser": {
+      "name": "Firefox",
+      "version": "137.0"
+    },
+    "pages": [
+      {
+        "id": "page_6",
+        "pageTimings": {
+          "onContentLoad": 1456,
+          "onLoad": 1469
+        },
+        "startedDateTime": "2025-04-12T17:15:17.634+08:00",
+        "title": "https://yihu.gzsums.net/ccd/info?empi=219a4d5a-2290-4ea0-9df1-86c6d15bb15e&admitDate=20250324084759&domain=2.16.840.1.113883.4.487.2.1.4.4&mzbl=false&id=ZY010031293512&deptCode=f8d9a5d128b3586433c3efea570e65e7&inStart=O&deptName=%E5%8F%A3%E8%85%94%E9%A2%8C%E9%9D%A2%E5%A4%96%E7%A7%91&access_channel=inpatient"
+      }
+    ],
+    "entries": [
+      {
+        "startedDateTime": "2025-04-12T17:15:17.634+08:00",
+        "request": {
+          "bodySize": 231,
+          "method": "POST",
+          "url": "https://yihu.gzsums.net/ccd/api/inpatient/data",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Host",
+              "value": "yihu.gzsums.net"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Android 16 Beta 2; Mobile; rv:136.0) Gecko/136.0 Firefox/136.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json, text/javascript, */*; q=0.01"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,zh-CN;q=0.7,en;q=0.3"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, br, zstd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "XMLHttpRequest"
+            },
+            {
+              "name": "Content-Length",
+              "value": "231"
+            },
+            {
+              "name": "Origin",
+              "value": "https://yihu.gzsums.net"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "name": "Referer",
+              "value": "https://yihu.gzsums.net/ccd/info?empi=219a4d5a-2290-4ea0-9df1-86c6d15bb15e&admitDate=20250324084759&domain=2.16.840.1.113883.4.487.2.1.4.4&mzbl=false&id=ZY010031293512&deptCode=f8d9a5d128b3586433c3efea570e65e7&inStart=O&deptName=%E5%8F%A3%E8%85%94%E9%A2%8C%E9%9D%A2%E5%A4%96%E7%A7%91&access_channel=inpatient"
+            },
+            {
+              "name": "Cookie",
+              "value": "yihu-portal=c8bf603457cf097e62276af456a658e120b9682f7c23439c.LBymU0fsX55NfL7ANfchcpoxEpw; yihu-ccd=.eJw9jVsKgzAQRfcy3wqal9ENdBNCiMlEpTYRk1Da0r1Xi-3PZThzLvcFasXtpj36BF3aMhagjcEYVQpX9NCB43VDLbqSSTGUrCWulIOjpd4vSWphmWmgAItrUrM9CtK2mtuayIFyKRilhqJDzZsKBcdDXrfg9o05eGWCReh8XpYC4hTuKs1p-ZMccTsVeE7aj_FBCBvh_Hz3dnD5Aa9vh9pn7ki1J1a8zwLbCt4fQPhKMg.Z_ovIA.Yd11ndtshRjS2wei0b0s_Po0i-4"
+            },
+            {
+              "name": "Sec-Fetch-Dest",
+              "value": "empty"
+            },
+            {
+              "name": "Sec-Fetch-Mode",
+              "value": "cors"
+            },
+            {
+              "name": "Sec-Fetch-Site",
+              "value": "same-origin"
+            },
+            {
+              "name": "Priority",
+              "value": "u=0"
+            }
+          ],
+          "cookies": [
+            {
+              "name": "yihu-portal",
+              "value": "c8bf603457cf097e62276af456a658e120b9682f7c23439c.LBymU0fsX55NfL7ANfchcpoxEpw"
+            },
+            {
+              "name": "yihu-ccd",
+              "value": ".eJw9jVsKgzAQRfcy3wqal9ENdBNCiMlEpTYRk1Da0r1Xi-3PZThzLvcFasXtpj36BF3aMhagjcEYVQpX9NCB43VDLbqSSTGUrCWulIOjpd4vSWphmWmgAItrUrM9CtK2mtuayIFyKRilhqJDzZsKBcdDXrfg9o05eGWCReh8XpYC4hTuKs1p-ZMccTsVeE7aj_FBCBvh_Hz3dnD5Aa9vh9pn7ki1J1a8zwLbCt4fQPhKMg.Z_ovIA.Yd11ndtshRjS2wei0b0s_Po0i-4"
+            }
+          ],
+          "queryString": [],
+          "headersSize": 1263,
+          "postData": {
+            "mimeType": "application/x-www-form-urlencoded",
+            "params": [
+              {
+                "name": "empi",
+                "value": "219a4d5a-2290-4ea0-9df1-86c6d15bb15e"
+              },
+              {
+                "name": "domain",
+                "value": "2.16.840.1.113883.4.487.2.1.4.4"
+              },
+              {
+                "name": "admitDate",
+                "value": "20250324084759"
+              },
+              {
+                "name": "payLoadType",
+                "value": "XDS.LISBG,XDS.PoctBloodReport,XDS.LISBG.WY,XDS.BacteriaLISBG"
+              },
+              {
+                "name": "type",
+                "value": "payLoadType.JianYan"
+              },
+              {
+                "name": "searchType",
+                "value": "0"
+              },
+              {
+                "name": "pageNo",
+                "value": "0"
+              }
+            ],
+            "text": "empi=219a4d5a-2290-4ea0-9df1-86c6d15bb15e&domain=2.16.840.1.113883.4.487.2.1.4.4&admitDate=20250324084759&payLoadType=XDS.LISBG%2CXDS.PoctBloodReport%2CXDS.LISBG.WY%2CXDS.BacteriaLISBG&type=payLoadType.JianYan&searchType=0&pageNo=0"
+          }
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Server",
+              "value": "nginx/1.14.2"
+            },
+            {
+              "name": "Date",
+              "value": "Sat, 12 Apr 2025 09:15:18 GMT"
+            },
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "name": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "name": "Vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "Vary",
+              "value": "Cookie"
+            },
+            {
+              "name": "Set-Cookie",
+              "value": "yihu-ccd=.eJw9jVsKgzAQRfcy3wqal9ENdBNCiMlEpTYRk1Da0r1Xi-3PZThzLvcFasXtpj36BF3aMhagjcEYVQpX9NCB43VDLbqSSTGUrCWulIOjpd4vSWphmWmgAItrUrM9CtK2mtuayIFyKRilhqJDzZsKBcdDXrfg9o05eGWCReh8XpYC4hTuKs1p-ZMccTsVeE7aj_FBCBvh_Hz3dnD5Aa9vh9pn7ki1J1a8zwLbCt4fQPhKMg.Z_ovJg.ConHd4y16c6ZxpwFRO6Bm5NiWDw; Expires=Mon, 12-May-2025 09:15:18 GMT; HttpOnly; Path=/"
+            },
+            {
+              "name": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "name": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+            },
+            {
+              "name": "Content-Encoding",
+              "value": "gzip"
+            }
+          ],
+          "cookies": [
+            {
+              "name": "yihu-ccd",
+              "value": ".eJw9jVsKgzAQRfcy3wqal9ENdBNCiMlEpTYRk1Da0r1Xi-3PZThzLvcFasXtpj36BF3aMhagjcEYVQpX9NCB43VDLbqSSTGUrCWulIOjpd4vSWphmWmgAItrUrM9CtK2mtuayIFyKRilhqJDzZsKBcdDXrfg9o05eGWCReh8XpYC4hTuKs1p-ZMccTsVeE7aj_FBCBvh_Hz3dnD5Aa9vh9pn7ki1J1a8zwLbCt4fQPhKMg.Z_ovJg.ConHd4y16c6ZxpwFRO6Bm5NiWDw"
+            }
+          ],
+          "content": {
+            "mimeType": "text/html; charset=utf-8",
+            "size": 22511,
+            "text": "{\"code\": 200, \"data\": {\"list\": [{\"dateGroupList\": null, \"dateGroupMap\": null, \"documentList\": [{\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u7a0b\\u9759\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u8d3a\\u4e2d\\u5e73\", \"bedNo\": \"010\", \"bodyPart\": null, \"cdaUniqueId\": \"b332455fa5f54201b65b64f5d0f57f16\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u95e8\\u6025\\u8bca\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-30 07:01\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251219931\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.106006097040248239.1743289289876.54982\", \"effectiveTime\": 1743211303000, \"entryuuid\": \"213e0cf2-f85e-4883-9b81-6abe904fbb09\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/30/1.2.3.4.106006097040248239.1743289289876.54982.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/30/07/3c1d759c-6ef6-40ab-ac60-c64836768640.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26366664619, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u6025\\u8bca\\u751f\\u5316\\u7ec4\\u5408\", \"projectName\": null, \"receivedTime\": 1743289290148, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"08409061080194\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}, {\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u7a0b\\u9759\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u8d3a\\u4e2d\\u5e73\", \"bedNo\": \"010\", \"bodyPart\": null, \"cdaUniqueId\": \"63f5598d725d45d99b39351ab16a52e4\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u95e8\\u6025\\u8bca\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-30 06:45\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251219932\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.159010093065142119.1743288334862.54965\", \"effectiveTime\": 1743211303000, \"entryuuid\": \"c881bfa7-6d09-4764-9ba8-6ef5101bdce6\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/30/1.2.3.4.159010093065142119.1743288334862.54965.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/30/06/b8e0b71c-4b30-4856-b71d-595c130b5c6a.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26366660719, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u6025\\u8bca\\u8840\\u5e38\\u89c4+\\u8d85\\u654fC\\u53cd\\u5e94\\u86cb\\u767d\\u7ec4\\u5408\", \"projectName\": null, \"receivedTime\": 1743288335148, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"08409061079272\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}, {\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u6b27\\u9633\\u6587\\u5a77\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u6881\\u9274\\u6ce2\", \"bedNo\": \"019\", \"bodyPart\": null, \"cdaUniqueId\": \"0d9f7bec82704cdea1bdfb595587be95\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u514d\\u75ab\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-25 14:06\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251138106\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.116008053004220229.1742882779485.14768\", \"effectiveTime\": 1742792760000, \"entryuuid\": \"706ca9d0-b629-44ae-978d-170d4d84f463\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/25/1.2.3.4.116008053004220229.1742882779485.14768.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/25/14/466f15f6-9c04-4d9b-aa63-21f3c8246bf3.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26339880519, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u611f\\u67d3\\u7b5b\\u67e5\\u7ec4\\u54088\\u9879\", \"projectName\": null, \"receivedTime\": 1742882779633, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"04575026211355\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}, {\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u53f6\\u68a6\\u654f\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u6e29\\u7eee\\u6d48\", \"bedNo\": \"019\", \"bodyPart\": null, \"cdaUniqueId\": \"0aa51d38f3c54369a242db21c026adb0\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u751f\\u5316\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-25 10:28\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251138110\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.132006118062158035.1742869708500.10301\", \"effectiveTime\": 1742792760000, \"entryuuid\": \"defa07e7-a35d-405e-84df-b25d86afef5b\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/25/1.2.3.4.132006118062158035.1742869708500.10301.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/25/10/e0c3f211-f4a4-43f4-bd56-a3cd0565123e.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26337270019, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u809d\\u80c6\\u4ee3\\u8c22\\u7ec4\\u5408,\\u809d\\u9176\\u5b66\\u7ec4\\u5408,\\u57fa\\u7840\\u4ee3\\u8c22\\u751f\\u5316\\u7ec4\\u5408I\", \"projectName\": null, \"receivedTime\": 1742869708763, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"04575026213379\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}, {\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u4f55\\u6811\\u6d2a\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u77f3\\u743c\", \"bedNo\": \"019\", \"bodyPart\": null, \"cdaUniqueId\": \"9d2a7964fa3b417eb92e38852a330929\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u95e8\\u6025\\u8bca\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-25 10:27\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251138107\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.169004119132208203.1742869688881.10262\", \"effectiveTime\": 1742792760000, \"entryuuid\": \"b64443f5-613f-4ef2-9dd1-5a97e770cc2b\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/25/1.2.3.4.169004119132208203.1742869688881.10262.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/25/10/a6838362-086a-4183-9f9d-52e4292608d1.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26337256319, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u51fa\\u3001\\u51dd\\u8840\\u5e38\\u89c4\", \"projectName\": null, \"receivedTime\": 1742869689065, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"04575026214478\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}, {\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u7a0b\\u9759\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u6b27\\u9999\\u5fe0\", \"bedNo\": \"019\", \"bodyPart\": null, \"cdaUniqueId\": \"77af0b9d2388452a885093fd30dadf1c\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u95e8\\u6025\\u8bca\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-25 10:15\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251138105\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.117077025037040091.1742868949917.9825\", \"effectiveTime\": 1742792760000, \"entryuuid\": \"cdf4f707-2c4f-4002-9245-abc37ec83b96\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/25/1.2.3.4.117077025037040091.1742868949917.9825.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/25/10/8aa017ce-4fe7-4dbb-8004-dc27403c77f9.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26337007019, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u8840\\u578b\\u68c0\\u5b9a\", \"projectName\": null, \"receivedTime\": 1742868950117, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"04575026209923\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}, {\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u6c5f\\u6653\\u51b0\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u5f6d\\u6167\\u6587\", \"bedNo\": \"019\", \"bodyPart\": null, \"cdaUniqueId\": \"29c247fcc30a4ba1b45806c08765bd62\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u95e8\\u6025\\u8bca\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-25 09:12\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251138109\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.181031036122331014.1742865152694.7938\", \"effectiveTime\": 1742792760000, \"entryuuid\": \"127a85b9-24f1-46b3-9a5e-d730d9feac43\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/25/1.2.3.4.181031036122331014.1742865152694.7938.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/25/09/4ece9eb7-7375-4884-8d90-b41e191b3a51.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26335798219, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u5c3f\\u6c89\\u6e23\\u5b9a\\u91cf\\u68c0\\u6d4b,\\u5c3f\\u5e72\\u5316\\u5b66\\u68c0\\u6d4b\", \"projectName\": null, \"receivedTime\": 1742865152896, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"04575026210739\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}, {\"accessionnum\": null, \"admitDate\": null, \"admitTime\": null, \"assignedPerson\": \"\\u53f6\\u66fc\\u66fc\", \"assigningAuthority\": \"&2.16.840.1.113883.4.487.2&ISO\", \"authorName\": \"\\u4e25\\u4fe8\", \"bedNo\": \"019\", \"bodyPart\": null, \"cdaUniqueId\": \"cba5df6f3a4a4885a0d8f133b36ead58\", \"criticalFlag\": null, \"custom1\": null, \"custom2\": null, \"custom3\": null, \"custom4\": null, \"custom5\": null, \"customDicomUrl\": null, \"deprecated\": \"0\", \"deptGroupName\": \"\\u95e8\\u6025\\u8bca\\u5ba4\", \"deviceName\": null, \"diagnosisMethodCode\": null, \"dicomNum\": null, \"dicomStudyTime\": \"2025-03-25 09:02\", \"dischargeDate\": null, \"docAuthority\": null, \"docAuthorityRoot\": \"2.16.840.1.113883.4.487.2.1.5\", \"docCode\": \"49548-1\", \"docName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"documentDomainId\": \"2.16.840.1.113883.4.487.2.1.5\", \"documentUniqueId\": \"LIS:251138108\", \"documentscatterId\": null, \"documentuniqueid\": \"1.2.3.4.164070046013292133.1742864558867.7750\", \"effectiveTime\": 1742792760000, \"entryuuid\": \"b2e8a5de-d60e-4601-bc00-5418a0021ff6\", \"fileCode\": null, \"fileSystemFk\": 1, \"fileType\": \"text/xml\", \"filepath\": \"2025/03/25/1.2.3.4.164070046013292133.1742864558867.7750.xml\", \"hisType\": \"I\", \"hospitalId\": null, \"hospitalizeNo\": null, \"icuName\": null, \"icuType\": null, \"isVertify\": null, \"legalPerson\": null, \"machineRoomName\": null, \"modality\": null, \"orderDomain\": null, \"orderNumber\": null, \"otherFileStatus\": null, \"patCurDep\": null, \"patCurRoom\": null, \"patientDomain\": \"2.16.840.1.113883.4.487.2.1.4\", \"patientId\": \"0031293512\", \"patientName\": \"\\u9ec4\\u5955\\u5f3a\", \"payLoadType\": \"XDS.LISBG\", \"payLoadTypeName\": \"\\u68c0\\u9a8c\\u62a5\\u544a\", \"pdfPath\": \"Y:/FILE/FILE_AXDS/PDF/2025/03/25/09/d4f7089c-d480-4aad-ab15-34d48cf09ee8.pdf\", \"personId\": \"219a4d5a-2290-4ea0-9df1-86c6d15bb15e\", \"pk\": 26335609219, \"primDiagnosis\": null, \"primDiagnosisResult\": null, \"printStatus\": null, \"printTimes\": null, \"processTime\": null, \"profileDesc\": \"\\u8840\\u5e38\\u89c4\\u5168\\u5957\\u7ec4\\u5408[CBC+DIFF+RET]\", \"projectName\": null, \"receivedTime\": 1742864559102, \"repeatNumber\": null, \"reportFlag\": \"true\", \"reportStatus\": null, \"requestDomain\": \"2.16.840.1.113883.4.487.2.1.5\", \"requestNumber\": \"04575026212931\", \"retryTimes\": null, \"specimentype\": null, \"status\": 1, \"studyUid\": null, \"studyUids\": null, \"subType\": \"ADD\", \"thisImageFlag\": null, \"updateTime\": null, \"visitFlowDomain\": \"2.16.840.1.113883.4.487.2.1.4.4\", \"visitFlowId\": \"ZY010031293512\"}], \"healthCheckDocuments\": null, \"icuAllGroupMap\": null, \"isShowMedicaladvice\": null, \"jcGroupMap\": null, \"jcOrderByDateList\": null, \"listJianChanType\": null, \"listJianYanType\": {\"\\u514d\\u75ab\\u5ba4\": [\"\\u611f\\u67d3\\u7b5b\\u67e5\\u7ec4\\u54088\\u9879\"], \"\\u751f\\u5316\\u5ba4\": [\"\\u809d\\u80c6\\u4ee3\\u8c22\\u7ec4\\u5408,\\u809d\\u9176\\u5b66\\u7ec4\\u5408,\\u57fa\\u7840\\u4ee3\\u8c22\\u751f\\u5316\\u7ec4\\u5408I\"], \"\\u95e8\\u6025\\u8bca\\u5ba4\": [\"\\u8840\\u578b\\u68c0\\u5b9a\", \"\\u6025\\u8bca\\u751f\\u5316\\u7ec4\\u5408\", \"\\u8840\\u5e38\\u89c4\\u5168\\u5957\\u7ec4\\u5408[CBC+DIFF+RET]\", \"\\u6025\\u8bca\\u8840\\u5e38\\u89c4+\\u8d85\\u654fC\\u53cd\\u5e94\\u86cb\\u767d\\u7ec4\\u5408\", \"\\u5c3f\\u6c89\\u6e23\\u5b9a\\u91cf\\u68c0\\u6d4b,\\u5c3f\\u5e72\\u5316\\u5b66\\u68c0\\u6d4b\", \"\\u51fa\\u3001\\u51dd\\u8840\\u5e38\\u89c4\"]}, \"listTitleDetail\": [{\"createTime\": 1544062000000, \"isHide\": 0, \"labelName\": \"payLoadType.JianYan\", \"orderByKey\": \"REPORT_STATUS\", \"orderNum\": 1, \"otherDescribe\": \"\\u68c0\\u9a8c\", \"pk\": 62, \"typeKey\": \"reportStatus\", \"typeValue\": \"\\u72b6\\u6001\", \"updateTime\": 1544062000000}, {\"createTime\": 1544062000000, \"isHide\": 0, \"labelName\": \"payLoadType.JianYan\", \"orderByKey\": \"profileDesc\", \"orderNum\": 2, \"otherDescribe\": \"\\u68c0\\u9a8c\", \"pk\": 75, \"typeKey\": \"profileDesc\", \"typeValue\": \"\\u68c0\\u9a8c\\u9879\\u76ee\", \"updateTime\": 1544062000000}, {\"createTime\": 1544062000000, \"isHide\": 0, \"labelName\": \"payLoadType.JianYan\", \"orderByKey\": \"deptGroupName\", \"orderNum\": 4, \"otherDescribe\": \"\\u68c0\\u9a8c\", \"pk\": 200, \"typeKey\": \"deptGroupName\", \"typeValue\": \"\\u68c0\\u9a8c\\u5927\\u7c7b\", \"updateTime\": 1544062000000}, {\"createTime\": 1544062000000, \"isHide\": 0, \"labelName\": \"payLoadType.JianYan\", \"orderByKey\": \"PATIENT_ID\", \"orderNum\": 4, \"otherDescribe\": \"\\u68c0\\u9a8c\", \"pk\": 186, \"typeKey\": \"patientId\", \"typeValue\": \"\\u4f4f\\u9662/\\u95e8\\u8bca\\u53f7\", \"updateTime\": 1544062000000}, {\"createTime\": 1544062000000, \"isHide\": 0, \"labelName\": \"payLoadType.JianYan\", \"orderByKey\": \"deptGroupName\", \"orderNum\": 5, \"otherDescribe\": \"\\u68c0\\u9a8c\", \"pk\": 152, \"typeKey\": \"documentUniqueId\", \"typeValue\": \"\\u6807\\u672c\\u53f7\", \"updateTime\": 1544062000000}, {\"createTime\": 1544062000000, \"isHide\": 0, \"labelName\": \"payLoadType.JianYan\", \"orderByKey\": \"AUTHOR_NAME\", \"orderNum\": 6, \"otherDescribe\": \"\\u68c0\\u9a8c\", \"pk\": 76, \"typeKey\": \"authorName\", \"typeValue\": \"\\u62a5\\u544a\\u533b\\u751f\", \"updateTime\": 1544062000000}, {\"createTime\": 1544062000000, \"isHide\": 0, \"labelName\": \"payLoadType.JianYan\", \"orderByKey\": \"DICOM_STUDY_TIME\", \"orderNum\": 7, \"otherDescribe\": \"\\u68c0\\u9a8c\", \"pk\": 77, \"typeKey\": \"dicomStudyTime\", \"typeValue\": \"\\u62a5\\u544a\\u65f6\\u95f4\", \"updateTime\": 1544062000000}], \"modGroupMap\": null, \"modList\": null, \"newestDoc\": null, \"payLoadTypeList\": null, \"personInfo\": null, \"profileDescList\": null, \"profileGroupMap\": null, \"profileOrderByDateList\": null, \"visitFlowIds\": null}], \"listTitleDetail\": [], \"page\": {\"beginIndex\": 10, \"currentPage\": 1, \"defaultInfo\": \"&nbsp;&nbsp;\", \"endinIndex\": 10, \"everyPage\": 10, \"hasNextPage\": true, \"hasPrePage\": true, \"sort\": false, \"sortInfo\": null, \"sortName\": null, \"sortState\": null, \"totalCount\": 8, \"totalPage\": 1, \"url\": null}}}"
+          },
+          "redirectURL": "",
+          "headersSize": 856,
+          "bodySize": 3941
+        },
+        "cache": {},
+        "timings": {
+          "blocked": 0,
+          "dns": 0,
+          "connect": 0,
+          "ssl": 0,
+          "send": 0,
+          "wait": 231,
+          "receive": 0
+        },
+        "time": 231,
+        "_securityState": "secure",
+        "serverIPAddress": "127.0.0.1",
+        "connection": "7890",
+        "pageref": "page_6"
+      }
+    ]
+  }
+}

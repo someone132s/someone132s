@@ -61,6 +61,7 @@ class VisitRecord(Base):
     dept_code = Column(String(100))
     dept_name = Column(String(100))
     clinic_type = Column(String(20))  # 门诊/住院
+    visit_flow_domain = Column(String(100))
     raw_data = Column(JSONB)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
