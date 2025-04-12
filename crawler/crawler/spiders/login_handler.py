@@ -206,6 +206,10 @@ class LoginStateMachine:
                     }
                     self.repo.save_session(session_data)
                     self.context['result'] = session_data
+                    # 确保cookie被全局共享
+                    if 'cookies' not in self.context:
+                        self.context['cookies'] = {}
+                    self.context['cookies'].update(session_data['cookies'])
                     self.complete()
                 else:
                     raise ValueError(f"登录失败: {result.get('message')}")

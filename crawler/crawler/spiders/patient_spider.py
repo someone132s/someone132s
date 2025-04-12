@@ -93,7 +93,10 @@ class PatientSpider(scrapy.Spider):
                 raise ValueError("多次重定向，可能登录失败")
                 
             self.logger.warning("会话失效，重新发起请求")
-            # 直接复用start_requests的逻辑
+            # 确保使用最新的cookies
+            session = self.login_handler.get_session()
+            if session and 'cookies' in session:
+                response.request.cookies.update(session['cookies'])
             return self.start_requests()
         
         elif response.status != 200:
