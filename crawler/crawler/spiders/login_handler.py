@@ -43,10 +43,10 @@ class LoginStateMachine:
             model=self,
             states=LoginStateMachine.states,
             initial='init',
-            ignore_invalid_triggers=True
+            ignore_invalid_triggers=False  # 改为False以捕获无效转换
         )
         
-        # 添加状态转换，目标状态使用点号分隔的完整名称
+        # 添加状态转换
         self.machine.add_transition('load_config', 'init', 'config_loaded')
         self.machine.add_transition('connect_db', 'config_loaded', 'db_connected')
         self.machine.add_transition('check_session', 'db_connected', 'session_query_db')
@@ -55,9 +55,13 @@ class LoginStateMachine:
         self.machine.add_transition('start_login', 'session_no_session', 'login_encrypting')
         self.machine.add_transition('send_request', 'login_encrypting', 'login_requesting')
         self.machine.add_transition('complete', ['login_requesting', 'session_has_session'], 'ready')
+        
+        # 新增重置和作废转换
+        self.machine.add_transition('reset', '*', 'init')
+        self.machine.add_transition('invalidate', ['ready', 'session_has_session'], 'init')
         self.machine.add_transition('error', '*', 'error')
         
-        # 添加回调（注意：状态名称自动将"."转换为"_"，所以回调名称使用下划线格式）
+        # 添加回调
         self.machine.on_enter_config_loaded('_on_config_loaded')
         self.machine.on_enter_db_connected('_on_db_connected')
         self.machine.on_enter_session_query_db('_on_query_db')
@@ -66,6 +70,7 @@ class LoginStateMachine:
         self.machine.on_enter_login_encrypting('_on_encrypting')
         self.machine.on_enter_login_requesting('_on_requesting')
         self.machine.on_enter_error('_on_error')
+        self.machine.on_enter_init('_on_reset')
 
     def _on_config_loaded(self):
         """配置加载回调"""
@@ -202,7 +207,7 @@ class LoginStateMachine:
                         'cookies': dict(response.cookies),
                         'access_token': result['data']['access_token'],
                         'user_code': result['data']['user_code'],
-                        'expires_at': expires
+                        'expires_at': expires.isoformat() if expires else None
                     }
                     self.repo.save_session(session_data)
                     self.context['result'] = session_data
@@ -210,7 +215,10 @@ class LoginStateMachine:
                     if 'cookies' not in self.context:
                         self.context['cookies'] = {}
                     self.context['cookies'].update(session_data['cookies'])
-                    self.complete()
+                    # 重置状态机到init状态
+                    self.reset()
+                    # 重新开始流程
+                    self.load_config()
                 else:
                     raise ValueError(f"登录失败: {result.get('message')}")
             else:
@@ -220,14 +228,26 @@ class LoginStateMachine:
             self.error(error=e)
 
     def _on_error(self, error: Exception):
-        """错误处理回调"""
+        """增强的错误处理回调"""
         self.logger.error(f"状态机错误: {str(error)}")
-        if self.retry_count < self.max_retries:
-            self.retry_count += 1
-            self.logger.info(f"准备重试({self.retry_count}/{self.max_retries})")
-            self.load_config()
-        else:
-            raise RuntimeError(f"超过最大重试次数: {str(error)}")
+        try:
+            self.reset()  # 错误时自动重置
+        except Exception as reset_error:
+            self.logger.error(f"重置状态机失败: {str(reset_error)}")
+            raise RuntimeError(f"严重错误-无法重置状态机: {str(error)}")
+
+    def _on_invalidate(self):
+        """会话作废时的清理工作"""
+        self.logger.info("正在作废当前会话并重置状态机")
+        if 'cookies' in self.context:
+            del self.context['cookies']
+        if 'result' in self.context:
+            del self.context['result']
+
+    def _on_reset(self):
+        """重置后的初始化工作"""
+        self.logger.info("状态机已重置")
+        self.retry_count = 0  # 重置重试计数器
 
 
 class LoginHandler:
@@ -250,10 +270,14 @@ class LoginHandler:
 
 
     def invalidate_session(self):
-        """作废当前用户的会话(使用Repository版本)"""
+        """增强的会话作废方法"""
         try:
+            # 作废数据库会话
             self.state_machine.repo.invalidate_session(self.username)
-            self.logger.info(f"已作废用户 {self.username} 的会话")
+            # 触发状态机重置
+            if hasattr(self.state_machine, 'invalidate'):
+                self.state_machine.invalidate()
+            self.logger.info(f"已作废用户 {self.username} 的会话并重置状态机")
             return True
         except Exception as e:
             self.logger.error(f"作废会话失败: {str(e)}")
@@ -261,7 +285,12 @@ class LoginHandler:
 
     def get_session(self):
         """获取有效会话(状态机版本)"""
+        if self.state_machine.state == 'ready':
+            return self.state_machine.context.get('result')
+        
+        self.state_machine.reset()  # 确保从初始状态开始
         self.state_machine.load_config()
+        
         while self.state_machine.state != 'ready':
             if self.state_machine.state == 'error':
                 raise RuntimeError("获取会话失败")
@@ -340,7 +369,7 @@ class LoginHandler:
                     'cookies': merged_cookies,
                     'access_token': session.access_token,
                     'user_code': session.user_code,
-                    'expires_at': session.expires_at
+                    'expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') and session.expires_at else (datetime.now() + timedelta(days=30)).isoformat()
                 })
                 return merged_cookies
                 
@@ -356,7 +385,10 @@ class LoginHandler:
                         merged_cookies = {**session.cookies, **new_cookies}
                         self.state_machine.repo.save_session({
                             'user_id': self.username,
-                            'cookies': merged_cookies
+                            'cookies': merged_cookies,
+                            'access_token': new_token,
+                            'user_code': session.user_code,
+                            'expires_at': (datetime.now() + timedelta(days=30)).isoformat()
                         })
                         return merged_cookies
                     raise ValueError(f"使用新token获取科室cookie失败: HTTP {response.status_code}")
@@ -424,7 +456,7 @@ class LoginHandler:
                         'cookies': dict(response.cookies),
                         'access_token': result['data']['access_token'],
                         'user_code': result['data']['user_code'],
-                        'expires_at': expires or datetime.now() + timedelta(days=30)
+                        'expires_at': (expires or datetime.now() + timedelta(days=30)).isoformat()
                     }
                     self.logger.debug(f"会话数据: {session_data}")
                     # 保存会话到数据库

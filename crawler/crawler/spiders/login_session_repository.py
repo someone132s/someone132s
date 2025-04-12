@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import logging
 from crawler.models import SpiderSession
@@ -29,17 +29,30 @@ class LoginSessionRepository:
         """保存或更新会话"""
         session = self.Session()
         try:
+            # 确保expires_at是datetime对象
+            expires_at = session_data.get('expires_at')
+            if isinstance(expires_at, str):
+                expires_at = datetime.fromisoformat(expires_at)
+            elif not isinstance(expires_at, datetime):
+                expires_at = datetime.now() + timedelta(days=30)
+                
             existing = session.query(SpiderSession)\
                 .filter_by(user_id=session_data['user_id'])\
                 .first()
                 
             if existing:
                 existing.cookies = session_data['cookies']
-                existing.access_token = session_data['access_token']
-                existing.user_code = session_data['user_code']
-                existing.expires_at = session_data['expires_at']
+                existing.access_token = session_data.get('access_token', existing.access_token)
+                existing.user_code = session_data.get('user_code', existing.user_code)
+                existing.expires_at = expires_at
             else:
-                new_session = SpiderSession(**session_data)
+                new_session = SpiderSession(
+                    user_id=session_data['user_id'],
+                    cookies=session_data['cookies'],
+                    access_token=session_data.get('access_token'),
+                    user_code=session_data.get('user_code'),
+                    expires_at=expires_at
+                )
                 session.add(new_session)
                 
             session.commit()

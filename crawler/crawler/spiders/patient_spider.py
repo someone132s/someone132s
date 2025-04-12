@@ -123,12 +123,20 @@ class PatientSpider(scrapy.Spider):
                     self.logger.warning(f"患者记录{idx}缺少EMPI，跳过")
                     continue
                 
+                patient_name = patient.get('NAME', '未知')
+                self.logger.info(f"正在处理患者 {patient_name}({empi}) [{idx}/{len(patients)}]")
+                
                 if self.fetch_records:
                     yield scrapy.Request(
                         url=f"https://yihu.gzsums.net/ccd/api/inpatient/record?id={empi}",
                         cookies=response.request.cookies,
                         callback=self.parse_visit_records,
-                        meta={'patient_empi': empi}
+                        meta={
+                            'patient_empi': empi,
+                            'patient_name': patient_name,
+                            'current_patient_index': idx,
+                            'total_patients': len(patients)
+                        }
                     )
                 
                 # 打印诊断信息
@@ -222,7 +230,19 @@ class PatientSpider(scrapy.Spider):
                         db_session.add(new_visit)
                         
             db_session.commit()
-            self.logger.info(f"成功保存患者{empi}的{len(timeline)}条就诊记录")
+            new_count = sum(1 for r in timeline for v in r.get('timeLine', []) 
+                          if not db_session.query(VisitRecord)
+                                         .filter_by(visit_flow_id=v.get('visitFlowId'))
+                                         .first())
+            existing_count = len(timeline) * len(timeline[0].get('timeLine', [])) - new_count
+            total = new_count + existing_count
+            
+            patient_name = response.meta.get('patient_name', '未知')
+            self.logger.info(
+                f"已保存患者{patient_name}({empi})的就诊记录，"
+                f"新增{new_count}条，已有{existing_count}条，"
+                f"现共有{total}条"
+            )
         except Exception as e:
             db_session.rollback()
             self.logger.error(f"保存就诊记录失败: {str(e)}")
