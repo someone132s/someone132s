@@ -9,8 +9,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from urllib.parse import urlencode
 
-class CrawlerMainSpider(scrapy.Spider):
-    name = "crawler-main"
+class UserDepartmentSpider(scrapy.Spider):
+    name = "user-department-spider"
     
     def __init__(self):
         load_dotenv()

@@ -9,12 +9,12 @@ import os
 from dotenv import load_dotenv
 import json
 
-class PatientSpider(scrapy.Spider):
-    name = "patient"
+class InfoTimelineSpider(scrapy.Spider):
+    name = "info-timeline-spider"
     
     def __init__(self, type=None, dept_id=None, start_date=None, end_date=None, 
                  force_updatedb=False, fetch_records=True, *args, **kwargs):
-        super(PatientSpider, self).__init__(*args, **kwargs)
+        super(InfoTimelineSpider, self).__init__(*args, **kwargs)
         self.redirect_count = 0  # 重定向计数器
         load_dotenv()
         self.fetch_records = fetch_records  # 控制是否获取就诊记录
@@ -110,8 +110,10 @@ class PatientSpider(scrapy.Spider):
         try:
             data = json.loads(response.text)
             patients = data.get('data', {}).get('List', {}).get('InPatientMainInfo', [])
-            #print("#####patients",patients)
-            if not isinstance(patients, list):
+            # 兼容O类型返回单个字典的情况，只见于请求只返回一个患者的时候。
+            if isinstance(patients, dict):
+                patients = [patients]
+            elif not isinstance(patients, list):
                 self.logger.error(f"无效的患者数据格式: {type(patients)}")
                 patients = []
             
@@ -144,25 +146,25 @@ class PatientSpider(scrapy.Spider):
                     .filter_by(empi=empi)\
                     .first()
                     
-                if self.force_updatedb or not existing:
-                    if existing:
-                        existing.patient_name = patient.get('NAME')
-                        existing.patient_no = patient.get('PATIENT_NO')
-                        existing.patient_type = self.type
-                        existing.dept_code = self.dept_id
-                        existing.raw_data = patient
-                        updated_count += 1
-                    else:
-                        new_patient = Patient(
-                            empi=empi,
-                            patient_name=patient.get('NAME'),
-                            patient_no=patient.get('PATIENT_NO'),
-                            patient_type=self.type,
-                            dept_code=self.dept_id,
-                            raw_data=patient
-                        )
-                        db_session.add(new_patient)
-                        inserted_count += 1              
+                # 总是更新患者状态和基本信息
+                if existing:
+                    existing.patient_name = patient.get('NAME')
+                    existing.patient_no = patient.get('PATIENT_NO')
+                    existing.patient_type = patient.get('IN_STATE')  # 确保状态更新
+                    existing.dept_code = patient.get('DEPT_CODE')
+                    existing.raw_data = patient
+                    updated_count += 1
+                else:
+                    new_patient = Patient(
+                        empi=empi,
+                        patient_name=patient.get('NAME'),
+                        patient_no=patient.get('PATIENT_NO'),
+                        patient_type=patient.get('IN_STATE'),
+                        dept_code=patient.get('DEPT_CODE'),
+                        raw_data=patient
+                    )
+                    db_session.add(new_patient)
+                    inserted_count += 1              
             
             try:
                 db_session.commit()
@@ -213,7 +215,7 @@ class PatientSpider(scrapy.Spider):
                         existing.dept_name = visit.get('deptName')
                         existing.clinic_type = visit.get('clinicTypeName')
                         existing.visit_flow_domain = visit.get('visitFlowDomain')
-                        existing.raw_data = visit
+                        existing.timeline_raw_data = visit
                     else:
                         new_visit = VisitRecord(
                             visit_flow_id=visit_flow_id,
@@ -223,7 +225,7 @@ class PatientSpider(scrapy.Spider):
                             dept_name=visit.get('deptName'),
                             clinic_type=visit.get('clinicTypeName'),
                             visit_flow_domain=visit.get('visitFlowDomain'),
-                            raw_data=visit
+                            timeline_raw_data=visit
                         )
                         db_session.add(new_visit)
                         

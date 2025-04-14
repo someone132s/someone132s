@@ -58,11 +58,13 @@ class VisitRecord(Base):
     visit_flow_id = Column(String(100), primary_key=True)
     empi = Column(String(50), ForeignKey('patients.empi'))
     admit_date = Column(DateTime)
-    dept_code = Column(String(100))
-    dept_name = Column(String(100))
+    dept_code = Column(String(100))  # 科室代码
+    dept_name = Column(String(100))  # 科室名称
+    pat_cur_dep = Column(String(50))  # 科室护士站代号
     clinic_type = Column(String(20))  # 门诊/住院
     visit_flow_domain = Column(String(100))
-    raw_data = Column(JSONB)
+    timeline_raw_data = Column(JSONB)  # 原raw_data重命名
+    payload_type_info = Column(JSONB)  # 存储payLoadTypeList完整结构
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     
