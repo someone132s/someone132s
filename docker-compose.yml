@@ -32,6 +32,7 @@ services:
       - POSTGRES_USER=medical
       - POSTGRES_PASSWORD=medical
       - POSTGRES_DB=medical
+      - TZ=Asia/Shanghai
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -63,6 +64,8 @@ services:
     volumes:
       - ./crawler:/app
       - ./crawler/.env:/app/.env
+    environment:
+      - TZ=Asia/Shanghai             # ← 增加这一行
     working_dir: /app
     tty: true
     stdin_open: true

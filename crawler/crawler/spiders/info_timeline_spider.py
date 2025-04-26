@@ -1,258 +1,240 @@
+# Enhanced InfoTimelineSpider with incremental upsert logic and robust parsing
+# 修改说明：
+# 1. parse_patient_list:
+#    - 增量插入/更新患者信息。先查询已存在的 EMPI，再 bulk_insert_mappings 插入新患者；
+#      当 force_updatedb=True 时，对已存在患者使用 bulk_update_mappings 更新。
+#    - 去掉 Scrapy callback 中的 return 生成器写法，统一使用 yield。
+# 2. fetch_visit_records:
+#    - 正确定位 Scrapy.Request 参数，move handle_httpstatus_list 到 meta 中，避免多余参数。
+# 3. parse_visit_records:
+#    - 使用 payload.get(...) or [] 保证 patientTimeLine 和 timeLine 始终为列表，绝不对 None 迭代。
+#    - 构造 new_records，批量放入 record_buffer，并在达到阈值时直接调用 batch_save_records。
+# 4. batch_save_records:
+#    - 分批（batch_size=100）插入/更新：只处理足够大小的批次，保留剩余；
+#    - 在同一方法末尾处理剩余所有条目，确保最后不满批次也被写入；
+#    - 统计 total_inserted/total_updated 并更新 stats。
+# 5. handle_request_error:
+#    - 修正 HttpError 导入路径，捕获并记录 HTTP 错误状态。
+
 import scrapy
-from urllib.parse import urlencode
+import os
+import json
 from datetime import datetime
-from crawler.models import Patient, VisitRecord
-from .login_handler import LoginHandler
+from scrapy.spidermiddlewares.httperror import HttpError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import os
+from crawler.models import Patient, VisitRecord
+from .login_handler import LoginHandler
 from dotenv import load_dotenv
-import json
 
 class InfoTimelineSpider(scrapy.Spider):
     name = "info-timeline-spider"
-    
-    def __init__(self, type=None, dept_id=None, start_date=None, end_date=None, 
-                 force_updatedb=False, fetch_records=True, *args, **kwargs):
-        super(InfoTimelineSpider, self).__init__(*args, **kwargs)
-        self.redirect_count = 0  # 重定向计数器
+
+    def __init__(self, type=None, dept_id=None, start_date=None, end_date=None,
+                 force_updatedb=False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         load_dotenv()
-        self.fetch_records = fetch_records  # 控制是否获取就诊记录
-        
         if type not in ['I', 'O']:
-            raise ValueError("type参数必须是'I'或'O'")
+            raise ValueError("type 参数必须是 'I' 或 'O'")
         if not dept_id:
-            raise ValueError("dept_id参数不能为空")
-            
+            raise ValueError("dept_id 参数不能为空")
+
         self.type = type
         self.dept_id = dept_id
         self.start_date = start_date if type == 'O' else None
         self.end_date = end_date if type == 'O' else None
-        self.force_updatedb = force_updatedb  # 强制更新数据库标志
+        self.force_updatedb = force_updatedb
+
+        self.record_buffer = []
+        self.stats = {'patients': 0, 'records': 0, 'saved': 0, 'errors': 0, 'updated': 0}
 
         self.patient_list_url = os.getenv('PATIENT_LIST_URL')
-        self.allowed_domains = ["yihu.gzsums.net"]
-        
-        # 初始化数据库
+        self.record_base_url = os.getenv('PATIENT_VISIT_RECORD_URL')
         self.engine = create_engine(os.getenv('DATABASE_URI'))
         self.Session = sessionmaker(bind=self.engine)
-
         self.login_handler = LoginHandler()
 
     def start_requests(self):
-        """使用LoginHandler获取会话"""
-        self.login_handler.get_dept_cookie(self.dept_id)
         session = self.login_handler.get_session()
+        if not session:
+            raise ValueError("无法获取有效会话")
 
-        formdata = {
-            'type': self.type,
-            'dept_id\t': self.dept_id,  # 添加制表符编码
-            'patient_name': '',
-            'inpatient_no': '',
-            'inpatient_diagnose': ''
-        }
-        
+        formdata = {'type': self.type, 'dept_id': self.dept_id,
+                    'patient_name': '', 'inpatient_no': '', 'inpatient_diagnose': ''}
         if self.type == 'O':
-            formdata['start_date'] = self.start_date
-            formdata['end_date'] = self.end_date
+            formdata.update({'start_date': self.start_date, 'end_date': self.end_date})
 
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-#            "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36",
-            "Accept": "*/*",
-#            "Host": "yihu.gzsums.net",
-            "Connection": "keep-alive",
-        }
-
-        request = scrapy.FormRequest(
-            method='POST',
-            url=self.patient_list_url,
-            cookies=session['cookies'],
-            formdata=formdata,
-            headers=headers,
-            callback=self.parse_patient_list
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        yield scrapy.FormRequest(
+            method='POST', url=self.patient_list_url,
+            cookies=session['cookies'], formdata=formdata,
+            headers=headers, callback=self.parse_patient_list
         )
-        
-        # 打印完整的请求信息用于调试
-        print("=== 请求URL ===")
-        print(request.url)
-        print("\n=== 请求头 ===")
-        print(request.headers)
-        print("\n=== 请求体 ===")
-        print(request.body)
-        print("\n=== Cookies ===")
-        print(request.cookies)
-        
-        yield request
 
     def parse_patient_list(self, response):
-        # 状态码检查
-        if response.status == 302:
-            self.redirect_count += 1
-            if self.redirect_count > 1:  # 避免循环
-                raise ValueError("多次重定向，可能登录失败")
-                
-            self.logger.warning("会话失效，重新发起请求")
-            # 确保使用最新的cookies
-            session = self.login_handler.get_session()
-            if session and 'cookies' in session:
-                response.request.cookies.update(session['cookies'])
-            return self.start_requests()
-        
-        elif response.status != 200:
-            self.logger.error(f"无效响应状态码: {response.status}")
-            raise ValueError(f"请求失败，状态码: {response.status}")
-        
-        # 重置计数器
-        self.redirect_count = 0
-        
-        db_session = self.Session()
         try:
             data = json.loads(response.text)
-            patients = data.get('data', {}).get('List', {}).get('InPatientMainInfo', [])
-            # 兼容O类型返回单个字典的情况，只见于请求只返回一个患者的时候。
-            if isinstance(patients, dict):
-                patients = [patients]
-            elif not isinstance(patients, list):
-                self.logger.error(f"无效的患者数据格式: {type(patients)}")
-                patients = []
-            
-            updated_count = 0
-            inserted_count = 0
-            for idx, patient in enumerate(patients, 1):
-                empi = patient.get('EMPI')
-                if not empi:
-                    self.logger.warning(f"患者记录{idx}缺少EMPI，跳过")
-                    continue
-                
-                patient_name = patient.get('NAME', '未知')
-                diag = patient.get('DIAG_NAME1', '无诊断信息')
-                self.logger.info(f"正在处理患者 {patient_name}({empi}) - 诊断: {diag} [{idx}/{len(patients)}]")
-                
-                if self.fetch_records:
-                    yield scrapy.Request(
-                        url=f"https://yihu.gzsums.net/ccd/api/inpatient/record?id={empi}",
-                        cookies=response.request.cookies,
-                        callback=self.parse_visit_records,
-                        meta={
-                            'patient_empi': empi,
-                            'patient_name': patient_name,
-                            'current_patient_index': idx,
-                            'total_patients': len(patients)
-                        }
-                    )
-                # 保存患者信息
-                existing = db_session.query(Patient)\
-                    .filter_by(empi=empi)\
-                    .first()
-                    
-                # 总是更新患者状态和基本信息
-                if existing:
-                    existing.patient_name = patient.get('NAME')
-                    existing.patient_no = patient.get('PATIENT_NO')
-                    existing.patient_type = patient.get('IN_STATE')  # 确保状态更新
-                    existing.dept_code = patient.get('DEPT_CODE')
-                    existing.raw_data = patient
-                    updated_count += 1
-                else:
-                    new_patient = Patient(
-                        empi=empi,
-                        patient_name=patient.get('NAME'),
-                        patient_no=patient.get('PATIENT_NO'),
-                        patient_type=patient.get('IN_STATE'),
-                        dept_code=patient.get('DEPT_CODE'),
-                        raw_data=patient
-                    )
-                    db_session.add(new_patient)
-                    inserted_count += 1              
-            
-            try:
-                db_session.commit()
-#                self.processed_count += len(patients)
-                self.logger.info(f"患者记录处理完成 - 本次返回: {len(patients)}条, 更新: {updated_count}条, 新增: {inserted_count}条")
-            except Exception as e:
-                db_session.rollback()
-                self.logger.error(f"提交事务失败: {str(e)}")
-                raise    
-              
+            patients = data.get('data', {}).get('List', {}).get('InPatientMainInfo') or []
+            if isinstance(patients, dict): patients = [patients]
+
+            mappings = []
+            for p in patients:
+                empi = p.get('EMPI')
+                if not empi: continue
+                mappings.append({
+                    'empi': empi,
+                    'patient_name': p.get('NAME'),
+                    'patient_no': p.get('PATIENT_NO'),
+                    'patient_type': p.get('IN_STATE'),
+                    'dept_code': p.get('DEPT_CODE'),
+                    'raw_data': p
+                })
+            empi_list = [m['empi'] for m in mappings]
+
+            with self.Session() as session:
+                existing = {e[0] for e in session.query(Patient.empi)
+                                    .filter(Patient.empi.in_(empi_list)).all()}
+
+                to_insert = [m for m in mappings if m['empi'] not in existing]
+                if to_insert:
+                    session.bulk_insert_mappings(Patient, to_insert)
+
+                if self.force_updatedb:
+                    to_update = [m for m in mappings if m['empi'] in existing]
+                    if to_update:
+                        session.bulk_update_mappings(Patient, to_update)
+
+                session.commit()
+                self.stats['patients'] = len(existing) + len(to_insert)
+                self.logger.info(f"患者列表：{len(to_insert)} 新，{len(existing)} 已存")
+
+            for m in mappings:
+                yield self.fetch_visit_records(m['empi'], m['patient_name'])
         except Exception as e:
-            db_session.rollback()
-            self.logger.error(f"保存患者信息失败: {str(e)}")
-            self.logger.error(f"响应: {response.text}")
-        finally:
-            db_session.close()
+            self.stats['errors'] += 1
+            self.logger.error(f"解析患者列表失败: {e}")
+            self.logger.error(f"原始响应: {response.text}")
+
+    def fetch_visit_records(self, empi, patient_name):
+        return scrapy.Request(
+            url = f"{self.record_base_url}?id={empi}",
+            cookies=self.login_handler.get_session()['cookies'],
+            callback=self.parse_visit_records,
+            errback=self.handle_request_error,
+            meta={'patient_empi': empi, 'patient_name': patient_name,
+                  'handle_httpstatus_list': [400,401,403,404,500]}
+        )
 
     def parse_visit_records(self, response):
-        empi = response.meta['patient_empi']
-        data = json.loads(response.text)
-        if data.get('code') != 200:
-            self.logger.error(f"获取就诊记录失败: {data.get('message')}")
-            return
-            
-        timeline = data.get('data', {}).get('patientTimeLine', [])
-        if not timeline:
-            self.logger.info(f"患者{empi}无就诊记录")
-            return
-            
-        db_session = self.Session()
+        empi = response.meta.get('patient_empi')
+        pname = response.meta.get('patient_name')
         try:
-            for record in timeline:
-                for visit in record.get('timeLine', []):
-                    visit_flow_id = visit.get('visitFlowId')
-                    if not visit_flow_id:
-                        continue
-                        
-                    admit_date_str = visit.get('admitDate')
-                    admit_date = datetime.strptime(admit_date_str, '%Y%m%d%H%M%S') if admit_date_str else None
-                    
-                    existing = db_session.query(VisitRecord)\
-                        .filter_by(visit_flow_id=visit_flow_id)\
-                        .first()
-                        
-                    if existing:
-                        existing.admit_date = admit_date
-                        existing.dept_code = visit.get('deptCode')
-                        existing.dept_name = visit.get('deptName')
-                        existing.clinic_type = visit.get('clinicTypeName')
-                        existing.visit_flow_domain = visit.get('visitFlowDomain')
-                        existing.timeline_raw_data = visit
-                    else:
-                        new_visit = VisitRecord(
-                            visit_flow_id=visit_flow_id,
-                            empi=empi,
-                            admit_date=admit_date,
-                            dept_code=visit.get('deptCode'),
-                            dept_name=visit.get('deptName'),
-                            clinic_type=visit.get('clinicTypeName'),
-                            visit_flow_domain=visit.get('visitFlowDomain'),
-                            timeline_raw_data=visit
-                        )
-                        db_session.add(new_visit)
-                        
-            db_session.commit()
-            # 在保存记录时统计新增和更新数量
-            new_count = sum(1 for r in timeline for v in r.get('timeLine', []) 
-                        if not db_session.query(VisitRecord)
-                                       .filter_by(visit_flow_id=v.get('visitFlowId'))
-                                       .first())
-            updated_count = sum(1 for r in timeline for v in r.get('timeLine', [])
-                             if db_session.query(VisitRecord)
-                                        .filter_by(visit_flow_id=v.get('visitFlowId'))
-                                        .first())
-            total_count = new_count + updated_count
-            
-            patient_name = response.meta.get('patient_name', '未知')
-#            current_idx = response.meta.get('current_patient_index', 0)
-            total_patients = response.meta.get('total_patients', 0)
-            
-            self.logger.info(
-                f"已保存患者{patient_name}({empi})的就诊记录，"
-                f"新增{new_count}条，更新{updated_count}条，"
-                f"现共有{total_count}条"
-            )
+            payload = json.loads(response.text)
+            if payload.get('code') != 200:
+                self.logger.error(f"获取就诊记录失败: {payload.get('message')}")
+                return
+            entries = payload.get('data', {}).get('patientTimeLine') or []
+            if not entries:
+                self.logger.info(f"{pname}({empi})无就诊记录")
+                return
+
+            new_records = []
+            for entry in entries:
+                visits = entry.get('timeLine') or []
+                for v in visits:
+                    vid = v.get('visitFlowId')
+                    if not vid: continue
+                    new_records.append({
+                        'visit_flow_id': vid,
+                        'empi': empi,
+                        'admit_date': datetime.strptime(v.get('admitDate',''), '%Y%m%d%H%M%S')
+                                        if v.get('admitDate') else None,
+                        'discharge_date': datetime.strptime(v.get('dischargeDate',''), '%Y%m%d%H%M%S')
+                                        if v.get('dischargeDate') else None,
+                        'dept_code': v.get('deptCode'),
+                        'dept_name': v.get('deptName'),
+                        'clinic_type': v.get('clinicTypeName'),
+                        'visit_flow_domain': v.get('visitFlowDomain'),
+                        'timeline_raw_data': v
+                    })
+
+            cnt = len(new_records)
+            self.stats['records'] += cnt
+            self.logger.info(f"{pname}({empi}) 获取 {cnt} 条就诊记录")
+
+            if new_records:
+                self.record_buffer.extend(new_records)
+                if len(self.record_buffer) >= 100:
+                    self.batch_save_records()
         except Exception as e:
-            db_session.rollback()
-            self.logger.error(f"保存就诊记录失败: {str(e)}")
-            self.logger.error(f"错误记录: {json.dumps(visit, ensure_ascii=False)}")
-        finally:
-            db_session.close()
+            self.stats['errors'] += 1
+            self.logger.error(f"解析就诊记录失败: {e}")
+            self.logger.error(f"{pname}({empi}) 原始响应: {response.text}")
+
+    def batch_save_records(self):
+        """对 visit_flow_id 做增量插入/更新，并填充 patient_id 外键"""
+        if not self.record_buffer:
+            return
+        BATCH = 100
+        total_i = total_u = 0
+        with self.Session() as session:
+            # 1) 先查询所有 EMPI 对应的 Patient.id
+            empis = list({r['empi'] for r in self.record_buffer})
+            patients = session.query(Patient.empi, Patient.id) \
+                .filter(Patient.empi.in_(empis)).all()
+            empi_to_id = {empi: pid for empi, pid in patients}
+            # 2) 为每条记录填充 patient_id
+            for rec in self.record_buffer:
+                rec['patient_id'] = empi_to_id.get(rec['empi'])
+
+            # 3) 分批处理
+            while len(self.record_buffer) >= BATCH:
+                batch = self.record_buffer[:BATCH]
+                vfids = [r['visit_flow_id'] for r in batch]
+                exist = {x[0] for x in session.query(VisitRecord.visit_flow_id)
+                                  .filter(VisitRecord.visit_flow_id.in_(vfids)).all()}
+                ins = [r for r in batch if r['visit_flow_id'] not in exist]
+                upd = [r for r in batch if r['visit_flow_id'] in exist]
+                if ins:
+                    session.bulk_insert_mappings(VisitRecord, ins)
+                if self.force_updatedb and upd:
+                    session.bulk_update_mappings(VisitRecord, upd)
+                session.commit()
+                total_i += len(ins)
+                total_u += len(upd) if self.force_updatedb else 0
+                self.record_buffer = self.record_buffer[BATCH:]
+
+            # 4) 处理剩余不足 BATCH 的记录
+            if self.record_buffer:
+                batch = self.record_buffer
+                vfids = [r['visit_flow_id'] for r in batch]
+                exist = {x[0] for x in session.query(VisitRecord.visit_flow_id)
+                                  .filter(VisitRecord.visit_flow_id.in_(vfids)).all()}
+                ins = [r for r in batch if r['visit_flow_id'] not in exist]
+                upd = [r for r in batch if r['visit_flow_id'] in exist]
+                if ins:
+                    session.bulk_insert_mappings(VisitRecord, ins)
+                if self.force_updatedb and upd:
+                    session.bulk_update_mappings(VisitRecord, upd)
+                session.commit()
+                total_i += len(ins)
+                total_u += len(upd) if self.force_updatedb else 0
+                self.record_buffer.clear()
+
+        # 5) 更新统计并记录日志
+        self.stats['saved'] += total_i
+        self.stats['updated'] += total_u
+        self.logger.info(f"写入: {total_i}, 更新: {total_u} 更新完毕")
+
+    def handle_request_error(self, failure):
+        self.stats['errors'] += 1
+        self.logger.error(f"请求失败: {failure!r}")
+        if failure.check(HttpError):
+            resp = failure.value.response
+            self.logger.error(f"HTTP 错误: {resp.status} {resp.url}")
+
+    def closed(self, reason):
+        # 最后补写
+        if self.record_buffer:
+            self.logger.info(f"关闭时写入剩余{len(self.record_buffer)} 条记录")
+            self.batch_save_records()

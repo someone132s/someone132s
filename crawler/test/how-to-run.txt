@@ -1,0 +1,10 @@
+在/app下
+
+# 测试5条未更新记录(默认)
+python3 -m test.test_visit-items-spider
+
+# 测试10条记录
+python3 -m test.test_visit-items-spider -l 10
+
+# 强制更新20条记录
+python3 -m test.test_visit-items-spider -l 20 -f

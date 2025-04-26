@@ -41,11 +41,12 @@ class Department(Base):
 class Patient(Base):
     __tablename__ = 'patients'
     
-    empi = Column(String(50), primary_key=True)
-    patient_name = Column(String(100))
-    patient_no = Column(String(50))
-    patient_type = Column(String(10))  # I/O
-    dept_code = Column(String(100))
+    id = Column(Integer, primary_key=True)
+    empi = Column(String(50), unique=True, nullable=False)
+    patient_name = Column(String(100), nullable=False)
+    patient_no = Column(String(50), nullable=False)
+    patient_type = Column(String(10), nullable=False)  # I/O
+    dept_code = Column(String(100), index=True)
     raw_data = Column(JSONB)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
@@ -55,20 +56,52 @@ class Patient(Base):
 class VisitRecord(Base):
     __tablename__ = 'visit_records'
     
-    visit_flow_id = Column(String(100), primary_key=True)
-    empi = Column(String(50), ForeignKey('patients.empi'))
+    id = Column(Integer, primary_key=True)
+    visit_flow_id = Column(String(100), unique=True, nullable=False, index=True)
+    patient_id = Column(Integer, ForeignKey('patients.id', ondelete='CASCADE'), 
+                     nullable=False, index=True)
+    empi = Column(String(50), nullable=False)  # 保留作为冗余字段
     admit_date = Column(DateTime)
+    discharge_date = Column(DateTime)
     dept_code = Column(String(100))  # 科室代码
     dept_name = Column(String(100))  # 科室名称
     pat_cur_dep = Column(String(50))  # 科室护士站代号
     clinic_type = Column(String(20))  # 门诊/住院
     visit_flow_domain = Column(String(100))
-    timeline_raw_data = Column(JSONB)  # 原raw_data重命名
-    payload_type_info = Column(JSONB)  # 存储payLoadTypeList完整结构
+    timeline_raw_data = Column(JSONB)
+    payload_type_info = Column(JSONB)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     
     patient = relationship("Patient", back_populates="visits")
+    documents = relationship("MedicalDocument", back_populates="visit")
 
     def __repr__(self):
         return f"<VisitRecord(flow_id={self.visit_flow_id}, dept={self.dept_name}, date={self.admit_date})>"
+
+class MedicalDocument(Base):
+    __tablename__ = 'medical_documents'
+
+    # 主键和外键
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    document_id = Column(String(100), unique=True, nullable=False, index=True)
+    visit_record_id = Column(Integer, ForeignKey('visit_records.id', ondelete='CASCADE'),
+                          nullable=False, index=True)
+    
+    # 冗余字段
+    visit_flow_id = Column(String(100), nullable=True)
+    empi = Column(String(50), nullable=True)
+
+    # 文档内容
+    file_path = Column(String(255))
+    payload_type = Column(String(50))
+    document_metadata = Column(JSONB)
+    document_content = Column(JSONB)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+
+    # 关联关系
+    visit = relationship("VisitRecord", back_populates="documents")
+
+    def __repr__(self):
+        return f"<MedicalDocument(id={self.document_id}, type={self.payload_type})>"

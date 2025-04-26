@@ -2,8 +2,8 @@ import os
 import json
 import scrapy
 from datetime import datetime
-from scrapy.http import FormRequest, Request
-from crawler.models import MedicalDocument
+from scrapy.http import FormRequest
+from crawler.models import MedicalDocument, VisitRecord
 from .login_handler import LoginHandler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,43 +13,44 @@ from dotenv import load_dotenv
 class MedicalDocumentSpider(scrapy.Spider):
     name = "medical-document-spider"
     
-    def __init__(self, empi=None, domain=None, admit_date=None, payload_types=None, visit_flow_id=None, doc_type=None, **kwargs):
-        # 检查参数是否为空字符串或None
+    def __init__(self, empi=None, domain=None, admit_date=None, discharge_date=None, payload_types=None, 
+                 visit_flow_id=None, doc_type=None, strict_date_check=True, **kwargs):
         required_params = {
             'empi': empi,
             'domain': domain,
             'admit_date': admit_date,
+            'discharge_date': discharge_date,
             'payload_types': payload_types,
             'visit_flow_id': visit_flow_id,
             'doc_type': doc_type
         }
         
-        missing_params = [name for name, value in required_params.items() if not value and value != 0]
+        missing_params = [name for name, value in required_params.items() if value is None]
         if missing_params:
             raise ValueError(f"缺少必要参数: {', '.join(missing_params)}")
             
+        load_dotenv()
         self.empi = empi
         self.domain = domain
         self.admit_date = admit_date
+        self.discharge_date = discharge_date
+        self.strict_date_check = strict_date_check
         self.payload_types = payload_types
         self.visit_flow_id = visit_flow_id
         self.doc_type = doc_type
-        self.base_url = "https://yihu.gzsums.net/ccd/api/inpatient/data"
+        self.base_url = os.getenv('MEDICAL_DOCUMENT_URL')
         self.current_page = 0
-        self.all_documents = []  # 临时存储所有文档
-        load_dotenv()
+        self.all_documents = []
         self.engine = create_engine(os.getenv('DATABASE_URI'))
         self.Session = sessionmaker(bind=self.engine)
         self.login_handler = LoginHandler()
         super().__init__(**kwargs)
 
     def start_requests(self, page_no=0):
-        """构造并提交POST请求"""
         session = self.login_handler.get_session()
         if not session:
             raise ValueError("无法获取有效会话")
 
-        # 基础参数
         formdata = {
             "empi": self.empi,
             "domain": self.domain,
@@ -59,18 +60,14 @@ class MedicalDocumentSpider(scrapy.Spider):
             "pageNo": str(page_no)
         }
 
-        # 根据类型添加特殊参数
         if self.doc_type == "payLoadType.JianYan":
-            formdata.update({
-                "searchType": "0"  # 0-所有检验 1-最近一周
-            })
+            formdata.update({"searchType": "0"})
         elif self.doc_type == "payLoadType.JianCha":
             formdata.update({
                 "id": self.visit_flow_id,
-                "jcSearchType": "1"  # 固定为1(本次检查)
+                "jcSearchType": "1"
             })
         else:
-            # 其他类型添加visit_flow_id
             formdata["id"] = self.visit_flow_id
 
         headers = {
@@ -79,7 +76,7 @@ class MedicalDocumentSpider(scrapy.Spider):
             "Connection": "keep-alive",
         }
 
-        request = FormRequest(
+        yield FormRequest(
             url=self.base_url,
             method='POST',
             formdata=formdata,
@@ -88,105 +85,125 @@ class MedicalDocumentSpider(scrapy.Spider):
             callback=self.parse_page,
             meta={'page_no': page_no}
         )
-        
-        yield request
 
     def parse_page(self, response):
-        print("#####",response)
         try:
             data = json.loads(response.text)
             
-            # 检查响应状态码和数据有效性
             if response.status != 200 or data.get("code") != 200:
                 raise ValueError(f"Invalid response status: {response.status}, code: {data.get('code')}")
             
-            # 检查分页信息
             if 'data' not in data or 'page' not in data['data'] or 'totalPage' not in data['data']['page']:
                 raise ValueError("Invalid response: missing pagination data")
             self.total_pages = data['data']['page']['totalPage']
             
-            # 检查并收集当前页文档
             if "data" in data and "list" in data["data"] and len(data["data"]["list"]) > 0:
                 if "documentList" in data["data"]["list"][0]:
                     self.all_documents.extend(data["data"]["list"][0]["documentList"])
                 else:
                     self.logger.warning(f"No documentList found in page {response.meta['page_no']}")
-            else:
-                self.logger.warning(f"No valid data found in page {response.meta['page_no']}")
             
-            # 递归请求下一页
             self.current_page += 1
-            if self.current_page < self.total_pages: # 必须是小于，不可以是等于
+            if self.current_page < self.total_pages:
                 yield from self.start_requests(page_no=self.current_page)
             else:
-                # 所有页收集完成，处理数据
                 self.logger.info(f"Total pages processed: {self.total_pages}")
                 self.logger.info(f"Total documents collected: {len(self.all_documents) if self.all_documents else 0}")
                 
-                if self.all_documents:  # 确保有文档才处理
-                    result = self.process_all_documents()
-                    if result is None:
-                        self.logger.error("process_all_documents returned None")
-                        return
-                    yield from result
-                else:
-                    self.logger.warning("No documents collected from all pages")
+                if self.all_documents:
+                    yield from self.process_all_documents()
                 
         except Exception as e:
             self.logger.error(f"Failed to parse page {response.meta['page_no']}: {str(e)}")
             raise
 
-    def process_all_documents(self):
-        self.logger.info("Starting to process all documents")
-        processed_count = 0
+    def parse_special_date(self, date_str):
+        """处理特殊日期值00010101000000并统一日期格式"""
+        if date_str == "00010101000000":
+            self.logger.info("发现住院中患者，使用当前时间作为出院时间")
+            return datetime.now()
+        
         try:
-            for doc in self.all_documents:
-                try:
-                    # 注意主键是documentuniqueid(小写)
-                    doc_id = doc["documentuniqueid"]
-                    
-                    db_session = self.Session()
+            # 尝试解析"20250410155830"格式
+            if len(date_str) == 14 and date_str.isdigit():
+                return datetime.strptime(date_str, "%Y%m%d%H%M%S")
+            # 尝试解析"2025-04-01 11:13"格式并补全秒数
+            if len(date_str) == 16 and ":" in date_str:  # 2025-04-01 11:13
+                date_str += ":00"  # 补全秒数
+                return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            # 其他格式尝试原样解析
+            return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        except ValueError as e:
+            self.logger.warning(f"无法解析日期格式: {date_str}, 错误: {str(e)}")
+            return None
 
-                    # 检查文档是否已存在
-                    existing_doc = db_session.query(MedicalDocument).filter_by(
-                        document_id=doc_id
-                    ).first()
-                    
-                    if existing_doc:
-                        # 更新现有文档
-                        existing_doc.visit_flow_id = doc.get("visitFlowId")
-                        existing_doc.empi = self.empi
-                        existing_doc.file_path = doc.get("filepath")
-                        existing_doc.payload_type = doc["payLoadType"]
-                        existing_doc.document_metadata = doc  # 直接存储整个文档对象
-                        existing_doc.document_content = None  # 留空content字段
-                        existing_doc.status = "success"
-                        existing_doc.updated_at = datetime.now()
-                    else:
-                        # 创建新文档
-                        new_doc = MedicalDocument(
-                            document_id=doc_id,
-                            visit_flow_id=doc.get("visitFlowId"),
-                            empi=self.empi,
-                            file_path=doc.get("filepath"),
-                            payload_type=doc["payLoadType"],
-                            document_metadata=doc,  # 直接存储整个文档对象
-                            document_content=None,  # 留空content字段
-                            status="success"
-                        )
-                        db_session.add(new_doc)
-                    
-                    db_session.commit()
-                    
-                except Exception as e:
-                    db_session.rollback()
-                    self.logger.error(f"Failed to process document {doc_id}: {str(e)}")
-            processed_count += 1
-            if processed_count % 10 == 0:  # 每处理10个文档记录一次
-                self.logger.info(f"Processed {processed_count}/{len(self.all_documents)} documents")
+    def is_document_in_visit(self, doc):
+        """检查文档是否在就诊时间范围内"""
+        doc_time = self.parse_special_date(doc.get("dicomStudyTime"))
+        if not doc_time:
+            return not self.strict_date_check
+            
+        admit_time = self.parse_special_date(self.admit_date)
+        discharge_time = self.parse_special_date(self.discharge_date)
+        
+        if not all([admit_time, discharge_time]):
+            self.logger.error("无法解析入院或出院日期")
+            return False
+            
+        return admit_time <= doc_time <= discharge_time
+
+    def process_all_documents(self):
+        session = self.Session()
+        try:
+            # 0. 过滤不在就诊期间的文档
+            original_count = len(self.all_documents)
+            self.all_documents = [doc for doc in self.all_documents if self.is_document_in_visit(doc)]
+            filtered_count = original_count - len(self.all_documents)
+            if filtered_count > 0:
+                self.logger.info(f"过滤掉{filtered_count}份不在就诊期间的文档")
                 
+            # 1. 预取VisitRecord映射
+            flow_ids = {d["visitFlowId"] for d in self.all_documents}
+            mapping = session.query(VisitRecord.visit_flow_id, VisitRecord.id) \
+                            .filter(VisitRecord.visit_flow_id.in_(flow_ids)) \
+                            .all()
+            flowid_to_recordid = {fid: recid for fid, recid in mapping}
+
+            # 2. 批量upsert文档
+            to_insert, to_update = [], []
+            for doc in self.all_documents:
+                doc_id = doc["documentuniqueid"]
+                vrid = flowid_to_recordid.get(doc["visitFlowId"])
+                base = {
+                    "document_id": doc_id,
+                    "visit_record_id": vrid,
+                    "visit_flow_id": doc["visitFlowId"],
+                    "empi": self.empi,
+                    "file_path": doc.get("filepath"),
+                    "payload_type": doc["payLoadType"],
+                    "document_metadata": doc,
+                    "updated_at": datetime.now()
+                }
+                existing = session.query(MedicalDocument.id) \
+                                 .filter_by(document_id=doc_id).first()
+                if existing:
+                    base["id"] = existing[0]  # 添加主键id
+                    to_update.append(base)
+                else:
+                    base["created_at"] = datetime.now()
+                    to_insert.append(base)
+
+            if to_insert:
+                session.bulk_insert_mappings(MedicalDocument, to_insert)
+            if to_update:
+                session.bulk_update_mappings(MedicalDocument, to_update)
+            session.commit()
+            self.logger.info(f"Inserted {len(to_insert)} docs, updated {len(to_update)} docs")
+
+        except Exception as e:
+            session.rollback()
+            self.logger.exception("批量处理文档失败")
+            raise
         finally:
-            if 'db_session' in locals():
-                db_session.close()
-            self.logger.info(f"Finished processing {processed_count} documents")
-            return []  # 返回空列表避免NoneType错误
+            session.close()
+            return []
