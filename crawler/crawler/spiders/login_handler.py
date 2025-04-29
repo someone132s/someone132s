@@ -67,11 +67,6 @@ class LoginStateMachine:
         self.machine.add_transition('ccd_valid', 'ccd_query', 'ccd_ready')
         #目前还需要！
 
-        #self.machine.add_transition('ccd_invalid','ccd_query', 'renew_ccd_session')
-        #不再使用的旧路径，暂时不删
-        #self.machine.add_transition('dept_cookie_ready', 'ccd_query', 'ccd_ready')
-        #不再使用的旧路径，暂时不删
-
         # 重置/作废/错误
         self.machine.add_transition('reset', '*', 'init')
         self.machine.add_transition('invalidate', ['portal_ready','ccd_ready'], 'init')
@@ -80,12 +75,14 @@ class LoginStateMachine:
         
         # CCD会话重建流程
         self.machine.add_transition('renew_ccd', '*', 'renew_ccd_session')
+        self.machine.add_transition('ccd_invalid', 'ccd_query', 'renew_ccd_session')
         self.machine.add_transition('renew_complete', 'renew_ccd_session', 'ccd_ready')
         self.machine.add_transition('renew_failed', 'renew_ccd_session', 'error')
 
         # 回调绑定
         self.machine.on_enter_config_loaded('_on_config_loaded')
-        self.machine.on_enter_db_connected('_on_db_connected')
+        #移除它，避免get portal没有传参user id
+        #self.machine.on_enter_db_connected('_on_db_connected')
         
         # Portal流程回调
         self.machine.on_enter_portal_query('_on_portal_query')
@@ -95,8 +92,8 @@ class LoginStateMachine:
         self.machine.on_enter_ccd_query('_on_ccd_query')
         
         # 公共回调
-        #self.machine.on_enter_error('_on_error')
-        #self.machine.on_enter_init('_on_reset')
+        self.machine.on_enter_error('_on_error')
+        self.machine.on_enter_init('_on_reset')
         self.machine.on_enter_renew_ccd_session('_on_renew_ccd_session')
         self.machine.on_enter_renew_portal('_on_renew_portal')
         
@@ -165,7 +162,7 @@ class LoginStateMachine:
                 }
                 self.ccd_valid()
             else:
-                self.renew_ccd()
+                self.ccd_invalid()
         except Exception as e:
             self.logger.error(f"查询ccd会话失败: {e}")
             self.error(error=e)
@@ -189,6 +186,15 @@ class LoginStateMachine:
             return r.status_code == 200
         except:
             return False
+        
+    def _on_reset(self):
+        self.logger.info("状态机 reset")
+        self.context.clear()
+
+    def _on_error(self, *_, **__):
+        self.logger.error("进入 error 状态")
+        # 若想自动复位则解除注释
+        # self.reset()
 
     def encrypt_password(self, pwd):
         if not self.sm4_key or len(self.sm4_key)!=32:
@@ -245,54 +251,6 @@ class LoginStateMachine:
         except Exception as e:
             self.logger.error(f"登录失败: {e}")
             self.error(error=e)
-
-    #旧代码，暂时不删先
-    """
-    # ———— 科室 cookie 流程 ————
-    def _on_fetch_dept_cookie(self):
-        #fetch_dept_cookie → 请求科室 cookie → dept_cookie_ready/dept_cookie_failed
-        try:
-            dept = self.context.get('dept_id')
-            if not dept:
-                raise ValueError("缺 dept_id")
-            sess = self.repo.get_active_session(
-                self.context['user_id'],
-                dept_id=self.context['dept_id']
-            )
-            if not sess:
-                raise ValueError("无有效会话")
-            url=f"{self.dept_cookie_url}?token={sess.access_token}&deptId={dept}"
-            r=requests.get(url, cookies=sess.cookies, timeout=10)
-            if r.status_code==200:
-                new_c=dict(r.cookies)
-                merged={**sess.cookies,**new_c}
-                # 保存
-                self.repo.save_session({
-                    'user_id':self.username,
-                    'cookies':merged,
-                    'access_token':sess.access_token,
-                    'user_code':sess.user_code,
-                    'expires_at':sess.expires_at.isoformat(),
-                    'dept_id':dept  # 添加科室ID
-                })
-                self.context['cookies']=merged
-                self.context['ccd_session'] = {'user_id': self.context['user_id'], 'dept_id': dept, 'access_token': sess.access_token, 'cookies': merged}
-                self.renew_complete()
-            else:
-                raise ValueError(f"HTTP {r.status_code}")
-        except Exception as e:
-            self.logger.error(f"拿 dept cookie 失败: {e}")
-            self.renew_failed(error=e)
-
-    def _on_error(self, error=None):
-        self.logger.error(f"状态机 error: {error}")
-        # 自动 reset 回 init
-        self.reset()
-
-    def _on_reset(self):
-        self.logger.info("状态机 reset")
-        self.context.clear()
-    """
         
     def _on_renew_portal(self):
         """处理portal会话重建"""
@@ -502,7 +460,7 @@ class LoginHandler:
             raise RuntimeError(f"获取科室[{dept_id}]会话失败")
         return self.sm.context['ccd_session']
 
-def mark_ccd_invalid(self, user_id: str, dept_id: str) -> dict:
+    def mark_ccd_invalid(self, user_id: str, dept_id: str) -> dict:
         """
         标记CCD会话失效并重建
         Args:
@@ -543,3 +501,19 @@ def mark_ccd_invalid(self, user_id: str, dept_id: str) -> dict:
         if self.sm.state != 'ccd_ready':
             raise RuntimeError(f"重建科室[{dept_id}]会话失败")
         return self.sm.context['ccd_session']
+
+    def is_ccd_expired_response(self, response) -> bool:
+        """
+        根据一次 CCD 业务请求的 response 判断 cookie 是否失效：
+        - 如果状态码是 302（重定向到登录页），则视为失效
+        - 否则（200 等），视为仍然有效
+        """
+        # Scrapy 在 meta.handle_httpstatus_list 中放行 302，此时 response.status == 302
+        if response.status in (301, 302):
+            # 可选：进一步检查 response.headers['Location'] 是否包含登录 URL 关键字
+            #loc = response.headers.get('Location', b'').decode('utf8')
+            #if self.login_url in loc:
+            #    return True
+            return True
+        # 其他状态码（如 200）视为有效
+        return False

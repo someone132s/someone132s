@@ -30,17 +30,20 @@ from dotenv import load_dotenv
 class InfoTimelineSpider(scrapy.Spider):
     name = "info-timeline-spider"
 
-    def __init__(self, type=None, dept_id=None, start_date=None, end_date=None,
+    def __init__(self, user_id=None, dept_id=None, type=None, start_date=None, end_date=None,
                  force_updatedb=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        load_dotenv()
+        if not all([user_id, dept_id, type]):
+            raise ValueError("必须提供 user_id, dept_id 和 type 参数")
         if type not in ['I', 'O']:
             raise ValueError("type 参数必须是 'I' 或 'O'")
         if not dept_id:
             raise ValueError("dept_id 参数不能为空")
 
-        self.type = type
+        load_dotenv()
+        self.user_id = user_id
         self.dept_id = dept_id
+        self.type = type
         self.start_date = start_date if type == 'O' else None
         self.end_date = end_date if type == 'O' else None
         self.force_updatedb = force_updatedb
@@ -56,8 +59,9 @@ class InfoTimelineSpider(scrapy.Spider):
 
     def start_requests(self):
         # 获取cookie：yihu-ccd
-        self.login_handler.get_dept_cookie(self.dept_id)
-        session = self.login_handler.get_session()
+        session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
+        self.ccd_cookies = session['cookies']
+
         if not session:
             raise ValueError("无法获取有效会话")
 
@@ -69,8 +73,8 @@ class InfoTimelineSpider(scrapy.Spider):
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         yield scrapy.FormRequest(
             method='POST', url=self.patient_list_url,
-            cookies=session['cookies'], formdata=formdata,
-            headers=headers, callback=self.parse_patient_list
+            cookies=self.ccd_cookies, meta={'cookiejar': 1},
+            formdata=formdata, headers=headers, callback=self.parse_patient_list
         )
 
     def parse_patient_list(self, response):
@@ -120,14 +124,31 @@ class InfoTimelineSpider(scrapy.Spider):
     def fetch_visit_records(self, empi, patient_name):
         return scrapy.Request(
             url = f"{self.record_base_url}?id={empi}",
-            cookies=self.login_handler.get_session()['cookies'],
             callback=self.parse_visit_records,
             errback=self.handle_request_error,
-            meta={'patient_empi': empi, 'patient_name': patient_name,
+            meta={'cookiejar': 1, 'patient_empi': empi, 'patient_name': patient_name,
                   'handle_httpstatus_list': [400,401,403,404,500]}
         )
 
     def parse_visit_records(self, response):
+        # —— 会话过期检测 ——  
+        if self.login_handler.is_ccd_expired_response(response):
+            self.logger.warning("检测到 CCD 会话已过期，正在重建并重试…")
+            # 重建 CCD 会话
+            new_sess = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            # 用新 Cookie 重试当前 URL
+            yield scrapy.Request(
+                url=response.url,
+                callback=self.parse_visit_records,
+                dont_filter=True,
+                cookies=new_sess['cookies'],        # 新的 CCD cookies
+                meta={'cookiejar': response.meta.get('cookiejar', 1),
+                      'patient_empi': response.meta['patient_empi'],
+                      'patient_name': response.meta['patient_name'],
+                      'handle_httpstatus_list': [200,302]}
+            )
+            return
+
         empi = response.meta.get('patient_empi')
         pname = response.meta.get('patient_name')
         try:

@@ -12,12 +12,11 @@ from urllib.parse import urlencode
 class UserDepartmentSpider(scrapy.Spider):
     name = "user-department-spider"
     
-    def __init__(self, user_id=None, dept_id=None, *args, **kwargs):
+    def __init__(self, user_id=None, *args, **kwargs):
         super(UserDepartmentSpider, self).__init__(*args, **kwargs)
-        if not all([user_id, dept_id]):
-            raise ValueError("必须提供user_id和dept_id参数")
+        if not all([user_id]):
+            raise ValueError("必须提供user_id参数")
         self.user_id = user_id
-        self.dept_id = dept_id
 
         load_dotenv()
         login_url = os.getenv('LOGIN_URL')
