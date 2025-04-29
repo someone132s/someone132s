@@ -1,0 +1,533 @@
+{
+    "code": 200,
+    "data": {
+        "accessionnum": "",
+        "anesthesiaMethod": "",
+        "bacTestList": [],
+        "bacteriaBbly": "",
+        "bacteriaItemList": [],
+        "bacteriaReportType": "",
+        "bedNo": "",
+        "bglr": "",
+        "bgrq": "",
+        "bgsj": "",
+        "bgys": "",
+        "bodyPart": "",
+        "checkDoctor": "",
+        "checkTheResult": "",
+        "deptStayed": "",
+        "diagBeforeOperation": "",
+        "dicomNum": "",
+        "documentuniqueid": "",
+        "effectiveTime": null,
+        "emergencyIndicator": "",
+        "errorMsg": "",
+        "explain": "",
+        "fileSystemFk": 0,
+        "filepath": "",
+        "flowFlag": "false",
+        "hisType": "",
+        "hospitalizeNo": "",
+        "imageBase64IndexList": [],
+        "imageFlag": "false",
+        "imageFlagDescribes": [],
+        "inspectionRecordList": [],
+        "instXmlBeans": null,
+        "jcsj": "",
+        "jytext": [],
+        "lisBbly": "静脉血",
+        "lisItemList": [
+            "乙肝表面抗原(发光)HBsAg",
+            "乙肝表面抗体(发光)HBsAb",
+            "乙肝e抗原(发光)HBeAg",
+            "乙肝e抗体(发光)HBeAb",
+            "乙肝核心抗体(发光)HBcAb",
+            "丙型肝炎病毒抗体(发光)HCV-Ab",
+            "人免疫缺陷病毒I型II型(HIV)",
+            "梅毒螺旋体抗体"
+        ],
+        "lisJyjg": "",
+        "lisTablesList": [],
+        "modality": "",
+        "operationName": "",
+        "patientDomain": "",
+        "patientId": "",
+        "personId": "",
+        "pk": 0,
+        "profileDesc": "",
+        "project": "",
+        "reportDoctor": "",
+        "reportTime": "",
+        "scsj": "",
+        "search": "",
+        "shsj": "",
+        "shys": "",
+        "studyUids": "",
+        "studys": "",
+        "surgeon": "",
+        "title": "",
+        "tuwen": "",
+        "valueMap": {
+            "contentList": [
+                {
+                    "index": "",
+                    "listShow": null,
+                    "name": "标本来源",
+                    "nodeName": "lisBbly",
+                    "other": null,
+                    "text": "静脉血"
+                }
+            ],
+            "tableBottomList": [
+                {
+                    "index": "0",
+                    "listShow": null,
+                    "name": "报告日期",
+                    "nodeName": "bgrq",
+                    "other": "date",
+                    "text": "2025-04-15 11:41"
+                },
+                {
+                    "index": "2",
+                    "listShow": null,
+                    "name": "审核医师",
+                    "nodeName": "shys",
+                    "other": null,
+                    "text": "邝昱"
+                },
+                {
+                    "index": "1",
+                    "listShow": null,
+                    "name": "报告医师",
+                    "nodeName": "bgys",
+                    "other": null,
+                    "text": "欧阳文婷"
+                }
+            ],
+            "tableRowList": [
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "乙肝表面抗原(发光)HBsAg"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": "0.00"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "IU/mL"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": "0.05"
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": ""
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "<0.05"
+                    },
+                    {
+                        "index": "",
+                        "name": "inspectionMax",
+                        "nodeName": "inspectionMax",
+                        "text": "<0.05"
+                    }
+                ],
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "乙肝表面抗体(发光)HBsAb"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": ">1000.00"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "IU/L"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": "1000"
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": "10"
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "10.00 - 1000.00"
+                    },
+                    {
+                        "index": "3",
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "10 - 1000"
+                    }
+                ],
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "乙肝e抗原(发光)HBeAg"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": "0.45"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "S/CO"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": "1"
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": ""
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "<1.00"
+                    },
+                    {
+                        "index": "",
+                        "name": "inspectionMax",
+                        "nodeName": "inspectionMax",
+                        "text": "<1.00"
+                    }
+                ],
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "乙肝e抗体(发光)HBeAb"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": "1.81"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "S/CO"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": ""
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": "1"
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": ">1.00"
+                    },
+                    {
+                        "index": "",
+                        "name": "inspectionMax",
+                        "nodeName": "inspectionMax",
+                        "text": ">1.00"
+                    }
+                ],
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "乙肝核心抗体(发光)HBcAb"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": "0.08"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "S/CO"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": "1"
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": ""
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "<1.00"
+                    },
+                    {
+                        "index": "",
+                        "name": "inspectionMax",
+                        "nodeName": "inspectionMax",
+                        "text": "<1.00"
+                    }
+                ],
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "丙型肝炎病毒抗体(发光)HCV-Ab"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": "0.10"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "S/CO"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": "1"
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": ""
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "<1.00"
+                    },
+                    {
+                        "index": "",
+                        "name": "inspectionMax",
+                        "nodeName": "inspectionMax",
+                        "text": "<1.00"
+                    }
+                ],
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "人免疫缺陷病毒I型II型(HIV)"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": "0.06"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "S/CO"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": "1"
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": ""
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "<1.00"
+                    },
+                    {
+                        "index": "",
+                        "name": "inspectionMax",
+                        "nodeName": "inspectionMax",
+                        "text": "<1.00"
+                    }
+                ],
+                [
+                    {
+                        "index": "0",
+                        "listShow": null,
+                        "name": "检验项名称",
+                        "nodeName": "item",
+                        "text": "梅毒螺旋体抗体"
+                    },
+                    {
+                        "index": "1",
+                        "listShow": null,
+                        "name": "检验结果",
+                        "nodeName": "result",
+                        "text": "0.04"
+                    },
+                    {
+                        "index": "2",
+                        "listShow": null,
+                        "name": "检验项单位",
+                        "nodeName": "unit",
+                        "text": "S/CO"
+                    },
+                    {
+                        "index": "4",
+                        "listShow": null,
+                        "name": "检验指标最大值",
+                        "nodeName": "inspectionMax",
+                        "text": "1"
+                    },
+                    {
+                        "index": "5",
+                        "listShow": null,
+                        "name": "检验指标最小值",
+                        "nodeName": "inspectionMin",
+                        "text": ""
+                    },
+                    {
+                        "index": "3",
+                        "listShow": null,
+                        "name": "参考值",
+                        "nodeName": "displayReference",
+                        "text": "<1.00"
+                    },
+                    {
+                        "index": "",
+                        "name": "inspectionMax",
+                        "nodeName": "inspectionMax",
+                        "text": "<1.00"
+                    }
+                ]
+            ],
+            "tableTitleList": [
+                {
+                    "index": 0,
+                    "name": "项目名称"
+                },
+                {
+                    "index": 1,
+                    "name": "结果"
+                },
+                {
+                    "index": 2,
+                    "name": "单位"
+                },
+                {
+                    "index": 3,
+                    "name": "参考值"
+                }
+            ]
+        },
+        "xAnesthbgXmlBean": null,
+        "xmlPath": "Y:/FILE/FILE_AXDS/2025/04/15/1.2.3.4.120010057062105000.1744688546326.103406.xml",
+        "yxzd": "",
+        "zdys": ""
+    }
+}

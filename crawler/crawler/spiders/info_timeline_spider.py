@@ -55,6 +55,8 @@ class InfoTimelineSpider(scrapy.Spider):
         self.login_handler = LoginHandler()
 
     def start_requests(self):
+        # 获取cookie：yihu-ccd
+        self.login_handler.get_dept_cookie(self.dept_id)
         session = self.login_handler.get_session()
         if not session:
             raise ValueError("无法获取有效会话")

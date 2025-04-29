@@ -8,3 +8,7 @@ python3 -m test.test_visit-items-spider -l 10
 
 # 强制更新20条记录
 python3 -m test.test_visit-items-spider -l 20 -f
+
+#测试门诊/住院患者
+
+python3 -m test.test_visit-items-spider -l 10 -t 住院

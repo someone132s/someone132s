@@ -12,7 +12,13 @@ from urllib.parse import urlencode
 class UserDepartmentSpider(scrapy.Spider):
     name = "user-department-spider"
     
-    def __init__(self):
+    def __init__(self, user_id=None, dept_id=None, *args, **kwargs):
+        super(UserDepartmentSpider, self).__init__(*args, **kwargs)
+        if not all([user_id, dept_id]):
+            raise ValueError("必须提供user_id和dept_id参数")
+        self.user_id = user_id
+        self.dept_id = dept_id
+
         load_dotenv()
         login_url = os.getenv('LOGIN_URL')
         self.allowed_domains = [login_url.split('://')[1].split('/')[0]]
@@ -30,7 +36,7 @@ class UserDepartmentSpider(scrapy.Spider):
 
     def start_requests(self):
         """使用LoginHandler获取会话"""
-        session = self.login_handler.get_session()
+        session = self.login_handler.get_portal_session(self.user_id)
         
         # 使用会话中的cookies发起请求
         yield scrapy.Request(

@@ -7,11 +7,16 @@ from crawler.models import MedicalDocument, VisitRecord
 from .login_handler import LoginHandler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.dialects.postgresql import insert
 from dotenv import load_dotenv
 
 
 class MedicalDocumentSpider(scrapy.Spider):
     name = "medical-document-spider"
+    
+    # 需要执行时间范围筛选的文档类型列表
+    # 只有这些类型的文档会进行就诊时间范围检查
+    NEEDS_TIME_FILTER_TYPES = ['payLoadType.JianYan']
     
     def __init__(self, empi=None, domain=None, admit_date=None, discharge_date=None, payload_types=None, 
                  visit_flow_id=None, doc_type=None, strict_date_check=True, **kwargs):
@@ -65,7 +70,7 @@ class MedicalDocumentSpider(scrapy.Spider):
         elif self.doc_type == "payLoadType.JianCha":
             formdata.update({
                 "id": self.visit_flow_id,
-                "jcSearchType": "1"
+                "jcSearchType": "0"       #0 表示本次，1表示所有
             })
         else:
             formdata["id"] = self.visit_flow_id
@@ -93,28 +98,42 @@ class MedicalDocumentSpider(scrapy.Spider):
             if response.status != 200 or data.get("code") != 200:
                 raise ValueError(f"Invalid response status: {response.status}, code: {data.get('code')}")
             
-            if 'data' not in data or 'page' not in data['data'] or 'totalPage' not in data['data']['page']:
-                raise ValueError("Invalid response: missing pagination data")
-            self.total_pages = data['data']['page']['totalPage']
-            
-            if "data" in data and "list" in data["data"] and len(data["data"]["list"]) > 0:
-                if "documentList" in data["data"]["list"][0]:
-                    self.all_documents.extend(data["data"]["list"][0]["documentList"])
+            page_info = data["data"].get("page", {})
+            self.total_pages = page_info.get("totalPage", 0)
+
+            # 收集所有entry的documentList
+            entries = data["data"].get("list") or []
+            for entry in entries:
+                docs = entry.get("documentList")
+                if docs:
+                    self.all_documents.extend(docs)
                 else:
-                    self.logger.warning(f"No documentList found in page {response.meta['page_no']}")
+                    self.logger.warning(f"页 {response.meta['page_no']} 某 entry 无 documentList")
             
             self.current_page += 1
             if self.current_page < self.total_pages:
                 yield from self.start_requests(page_no=self.current_page)
             else:
-                self.logger.info(f"Total pages processed: {self.total_pages}")
-                self.logger.info(f"Total documents collected: {len(self.all_documents) if self.all_documents else 0}")
-                
+                # 全局去重
+                seen = set()
+                unique_docs = []
+                for d in self.all_documents:
+                    doc_id = d.get("documentuniqueid")
+                    if doc_id and doc_id not in seen:
+                        seen.add(doc_id)
+                        unique_docs.append(d)
+                removed = len(self.all_documents) - len(unique_docs)
+                if removed:
+                    self.logger.info(f"全局去重去掉 {removed} 份重复文档")
+                self.all_documents = unique_docs
+
+                self.logger.info(f"总页数: {self.total_pages}, 唯一文档数: {len(self.all_documents)}")
                 if self.all_documents:
                     yield from self.process_all_documents()
                 
         except Exception as e:
             self.logger.error(f"Failed to parse page {response.meta['page_no']}: {str(e)}")
+            self.logger.error(f"Raw request is {response.text}")
             raise
 
     def parse_special_date(self, date_str):
@@ -137,6 +156,11 @@ class MedicalDocumentSpider(scrapy.Spider):
             self.logger.warning(f"无法解析日期格式: {date_str}, 错误: {str(e)}")
             return None
 
+    def should_filter_document(self, doc):
+        """判断文档是否需要时间范围筛选"""
+        # 根据初始化参数决定是否过滤
+        return self.doc_type in self.NEEDS_TIME_FILTER_TYPES
+
     def is_document_in_visit(self, doc):
         """检查文档是否在就诊时间范围内"""
         doc_time = self.parse_special_date(doc.get("dicomStudyTime"))
@@ -155,50 +179,117 @@ class MedicalDocumentSpider(scrapy.Spider):
     def process_all_documents(self):
         session = self.Session()
         try:
-            # 0. 过滤不在就诊期间的文档
+            # 0. 过滤文档 (只有NEEDS_TIME_FILTER_TYPES中的类型会检查时间范围)
             original_count = len(self.all_documents)
-            self.all_documents = [doc for doc in self.all_documents if self.is_document_in_visit(doc)]
+            self.all_documents = [
+                doc for doc in self.all_documents
+                if not self.should_filter_document(doc) or 
+                   self.is_document_in_visit(doc)
+            ]
             filtered_count = original_count - len(self.all_documents)
             if filtered_count > 0:
                 self.logger.info(f"过滤掉{filtered_count}份不在就诊期间的文档")
                 
             # 1. 预取VisitRecord映射
-            flow_ids = {d["visitFlowId"] for d in self.all_documents}
-            mapping = session.query(VisitRecord.visit_flow_id, VisitRecord.id) \
-                            .filter(VisitRecord.visit_flow_id.in_(flow_ids)) \
-                            .all()
+            # 调试日志：记录visitFlowId分布
+            from collections import Counter
+            flow_id_stats = Counter(d.get('visitFlowId') for d in self.all_documents)
+            self.logger.debug(f"文档visitFlowId统计: {flow_id_stats}")
+            
+            # 过滤无效visitFlowId并清理格式
+            valid_docs = [d for d in self.all_documents if d.get('visitFlowId')]
+            flow_ids = {d["visitFlowId"].strip() for d in valid_docs}
+            
+            # 分批查询避免IN子句过长
+            batch_size = 100
+            mapping = []
+            flow_ids_list = list(flow_ids)
+            for i in range(0, len(flow_ids_list), batch_size):
+                batch = flow_ids_list[i:i+batch_size]
+                mapping.extend(
+                    session.query(VisitRecord.visit_flow_id, VisitRecord.id)
+                          .filter(VisitRecord.visit_flow_id.in_(batch))
+                          .all()
+                )
             flowid_to_recordid = {fid: recid for fid, recid in mapping}
+            self.logger.debug(f"成功映射{len(flowid_to_recordid)}个visitFlowId")
 
             # 2. 批量upsert文档
-            to_insert, to_update = [], []
-            for doc in self.all_documents:
-                doc_id = doc["documentuniqueid"]
-                vrid = flowid_to_recordid.get(doc["visitFlowId"])
-                base = {
-                    "document_id": doc_id,
-                    "visit_record_id": vrid,
-                    "visit_flow_id": doc["visitFlowId"],
-                    "empi": self.empi,
-                    "file_path": doc.get("filepath"),
-                    "payload_type": doc["payLoadType"],
-                    "document_metadata": doc,
-                    "updated_at": datetime.now()
-                }
-                existing = session.query(MedicalDocument.id) \
-                                 .filter_by(document_id=doc_id).first()
-                if existing:
-                    base["id"] = existing[0]  # 添加主键id
-                    to_update.append(base)
-                else:
-                    base["created_at"] = datetime.now()
-                    to_insert.append(base)
+            BATCH_SIZE = 50  # 文档较大，批次调小
+            total_inserted = total_updated = 0
+            
+            for i in range(0, len(valid_docs), BATCH_SIZE):
+                batch = valid_docs[i:i+BATCH_SIZE]
+                doc_ids = [d["documentuniqueid"] for d in batch]
+                
+                # 查询已存在文档
+                existing = {d[0] for d in session.query(MedicalDocument.document_id)
+                           .filter(MedicalDocument.document_id.in_(doc_ids)).all()}
+                
+                # 处理当前批次
+                to_insert = []
+                to_update = []
+                for doc in batch:
+                    doc_id = doc["documentuniqueid"]
+                    visit_flow_id = doc["visitFlowId"].strip()
+                    vrid = flowid_to_recordid.get(visit_flow_id)
+                    
+                    if vrid is None:
+                        self.logger.warning(f"找不到visitFlowId对应的记录: {visit_flow_id}, 文档ID: {doc_id}")
+                        continue
+                        
+                    doc_data = {
+                        "document_id": doc_id,
+                        "visit_record_id": vrid,
+                        "visit_flow_id": doc["visitFlowId"],
+                        "empi": self.empi,
+                        "payload_type": doc["payLoadType"],
+                        "doc_type": self.doc_type,
+                        "document_metadata": doc,
+                        "updated_at": datetime.now()
+                    }
+                    
+                    if doc_id in existing:
+                        # 获取主键id用于更新
+                        doc_id_obj = session.query(MedicalDocument.id) \
+                                          .filter_by(document_id=doc_id).first()
+                        if doc_id_obj:
+                            doc_data["id"] = doc_id_obj[0]
+                            to_update.append(doc_data)
+                    else:
+                        doc_data["created_at"] = datetime.now()
+                        to_insert.append(doc_data)
+                
+                # 执行批量操作
+                try:
+                    if to_insert:
+                        # 使用ON CONFLICT DO NOTHING进行批量插入
+                        stmt = insert(MedicalDocument).values(to_insert)
+                        stmt = stmt.on_conflict_do_nothing(index_elements=['document_id'])
+                        result = session.execute(stmt)
+                        total_inserted += result.rowcount
+                    if to_update:
+                        session.bulk_update_mappings(MedicalDocument, to_update)
+                        total_updated += len(to_update)
+                    session.commit()
+                    
+                except Exception as e:
+                    session.rollback()
+                    self.logger.error(f"批量处理失败: {e}")
+                    # 失败后改为逐条处理
+                    for doc_data in to_insert + to_update:
+                        try:
+                            if "id" in doc_data:  # 更新
+                                session.merge(MedicalDocument(**doc_data))
+                            else:  # 插入
+                                session.add(MedicalDocument(**doc_data))
+                            session.commit()
+                        except Exception as e:
+                            self.logger.error(f"文档 {doc_data['document_id']} 处理失败: {e}")
+                            session.rollback()
 
-            if to_insert:
-                session.bulk_insert_mappings(MedicalDocument, to_insert)
-            if to_update:
-                session.bulk_update_mappings(MedicalDocument, to_update)
-            session.commit()
-            self.logger.info(f"Inserted {len(to_insert)} docs, updated {len(to_update)} docs")
+            self.logger.info(f"文档处理完成: 新增{total_inserted} 更新{total_updated}")
+            return []  # 返回空列表避免TypeError
 
         except Exception as e:
             session.rollback()
@@ -206,4 +297,3 @@ class MedicalDocumentSpider(scrapy.Spider):
             raise
         finally:
             session.close()
-            return []

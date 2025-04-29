@@ -1,479 +1,545 @@
+# login_handler.py
 import os
+import time
 import requests
 import logging
 from pysm4 import encrypt_ecb
 import base64
-import json
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from email.utils import parsedate_to_datetime
 from transitions import Machine
-from crawler.models import SpiderSession
 from .login_session_repository import LoginSessionRepository
 
 class LoginStateMachine:
+    # 加入 fetching_dept_cookie 状态
     states = [
-        'init',
-        'config_loaded',
-        'db_connected',
-        'session_query_db',
-        'session_has_session',
-        'session_no_session',
-        'login_encrypting',
-        'login_requesting',
-        'ready',
+        'init', 'config_loaded', 'db_connected',
+        'portal_query', 'portal_ready',  # 基础会话状态
+        'ccd_query', 'ccd_ready',       # 科室会话状态
+        'login_encrypting', 'login_requesting',
+        'renew_ccd_session',  # CCD会话重建状态
+        'renew_portal',       # Portal会话重建状态
         'error'
     ]
 
-    def __init__(self, username: str, password: str, sm4_key: str, login_url: str, db_uri: str):
+    def __init__(self, username, password, sm4_key, login_url,
+                 db_uri, user_info_url, dept_cookie_url, new_token_url):
         self.username = username
         self.password = password
         self.sm4_key = sm4_key
         self.login_url = login_url
+        self.db_uri = db_uri
+        self.user_info_url = user_info_url
+        self.dept_cookie_url = dept_cookie_url
+        self.new_token_url = new_token_url
         self.logger = logging.getLogger(__name__)
-        self.retry_count = 0
-        self.max_retries = 3
         self.context = {}
-        
         self.repo = LoginSessionRepository(db_uri)
         self._setup_state_machine()
 
     def _setup_state_machine(self):
         self.machine = Machine(
-            model=self,
-            states=LoginStateMachine.states,
-            initial='init',
-            ignore_invalid_triggers=False  # 改为False以捕获无效转换
+            model=self, states=LoginStateMachine.states,
+            initial='init', ignore_invalid_triggers=False
         )
-        
-        # 添加状态转换
+        # 基础portal会话流程
         self.machine.add_transition('load_config', 'init', 'config_loaded')
         self.machine.add_transition('connect_db', 'config_loaded', 'db_connected')
-        self.machine.add_transition('check_session', 'db_connected', 'session_query_db')
-        self.machine.add_transition('found_session', 'session_query_db', 'session_has_session')
-        self.machine.add_transition('no_session', 'session_query_db', 'session_no_session')
-        self.machine.add_transition('start_login', 'session_no_session', 'login_encrypting')
-        self.machine.add_transition('send_request', 'login_encrypting', 'login_requesting')
-        self.machine.add_transition('complete', ['login_requesting', 'session_has_session'], 'ready')
+        self.machine.add_transition('get_portal', 'db_connected', 'portal_query')
         
-        # 新增重置和作废转换
+        # 统一portal状态转换
+        self.machine.add_transition('portal_success', 
+                                  ['portal_query','login_requesting','renew_portal'], 
+                                  'portal_ready')
+        self.machine.add_transition('portal_fail', 'portal_query', 'renew_portal')
+        self.machine.add_transition('portal_renew_failed', 'renew_portal', 'error')
+        
+        # 登录流程
+        self.machine.add_transition('start_login', '*', 'login_encrypting')
+        self.machine.add_transition(
+            'send_request', 'login_encrypting', 'login_requesting',
+            after='_perform_login'
+        )
+
+        # 科室ccd会话流程
+        self.machine.add_transition('get_ccd', 'portal_ready', 'ccd_query')
+        #目前还需要！
+        self.machine.add_transition('ccd_valid', 'ccd_query', 'ccd_ready')
+        #目前还需要！
+
+        #self.machine.add_transition('ccd_invalid','ccd_query', 'renew_ccd_session')
+        #不再使用的旧路径，暂时不删
+        #self.machine.add_transition('dept_cookie_ready', 'ccd_query', 'ccd_ready')
+        #不再使用的旧路径，暂时不删
+
+        # 重置/作废/错误
         self.machine.add_transition('reset', '*', 'init')
-        self.machine.add_transition('invalidate', ['ready', 'session_has_session'], 'init')
+        self.machine.add_transition('invalidate', ['portal_ready','ccd_ready'], 'init')
         self.machine.add_transition('error', '*', 'error')
+        self.machine.add_transition('renew_portal','*','renew_portal')
         
-        # 添加回调
+        # CCD会话重建流程
+        self.machine.add_transition('renew_ccd', '*', 'renew_ccd_session')
+        self.machine.add_transition('renew_complete', 'renew_ccd_session', 'ccd_ready')
+        self.machine.add_transition('renew_failed', 'renew_ccd_session', 'error')
+
+        # 回调绑定
         self.machine.on_enter_config_loaded('_on_config_loaded')
         self.machine.on_enter_db_connected('_on_db_connected')
-        self.machine.on_enter_session_query_db('_on_query_db')
-        self.machine.on_enter_session_has_session('_on_has_session')
-        self.machine.on_enter_session_no_session('_on_no_session')
+        
+        # Portal流程回调
+        self.machine.on_enter_portal_query('_on_portal_query')
         self.machine.on_enter_login_encrypting('_on_encrypting')
-        self.machine.on_enter_login_requesting('_on_requesting')
-        self.machine.on_enter_error('_on_error')
-        self.machine.on_enter_init('_on_reset')
+        
+        # CCD流程回调
+        self.machine.on_enter_ccd_query('_on_ccd_query')
+        
+        # 公共回调
+        #self.machine.on_enter_error('_on_error')
+        #self.machine.on_enter_init('_on_reset')
+        self.machine.on_enter_renew_ccd_session('_on_renew_ccd_session')
+        self.machine.on_enter_renew_portal('_on_renew_portal')
+        
+        # login_requesting由after执行_perform_login，无需on_enter
 
+    # ———— 原有回调 ————
     def _on_config_loaded(self):
-        """配置加载回调"""
         try:
             self.context.update({
-                'username': self.username,
-                'password': self.password,
-                'sm4_key': self.sm4_key,
-                'login_url': self.login_url
+                'username':self.username,'password':self.password,
+                'sm4_key':self.sm4_key,'login_url':self.login_url
             })
-            self.connect_db()
         except Exception as e:
-            self.logger.error(f"加载配置失败: {str(e)}")
+            self.logger.error(f"加载配置失败: {e}")
             self.error(error=e)
 
     def _on_db_connected(self):
-        """数据库连接回调"""
+        """数据库连接成功后触发portal查询"""
         try:
-            self.check_session()
+            if 'user_id' not in self.context:
+                raise ValueError("缺少user_id")
+            # 触发portal会话查询
+            self.get_portal()
         except Exception as e:
-            self.logger.error(f"数据库连接失败: {str(e)}")
+            self.logger.error(f"DB连接后处理失败: {e}")
             self.error(error=e)
 
-    def _on_query_db(self):
-        """查询会话回调"""
+    def _on_portal_query(self):
+        """查询portal会话状态"""
         try:
-            session = self.repo.get_active_session(self.username)
-            if session:
-                self.context['session'] = session
-                self.found_session()
-            else:
-                self.no_session()
-        except Exception as e:
-            self.logger.error(f"查询会话失败: {str(e)}")
-            self.error(error=e)
-
-    def _verify_session(self, cookies):
-        """验证会话是否有效"""
-        try:
-            response = requests.get(
-                os.getenv('USER_INFO_URL'),
-                cookies=cookies,
-                timeout=10
+            sess = self.repo.get_active_session(
+                self.context['user_id'],
+                dept_id='portal'  # 固定portal标记
             )
-            if response.status_code == 200:
-                data = response.json()
-                return data.get('data', {}).get('loginName') == self.username
-            return False
-        except Exception as e:
-            self.logger.warning(f"会话验证失败: {str(e)}")
-            return False
-
-    def _on_has_session(self):
-        """存在会话回调"""
-        try:
-            session = self.context['session']
-            if self._verify_session(session.cookies):
-                self.context['result'] = {
-                    'user_id': session.user_id,
-                    'cookies': session.cookies,
-                    'access_token': session.access_token,
-                    'user_code': session.user_code
-                }
-                self.complete()
+            if sess and self._validate_portal(sess):
+                self.context.update({
+                    'portal_session': {
+                        'user_id': sess.user_id,
+                        'cookies': sess.cookies,
+                        'access_token': sess.access_token,
+                        'user_code': sess.user_code
+                    },
+                    'portal_cookies': sess.cookies
+                })
+                self.portal_success()
             else:
-                self.repo.invalidate_session(self.username)
-                self.start_login()
+                self.portal_fail()
         except Exception as e:
-            self.logger.error(f"会话验证失败: {str(e)}")
+            self.logger.error(f"查询portal会话失败: {e}")
             self.error(error=e)
 
-    def _on_no_session(self):
-        """无会话回调"""
+    def _on_ccd_query(self):
+        """查询ccd会话状态"""
         try:
-            self.logger.info("没有找到有效会话，开始登录流程")
-            self.start_login()
+            dept_id = self.context['dept_id']
+            sess = self.repo.get_active_session(
+                self.context['user_id'],
+                dept_id=dept_id
+            )
+            if sess and self._validate_ccd(sess):
+                self.context['ccd_session'] = {
+                    'user_id': sess.user_id,
+                    'cookies': sess.cookies,
+                    'access_token': sess.access_token,
+                    'user_code': sess.user_code
+                }
+                self.ccd_valid()
+            else:
+                self.renew_ccd()
         except Exception as e:
-            self.logger.error(f"无会话处理失败: {str(e)}")
+            self.logger.error(f"查询ccd会话失败: {e}")
             self.error(error=e)
 
-    def encrypt_password(self, password):
-        """使用SM4加密密码"""
+    def _validate_portal(self, session) -> bool:
+        """验证portal会话有效性"""
         try:
-            if not self.sm4_key or len(self.sm4_key) != 32:
-                raise ValueError("SM4密钥必须是32字符的16进制字符串")
-            
-            key_bytes = bytes.fromhex(self.sm4_key)
-            if len(key_bytes) != 16:
-                raise ValueError("转换后的SM4密钥必须为16字节")
-            key_str = key_bytes.decode('latin1')
-            
-            encrypted_base64 = encrypt_ecb(password, key_str)
-            cipher_bytes = base64.b64decode(encrypted_base64)
-            return cipher_bytes.hex()
-        except Exception as e:
-            raise ValueError(f"密码加密失败: {str(e)}")
+            r = requests.get(self.user_info_url,
+                           cookies=session.cookies, 
+                           timeout=10)
+            return (r.status_code == 200 and 
+                   r.json().get('data',{}).get('loginName') == self.username)
+        except:
+            return False
+
+    def _validate_ccd(self, session) -> bool:
+        """验证ccd会话有效性"""
+        try:
+            url = f"{self.dept_cookie_url}?deptId={self.context['dept_id']}"
+            r = requests.get(url, cookies=session.cookies, timeout=10)
+            return r.status_code == 200
+        except:
+            return False
+
+    def encrypt_password(self, pwd):
+        if not self.sm4_key or len(self.sm4_key)!=32:
+            raise ValueError("SM4 key 必须 32 字符")
+        key_bytes=bytes.fromhex(self.sm4_key)
+        key_str=key_bytes.decode('latin1')
+        return base64.b64decode(encrypt_ecb(pwd,key_str)).hex()
 
     def _on_encrypting(self):
-        """密码加密回调"""
         try:
-            encrypted = self.encrypt_password(self.password)
-            self.context['encrypted_pwd'] = encrypted
+            self.context['encrypted_pwd'] = self.encrypt_password(self.password)
+            # 触发发送登录请求
             self.send_request()
         except Exception as e:
-            self.logger.error(f"密码加密失败: {str(e)}")
+            self.logger.error(f"加密失败: {e}")
             self.error(error=e)
 
-    def _on_requesting(self):
-        """登录请求回调"""
+    # ———— 核心登录逻辑 ————
+    def _perform_login(self):
+        """在 login_requesting 后执行，成功 portal_complete(), 失败 error()."""
         try:
-            login_data = {
-                "scheme": "login3",
-                "userName": self.username,
-                "passWord": self.context['encrypted_pwd'],
-                "city": "未知",
-                "ip": "10.248.200.14",
-                "equipmentType": "PG199",
-                "needverifycode": "0"
+            data = {
+                "scheme":"login3","userName":self.username,
+                "passWord":self.context['encrypted_pwd'],
+                "city":"未知","ip":"10.248.200.14",
+                "equipmentType":"PG199","needverifycode":"0"
             }
-            
-            response = requests.post(
-                self.login_url,
-                data=login_data,
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-                allow_redirects=False
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                if result.get('code') == 200:
-                    expires = datetime.now() + timedelta(days=30)
-                    session_data = {
-                        'user_id': self.username,
-                        'cookies': dict(response.cookies),
-                        'access_token': result['data']['access_token'],
-                        'user_code': result['data']['user_code'],
-                        'expires_at': expires.isoformat() if expires else None
-                    }
-                    self.repo.save_session(session_data)
-                    self.context['result'] = session_data
-                    # 确保cookie被全局共享
-                    if 'cookies' not in self.context:
-                        self.context['cookies'] = {}
-                    self.context['cookies'].update(session_data['cookies'])
-                    # 重置状态机到init状态
-                    self.reset()
-                    # 重新开始流程
-                    self.load_config()
-                else:
-                    raise ValueError(f"登录失败: {result.get('message')}")
-            else:
-                raise ValueError(f"HTTP请求失败: {response.status_code}")
+            r = requests.post(self.login_url, data=data,
+                              headers={"Content-Type":"application/x-www-form-urlencoded"},
+                              allow_redirects=False, timeout=10)
+            r.raise_for_status()
+            j = r.json()
+            if j.get('code')!=200:
+                raise ValueError(j.get('message'))
+            expires=(datetime.now()+timedelta(days=30)).isoformat()
+            sess_data={
+                'user_id':self.username,
+                'cookies':dict(r.cookies),
+                'access_token':j['data']['access_token'],
+                'user_code':j['data']['user_code'],
+                'expires_at':expires,
+                'dept_id':'portal'  # 标记为portal会话
+            }
+            self.repo.save_session(sess_data)
+            # 统一更新上下文
+            self.context.update({
+                'result': sess_data,
+                'portal_session': sess_data,
+                'cookies': dict(r.cookies),
+                'portal_cookies': dict(r.cookies)
+            })
+            # 统一触发portal_success
+            self.portal_success()
         except Exception as e:
-            self.logger.error(f"登录请求失败: {str(e)}")
+            self.logger.error(f"登录失败: {e}")
             self.error(error=e)
 
-    def _on_error(self, error: Exception):
-        """增强的错误处理回调"""
-        self.logger.error(f"状态机错误: {str(error)}")
+    #旧代码，暂时不删先
+    """
+    # ———— 科室 cookie 流程 ————
+    def _on_fetch_dept_cookie(self):
+        #fetch_dept_cookie → 请求科室 cookie → dept_cookie_ready/dept_cookie_failed
         try:
-            self.reset()  # 错误时自动重置
-        except Exception as reset_error:
-            self.logger.error(f"重置状态机失败: {str(reset_error)}")
-            raise RuntimeError(f"严重错误-无法重置状态机: {str(error)}")
+            dept = self.context.get('dept_id')
+            if not dept:
+                raise ValueError("缺 dept_id")
+            sess = self.repo.get_active_session(
+                self.context['user_id'],
+                dept_id=self.context['dept_id']
+            )
+            if not sess:
+                raise ValueError("无有效会话")
+            url=f"{self.dept_cookie_url}?token={sess.access_token}&deptId={dept}"
+            r=requests.get(url, cookies=sess.cookies, timeout=10)
+            if r.status_code==200:
+                new_c=dict(r.cookies)
+                merged={**sess.cookies,**new_c}
+                # 保存
+                self.repo.save_session({
+                    'user_id':self.username,
+                    'cookies':merged,
+                    'access_token':sess.access_token,
+                    'user_code':sess.user_code,
+                    'expires_at':sess.expires_at.isoformat(),
+                    'dept_id':dept  # 添加科室ID
+                })
+                self.context['cookies']=merged
+                self.context['ccd_session'] = {'user_id': self.context['user_id'], 'dept_id': dept, 'access_token': sess.access_token, 'cookies': merged}
+                self.renew_complete()
+            else:
+                raise ValueError(f"HTTP {r.status_code}")
+        except Exception as e:
+            self.logger.error(f"拿 dept cookie 失败: {e}")
+            self.renew_failed(error=e)
 
-    def _on_invalidate(self):
-        """会话作废时的清理工作"""
-        self.logger.info("正在作废当前会话并重置状态机")
-        if 'cookies' in self.context:
-            del self.context['cookies']
-        if 'result' in self.context:
-            del self.context['result']
+    def _on_error(self, error=None):
+        self.logger.error(f"状态机 error: {error}")
+        # 自动 reset 回 init
+        self.reset()
 
     def _on_reset(self):
-        """重置后的初始化工作"""
-        self.logger.info("状态机已重置")
-        self.retry_count = 0  # 重置重试计数器
+        self.logger.info("状态机 reset")
+        self.context.clear()
+    """
+        
+    def _on_renew_portal(self):
+        """处理portal会话重建"""
+        try:
+            # 触发完整登录流程
+            self.start_login()
+            #self.send_request() 
+            # 只是增强可读性
+            # 登录成功后会自动转到portal_ready
+        except Exception as e:
+            self.logger.error(f"重建portal会话失败: {e}")
+            self.portal_renew_failed(error=e)
 
+    def _on_renew_ccd_session(self):
+        """处理CCD会话重建"""
+        try:
+            # 1. 刷新access_token
+            new_token = self.refresh_access_token()
+            
+            # 2. 获取新的ccd cookie
+            url = f"{self.dept_cookie_url}?token={new_token}&deptId={self.context['dept_id']}"
+            r = requests.get(url, cookies=self.context.get('portal_cookies', {}), timeout=10)
+            if r.status_code != 200:
+                raise ValueError(f"获取ccd cookie失败: HTTP {r.status_code}")
+            
+            # 3. 合并cookies并保存
+            merged_cookies = {**self.context.get('portal_cookies', {}), **dict(r.cookies)}
+            self.repo.save_session({
+                'user_id': self.context['user_id'],
+                'dept_id': self.context['dept_id'],
+                'access_token': new_token,
+                'cookies': merged_cookies,
+                'expires_at': (datetime.now() + timedelta(days=1)).isoformat()
+            })
+            
+            # 4. 更新上下文并完成
+            self.context['ccd_session'] = {
+                'user_id': self.context['user_id'],
+                'dept_id': self.context['dept_id'],
+                'access_token': new_token,
+                'cookies': merged_cookies
+            }
+            self.renew_complete()
+            
+        except Exception as e:
+            self.logger.error(f"重建CCD会话失败: {e}")
+            self.renew_failed(error=e)
+
+    def refresh_access_token(self):
+        """刷新access_token"""
+        try:
+            r = requests.get(self.new_token_url, cookies=self.context.get('portal_cookies', {}))
+            if r.status_code == 200:
+                data = r.json()
+                if data.get('code') == 200:
+                    return data['data']['access_token']
+                raise ValueError(f"获取新token失败: {data.get('message')}")
+            raise ValueError(f"刷新token请求失败: HTTP {r.status_code}")
+        except Exception as e:
+            self.logger.error(f"刷新token失败: {e}")
+            raise
 
 class LoginHandler:
+    """处理登录会话的核心类，提供portal和ccd两种会话获取方式"""
+    
     def __init__(self):
+        """初始化登录处理器，从环境变量加载配置"""
         load_dotenv()
+        # 外部配置一次性读取
+        self.database_uri = os.getenv('DATABASE_URI')
+        self.user_info_url = os.getenv('USER_INFO_URL')
+        self.dept_cookie_url = os.getenv('DEPT_COOKIE_URL')
+        self.new_token_url = os.getenv('NEW_TOKEN_URL')
         self.username = os.getenv('USERNAME')
         self.password = os.getenv('PASSWORD')
         self.sm4_key = os.getenv('SM4_KEY')
         self.login_url = os.getenv('LOGIN_URL')
         self.logger = logging.getLogger(__name__)
-        
-        # 初始化状态机
-        self.state_machine = LoginStateMachine(
-            username=self.username,
-            password=self.password,
-            sm4_key=self.sm4_key,
-            login_url=self.login_url,
-            db_uri=os.getenv('DATABASE_URI')
+        # 把这些常量都传进去
+        self.sm = LoginStateMachine(
+            username = self.username,
+            password = self.password,
+            sm4_key = self.sm4_key,
+            login_url = self.login_url,
+            db_uri = self.database_uri,
+            user_info_url = self.user_info_url,
+            dept_cookie_url = self.dept_cookie_url,
+            new_token_url = self.new_token_url
         )
 
+    def get_portal_session(self, user_id: str) -> dict:
+        """
+        获取基础portal会话
+        Args:
+            user_id: 必须提供的用户ID
+        Returns:
+            包含cookies等信息的字典
+        Raises:
+            ValueError: 当user_id为空时
+            RuntimeError: 当登录失败时
+        """
+        #重置状态机
+        self.sm.reset()
 
-    def invalidate_session(self):
-        """增强的会话作废方法"""
-        try:
-            # 作废数据库会话
-            self.state_machine.repo.invalidate_session(self.username)
-            # 触发状态机重置
-            if hasattr(self.state_machine, 'invalidate'):
-                self.state_machine.invalidate()
-            self.logger.info(f"已作废用户 {self.username} 的会话并重置状态机")
-            return True
-        except Exception as e:
-            self.logger.error(f"作废会话失败: {str(e)}")
-            return False
-
-    def get_session(self):
-        """获取有效会话(状态机版本)"""
-        if self.state_machine.state == 'ready':
-            return self.state_machine.context.get('result')
-        
-        self.state_machine.reset()  # 确保从初始状态开始
-        self.state_machine.load_config()
-        
-        while self.state_machine.state != 'ready':
-            if self.state_machine.state == 'error':
-                raise RuntimeError("获取会话失败")
+        if not user_id:
+            raise ValueError("user_id是必填参数")
             
-        return self.state_machine.context.get('result')
-
-    def refresh_access_token(self):
-        """刷新access_token(使用Repository版本)"""
-        try:
-            session = self.state_machine.repo.get_active_session(self.username)
-            if not session:
-                raise ValueError("没有有效的登录会话")
-                
-            new_token_url = os.getenv('NEW_TOKEN_URL')
-            response = requests.get(new_token_url, cookies=session.cookies)
+        # 确保按正确顺序初始化状态机
+        self.sm.load_config()
+        self.sm.connect_db()
+        self.sm.context.update({
+            'user_id': user_id,
+            'dept_id': 'portal'  # 特殊标记portal会话
+        })
+        self.sm.get_portal()
+        
+        # 等待状态机完成(最多30秒)
+        max_wait = 30  # 秒
+        start = time.time()
+        
+        while self.sm.state not in ('portal_ready', 'error'):
+            if time.time() - start > max_wait:
+                raise RuntimeError("获取portal会话超时")
+            time.sleep(0.1)  # 避免busy-wait
             
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('code') == 200:
-                    updated = {
-                        'access_token': data['data']['access_token'],
-                        'expires_at': datetime.now() + timedelta(days=1)
-                    }
-                    self.state_machine.repo.save_session({
-                        'user_id': self.username,
-                        **updated
-                    })
-                    return data['data']['access_token']
-                raise ValueError(f"获取新token失败: {data.get('message')}")
-            raise ValueError(f"刷新token请求失败: HTTP {response.status_code}")
-        except Exception as e:
-            self.logger.error(f"刷新token失败: {str(e)}")
-            raise ValueError(f"刷新access_token时出错: {str(e)}")
+        if self.sm.state != 'portal_ready':
+            raise RuntimeError("获取portal会话失败")
+        return self.sm.context['portal_session']
 
-    def get_dept_cookie(self, dept_id):
-        """获取科室相关cookie(使用Repository版本)"""
-        try:
-            # 获取当前有效会话
-            session = self.state_machine.repo.get_active_session(self.username)
-            if not session:
-                self.logger.warning("没有有效的登录会话，重新获取...")
-                session_data = self.get_session()
-                if not session_data:
-                    raise ValueError("无法获取有效的登录会话")
-                
-                # 保存新会话到数据库
-                self.state_machine.repo.save_session(session_data)
-                session = self.state_machine.repo.get_active_session(self.username)
-                if not session:
-                    raise ValueError("会话保存后仍无法获取")
+    def mark_portal_invalid(self, user_id: str) -> dict:
+        """
+        失效并重建portal会话
+        Args:
+            user_id: 必须提供的用户ID
+        Returns:
+            重建后的portal会话
+        Raises:
+            ValueError: 当user_id为空时
+            RuntimeError: 当重建失败时
+        """
+        #重置状态机
+        self.sm.reset()
 
-            # 检查access_token
-            if not getattr(session, 'access_token', None):
-                self.logger.warning("会话中缺少access_token，尝试刷新...")
-                new_token = self.refresh_access_token()
-                if not new_token:
-                    raise ValueError("无法获取有效的access_token")
-                session.access_token = new_token
-                self.state_machine.repo.save_session({
-                    'user_id': self.username,
-                    'access_token': new_token
-                })
-
-            # 构造请求获取科室cookie
-            url = f"{os.getenv('DEPT_COOKIE_URL')}?token={session.access_token}&deptId={dept_id}"
-            response = requests.get(url, cookies=session.cookies)
+        if not user_id:
+            raise ValueError("user_id是必填参数")
             
-            if response.status_code == 200:
-                # 合并新旧cookies
-                new_cookies = dict(response.cookies)
-                merged_cookies = {**session.cookies, **new_cookies}
-                
-                # 更新数据库中的cookies
-                self.state_machine.repo.save_session({
-                    'user_id': self.username,
-                    'cookies': merged_cookies,
-                    'access_token': session.access_token,
-                    'user_code': session.user_code,
-                    'expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') and session.expires_at else (datetime.now() + timedelta(days=30)).isoformat()
-                })
-                return merged_cookies
-                
-            elif response.status_code == 401:  # token失效
-                self.logger.warning("access_token失效，尝试刷新")
-                new_token = self.refresh_access_token()
-                if new_token:
-                    # 使用新token重试
-                    url = f"{os.getenv('DEPT_COOKIE_URL')}?token={new_token}&deptId={dept_id}"
-                    response = requests.get(url, cookies=session.cookies)
-                    if response.status_code == 200:
-                        new_cookies = dict(response.cookies)
-                        merged_cookies = {**session.cookies, **new_cookies}
-                        self.state_machine.repo.save_session({
-                            'user_id': self.username,
-                            'cookies': merged_cookies,
-                            'access_token': new_token,
-                            'user_code': session.user_code,
-                            'expires_at': (datetime.now() + timedelta(days=30)).isoformat()
-                        })
-                        return merged_cookies
-                    raise ValueError(f"使用新token获取科室cookie失败: HTTP {response.status_code}")
-            raise ValueError(f"获取科室cookie失败: HTTP {response.status_code}")
-        except Exception as e:
-            self.logger.error(f"获取科室cookie失败: {str(e)}")
-            raise ValueError(f"获取科室cookie时出错: {str(e)}")
-
-    def _perform_login(self):
-        """执行登录流程"""
-        from scrapy.http import TextResponse
-        
-        encrypted_pwd = self.encrypt_password(self.password)
-        
-        login_data = {
-            "scheme": "login3",
-            "userName": self.username,
-            "passWord": encrypted_pwd,
-            "city": "未知",
-            "ip": "10.248.200.14",
-            "equipmentType": "PG199",
-            "needverifycode": "0"
-        }
-        
-        self.logger.debug(f"提交登录表单: {login_data}")
-
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-    #        "User-Agent": "Mozilla/5.0 (Linux; Android 10; PG199 Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.186 Mobile Safari/537.36"
-        }
-        
         try:
-            response = requests.post(
-                self.login_url,
-                data=login_data,
-                headers=headers,
-                allow_redirects=False
-            )
+            # 1. 失效现有会话
+            self.sm.repo.invalidate_session(user_id, "portal")
             
-            self.logger.debug(f"登录响应: {response}")
-            if response.status_code == 200:
-                result = response.json()
-                if result.get('code') == 200:
-                    # 构造会话数据
-                    expires = None
-                    if 'Set-Cookie' in response.headers:
-                        set_cookie = response.headers['Set-Cookie']
-                        if isinstance(set_cookie, str):
-                            set_cookie = [set_cookie]
-                        else:
-                            set_cookie = [c.strip() for c in set_cookie.split(',') if c.strip()]
-                        
-                        for cookie in set_cookie:
-                            if 'Expires=' in cookie:
-                                expires_str = cookie.split('Expires=')[1].split(';')[0]
-                                try:
-                                    expires = parsedate_to_datetime(expires_str) if expires_str else None
-                                except ValueError:
-                                    self.logger.warning(f"无法解析过期时间: {expires_str}, 将使用默认过期时间")
-                                    expires = datetime.now() + timedelta(hours=1)
-                                break
-                    
-                    session_data = {
-                        'user_id': self.username,
-                        'cookies': dict(response.cookies),
-                        'access_token': result['data']['access_token'],
-                        'user_code': result['data']['user_code'],
-                        'expires_at': (expires or datetime.now() + timedelta(days=30)).isoformat()
-                    }
-                    self.logger.debug(f"会话数据: {session_data}")
-                    # 保存会话到数据库
-                    self.save_session(session_data)
-                    return session_data
-                else:
-                    raise ValueError(f"登录失败: {result.get('message')}")
-            else:
-                raise ValueError(f"HTTP请求失败: {response.status_code}")
+            # 2. 设置上下文并触发重建
+            self.sm.context['user_id'] = user_id
+            self.sm.context['dept_id'] = 'portal'
+            self.sm.renew_portal()
+            
+            # 3. 等待重建完成(最多30秒)
+            max_wait = 30  # 秒
+            start = time.time()
+            
+            while self.sm.state not in ('portal_ready', 'error'):
+                if time.time() - start > max_wait:
+                    raise RuntimeError("重建portal会话超时")
+                time.sleep(0.1)  # 避免busy-wait
+                
+            if self.sm.state != 'portal_ready':
+                raise RuntimeError("重建portal会话失败")
+            return self.sm.context['portal_session']
+            
         except Exception as e:
-            raise ValueError(f"登录过程中发生错误: {str(e)}")
+            self.logger.error(f"重建portal会话失败: {e}")
+            raise RuntimeError(f"重建portal会话失败: {e}")
 
-    def save_session(self, session_data):
-        """保存会话到数据库(使用Repository版本)"""
-        try:
-            self.state_machine.repo.save_session(session_data)
-            self.logger.debug("成功保存会话数据")
-        except Exception as e:
-            self.logger.error(f"保存会话失败: {str(e)}")
-            raise
+    def get_ccd_session(self, user_id: str, dept_id: str) -> dict:
+        """
+        获取指定科室的ccd会话
+        Args:
+            user_id: 必须提供的用户ID
+            dept_id: 必须提供的科室ID
+        Returns:
+            包含cookies等信息的字典
+        Raises:
+            ValueError: 当参数为空时
+            RuntimeError: 当登录失败时
+        """
+
+        if not user_id or not dept_id:
+            raise ValueError("user_id和dept_id都是必填参数")
+            
+        # 确保已有portal会话
+        if self.sm.state != 'portal_ready':
+            self.get_portal_session(user_id)
+            
+        self.sm.context['user_id'] = user_id
+        self.sm.context['dept_id'] = dept_id
+        self.sm.get_ccd()
+        
+        # 等待状态机完成(最多30秒)
+        max_wait = 30  # 秒
+        start = time.time()
+        
+        while self.sm.state not in ('ccd_ready', 'error'):
+            if time.time() - start > max_wait:
+                raise RuntimeError(f"获取科室[{dept_id}]会话超时")
+            time.sleep(0.1)  # 避免busy-wait
+            
+        if self.sm.state != 'ccd_ready':
+            raise RuntimeError(f"获取科室[{dept_id}]会话失败")
+        return self.sm.context['ccd_session']
+
+def mark_ccd_invalid(self, user_id: str, dept_id: str) -> dict:
+        """
+        标记CCD会话失效并重建
+        Args:
+            user_id: 用户ID
+            dept_id: 科室ID
+        Returns:
+            重建后的CCD会话
+        Raises:
+            ValueError: 参数无效时
+            RuntimeError: 重建失败时
+        """
+        #重置状态机
+        self.sm.reset()
+
+        if not user_id or not dept_id:
+            raise ValueError("user_id和dept_id都是必填参数")
+            
+        # 1. 失效现有会话
+        self.sm.repo.invalidate_session(user_id, dept_id)
+        
+        # 2. 设置上下文并触发重建
+        self.sm.context.update({
+            'user_id': user_id,
+            'dept_id': dept_id,
+            'portal_cookies': self.get_portal_session(user_id)['cookies']
+        })
+        self.sm.renew_ccd()
+        
+        # 3. 等待重建完成(最多30秒)
+        max_wait = 30  # 秒
+        start = time.time()
+        
+        while self.sm.state not in ('ccd_ready', 'error'):
+            if time.time() - start > max_wait:
+                raise RuntimeError(f"重建科室[{dept_id}]会话超时")
+            time.sleep(0.1)  # 避免busy-wait
+            
+        if self.sm.state != 'ccd_ready':
+            raise RuntimeError(f"重建科室[{dept_id}]会话失败")
+        return self.sm.context['ccd_session']

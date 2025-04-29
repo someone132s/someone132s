@@ -1,0 +1,376 @@
+{
+    "code": 200,
+    "data": {
+        "errorMessage": null,
+        "groupList": [],
+        "imageBase64IndexList": [],
+        "imageFlag": "false",
+        "nameList": [],
+        "nameValueMap": {
+            "contentList": [
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "title",
+                    "other": null,
+                    "text": "疾病证明书"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "杜庆孙"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "002L22"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "softwareName",
+                    "other": null,
+                    "text": "DJHealthUnionHiUP"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "广州中山大学附属第一医院"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "002L22"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "口腔颌面外科"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "姓名：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "杜庆孙"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "科别：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "口腔颌面外科"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "床号：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "006"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "住院号：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "0031069223"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "内容",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "出院患者疾病证明书"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "姓名：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "杜庆孙"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "性别：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "男"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "年龄：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "33岁"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "出院科别：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "口腔颌面外科"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "住院号：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "0031069223"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "入院日期：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "2023年11月03日"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "出院日期：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "2023年11月11日"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "出院诊断:",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "1.骨纤维异样增殖症(右上)"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "入院情况及诊疗经过：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "发现右颊部无痛性肿胀10年。曾于外院分别在2010年、2011年、2015年、2022年行“右上颌骨切除术”自觉术后术区逐渐增大，伴触痛，口内咸味液体流出。2023-07-18日曾行“右上颌骨切除术”时，术中发现出血明显。术后病理均提示：骨纤维异样增殖症(右上)。曾予抗感染、对症治疗，无明显改善。现患者为求进一步诊治，就诊于我院门诊，门诊拟以“骨纤维异常增殖症（右上）”收入院。入院以来患者一般情况精神良好，无咳嗽无发热，大小便及胃纳正常。入院后经完善相关检查，排除手术禁忌症，2023-11-08\n于气管内麻下行“上颌骨病损切除术+复杂牙拔出术+牙龈翻瓣术+牙龈成形术”，术程顺利，术后一般情况良好，创口愈合良好。\n。现患者一般情况良好，生命体征平稳，经上级医师批准，准予出院。"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "医师：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "<image>\n    /9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkS<省略图片base64编码值>hRoF23m6dJeaRONxDWcvy5P+w2QB7Ltrf8J+GLTwjoMWlWkkkoVjJJLJ1kc9TgcDoBj0H40UUAblFFFABXIeFvBX9geJvEGtTXEc8up3BeIKhBijLFiCT3JIHH90fgUUAdfUFrZ2tlG0dpbQwIzl2WJAoLHqTjufWiigCeiiigAooooAK4zx54MuPEcMGoaReGy1uzBEEu4qrqTyjEc+uCOmT60UUAT/Dnw7d+F/B8On36RJdmV5ZRE+4ZY8c4HOMD8K6yiigAooooA //Z\n</image>2023年11月11日"
+                }
+            ]
+        },
+        "studyUids": null,
+        "studys": null,
+        "titleList": [],
+        "tuwen": null,
+        "valueList": [],
+        "valueMap": {
+            "contentList": [
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "title",
+                    "other": null,
+                    "text": "疾病证明书"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "杜庆孙"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "002L22"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "softwareName",
+                    "other": null,
+                    "text": "DJHealthUnionHiUP"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "广州中山大学附属第一医院"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "002L22"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "",
+                    "nodeName": "name",
+                    "other": null,
+                    "text": "口腔颌面外科"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "姓名：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "杜庆孙"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "科别：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "口腔颌面外科"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "床号：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "006"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "住院号：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "0031069223"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "内容",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "出院患者疾病证明书"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "姓名：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "杜庆孙"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "性别：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "男"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "年龄：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "33岁"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "出院科别：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "口腔颌面外科"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "住院号：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "0031069223"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "入院日期：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "2023年11月03日"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "出院日期：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "2023年11月11日"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "出院诊断:",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "1.骨纤维异样增殖症(右上)"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "入院情况及诊疗经过：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "发现右颊部无痛性肿胀10年。曾于外院分别在2010年、2011年、2015年、2022年行“右上颌骨切除术”自觉术后术区逐渐增大，伴触痛，口内咸味液体流出。2023-07-18日曾行“右上颌骨切除术”时，术中发现出血明显。术后病理均提示：骨纤维异样增殖症(右上)。曾予抗感染、对症治疗，无明显改善。现患者为求进一步诊治，就诊于我院门诊，门诊拟以“骨纤维异常增殖症（右上）”收入院。入院以来患者一般情况精神良好，无咳嗽无发热，大小便及胃纳正常。入院后经完善相关检查，排除手术禁忌症，2023-11-08\n于气管内麻下行“上颌骨病损切除术+复杂牙拔出术+牙龈翻瓣术+牙龈成形术”，术程顺利，术后一般情况良好，创口愈合良好。\n。现患者一般情况良好，生命体征平稳，经上级医师批准，准予出院。"
+                },
+                {
+                    "index": "",
+                    "listShow": "",
+                    "name": "医师：",
+                    "nodeName": "node",
+                    "other": null,
+                    "text": "<image>\n    /9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAx<省略图片base64编码值>dfUFrZ2tlG0dpbQwIzl2WJAoLHqTjufWiigCeiiigAooooAK4zx54MuPEcMGoaReGy1uzBEEu4qrqTyjEc+uCOmT60UUAT/Dnw7d+F/B8On36RJdmV5ZRE+4ZY8c4HOMD8K6yiigAooooA //Z\n</image>2023年11月11日"
+                }
+            ]
+        },
+        "xmlPath": "Y:/FILE/FILE_AXDS/2023/11/11/11/1.2.3.4.184008137002023030.1699673820276.49890.xml"
+    }
+}

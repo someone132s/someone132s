@@ -1,0 +1,22 @@
+在/app下
+
+# 测试5条未更新记录(默认)
+python3 -m test.test_medical_document_spider
+
+# 测试1条记录
+python3 -m test.test_medical_document_spider -l 1 
+
+# 测试1条记录（dryrun模式）
+python3 -m test.test_medical_document_spider -l 1 --dryrun
+
+# 使用自定义批次大小
+python3 -m test.test_medical_document_spider -l 10 --batch-size 30
+
+# 只测试门诊记录
+python3 -m test.test_medical_document_spider --clinic-type "门诊" -l 5
+
+# 只测试住院记录
+python3 -m test.test_medical_document_spider --clinic-type "住院" --batch-size 30
+
+# 指定visit flow id
+python3 -m test.test_medical_document_spider --visit-flow-id "123456"

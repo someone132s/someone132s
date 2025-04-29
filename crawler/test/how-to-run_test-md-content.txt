@@ -1,0 +1,9 @@
+在/app下
+
+python3 -m test.test-md-content-spider --document_id "1.2.3.4.186087009144100249.1699569799105.35605"
+
+空转
+--dryrun
+最小参数
+--minimal
+

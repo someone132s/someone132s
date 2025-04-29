@@ -9,27 +9,34 @@ from crawler.models import VisitRecord
 from dotenv import load_dotenv
 
 class TestCrawler:
-    def __init__(self, force_update=False):
+    def __init__(self, force_update=False, clinic_type=None):
         load_dotenv()
         self.engine = create_engine(os.getenv('DATABASE_URI'))
         self.Session = sessionmaker(bind=self.engine)
         
         self.force_update = force_update
+        self.clinic_type = clinic_type
 
     def get_test_records(self, limit=5):
         """从数据库获取指定数量的测试记录"""
         session = self.Session()
         try:
+            query = session.query(VisitRecord)
+            
+            # 添加就诊类型筛选
+            if self.clinic_type:
+                query = query.filter(VisitRecord.clinic_type == self.clinic_type)
+                
             if self.force_update:
                 # 强制更新模式下获取所有记录
-                records = session.query(VisitRecord)\
+                records = query\
                     .order_by(VisitRecord.updated_at.asc())\
                     .limit(limit)\
                     .all()
             else:
                 # 普通模式下只获取未更新的记录
                 cutoff_date = datetime.now() - timedelta(days=1)
-                records = session.query(VisitRecord)\
+                records = query\
                     .filter(VisitRecord.updated_at < cutoff_date)\
                     .limit(limit)\
                     .all()
@@ -74,7 +81,9 @@ if __name__ == '__main__':
                        help='要测试的记录数量，默认5条')
     parser.add_argument('-f', '--force', action='store_true',
                        help='是否强制更新所有记录')
+    parser.add_argument('-t', '--clinic-type', choices=['门诊', '住院'],
+                       help='筛选门诊或住院类型患者')
     args = parser.parse_args()
 
-    tester = TestCrawler(force_update=args.force)
+    tester = TestCrawler(force_update=args.force, clinic_type=args.clinic_type)
     tester.test_and_verify(limit=args.limit)

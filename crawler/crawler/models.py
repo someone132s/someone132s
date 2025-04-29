@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
@@ -10,12 +10,18 @@ class SpiderSession(Base):
     __tablename__ = 'spider_sessions'
     
     id = Column(Integer, primary_key=True)
-    user_id = Column(String(50), unique=True)
+    user_id = Column(String(50))  # 移除unique
+    dept_id = Column(String(100), default="default")  # 新增
     cookies = Column(JSONB)
     access_token = Column(String(255))
     user_code = Column(String(50))
     created_at = Column(DateTime, default=datetime.now)
     expires_at = Column(DateTime)
+
+    # 新增复合唯一约束
+    __table_args__ = (
+        UniqueConstraint('user_id', 'dept_id', name='uq_user_dept'),
+    )
 
     def is_valid(self):
         return self.expires_at > datetime.now()
@@ -93,7 +99,7 @@ class MedicalDocument(Base):
     empi = Column(String(50), nullable=True)
 
     # 文档内容
-    file_path = Column(String(255))
+    doc_type = Column(String(50), nullable=False)
     payload_type = Column(String(50))
     document_metadata = Column(JSONB)
     document_content = Column(JSONB)
