@@ -1,3 +1,4 @@
+# md-content-spider.py
 import os
 import json
 import re
@@ -46,7 +47,7 @@ class MDContentSpider(scrapy.Spider):
         self.showinfo_url = os.getenv('DOCUMENT_SHOWINFO_URL')
         self.showinfo_plt_url = os.getenv('DOCUMENT_SHOWINFO_PLT_URL')
 
-    def start_requests(self, cookies=None):
+    def start_requests(self, cookies=None, jar=0):
         """构造并提交GET请求获取文档内容"""
         if self.filepath == self.VOID_VALUE:
             self.logger.info(f"文档{self.document_unique_id}标记为void，跳过爬取并写入数据库")
@@ -136,7 +137,8 @@ class MDContentSpider(scrapy.Spider):
             cookies=cookies,
             headers=headers,
             callback=self.parse_response,
-            meta={'handle_httpstatus_list': [200, 302]}
+            dont_filter=True,
+            meta={'handle_httpstatus_list': [200, 302], 'cookiejar': jar}
         )
         yield request
 
@@ -146,11 +148,14 @@ class MDContentSpider(scrapy.Spider):
             self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
             # 1. 重建 CCD 会话，拿到新的 cookies
             new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            old_jar = response.meta.get('cookiejar', 0)
+            new_jar = old_jar + 1
             # 2. 更新 spider 内部 cookie 存储（可选）
             #    这样 start_requests() 里拿到的 session 就是新的
             #    或者直接在 start_requests 中每次都重新取 session
             # 3. 重新发起本页请求
-            yield from self.start_requests(cookies=new_session['cookies'])
+            yield from self.start_requests(cookies=new_session['cookies'], jar=new_jar)
+            # 使用新的jar存放新的cookie，避免新旧cookie一起使用
             return
         
         """解析API响应并保存文档内容到数据库"""

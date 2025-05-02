@@ -509,11 +509,13 @@ class LoginHandler:
     def is_ccd_expired_response(self, response) -> bool:
         """
         根据一次 CCD 业务请求的 response 判断 cookie 是否失效：
-        - 如果状态码是 302（重定向到登录页），则视为失效
+        - 如果状态码是 301, 302, 307, 308（重定向到登录页），则视为失效
         - 否则（200 等），视为仍然有效
         """
         # Scrapy 在 meta.handle_httpstatus_list 中放行 302，此时 response.status == 302
-        if response.status in (301, 302):
+        print("######",response.headers)
+        print("######",response.status)
+        if response.status in (301, 302, 307, 308) :
             # 可选：进一步检查 response.headers['Location'] 是否包含登录 URL 关键字
             #loc = response.headers.get('Location', b'').decode('utf8')
             #if self.login_url in loc:

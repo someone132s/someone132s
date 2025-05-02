@@ -33,7 +33,7 @@ class VisitItemsSpider(scrapy.Spider):
         self.Session = sessionmaker(bind=self.engine)
         self.login_handler = LoginHandler()
 
-    def start_requests(self, cookies=None):
+    def start_requests(self, cookies=None, jar=0):
         if cookies is None:
             session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
             if not session:
@@ -61,7 +61,7 @@ class VisitItemsSpider(scrapy.Spider):
             formdata=formdata,
             cookies=cookies,
             headers=headers,
-            meta={'cookiejar': 1, 'handle_httpstatus_list': [200,302]},
+            meta={'cookiejar': jar, 'handle_httpstatus_list': [200,302]},
             dont_filter=True,
             callback=self.parse_response
         )
@@ -69,16 +69,20 @@ class VisitItemsSpider(scrapy.Spider):
         yield request
 
     def parse_response(self, response):
-        # —— 会话过期检测 ——  
+                # —— 会话过期检测 ——  
         if self.login_handler.is_ccd_expired_response(response):
             self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
             # 1. 重建 CCD 会话，拿到新的 cookies
             new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            old_jar = response.meta.get('cookiejar', 0)
+            new_jar = old_jar + 1
             # 2. 更新 spider 内部 cookie 存储（可选）
             #    这样 start_requests() 里拿到的 session 就是新的
             #    或者直接在 start_requests 中每次都重新取 session
             # 3. 重新发起本页请求
-            yield from self.start_requests(cookies=new_session['cookies'])
+            yield from self.start_requests(cookies=new_session['cookies'], jar=new_jar)
+            # 使用新的jar存放新的cookie，避免新旧cookie一起使用
+            return
         
         """解析API响应并保存到数据库"""
         if response.status != 200:

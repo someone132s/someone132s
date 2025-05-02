@@ -35,11 +35,12 @@ class InfoTimelineSpider(scrapy.Spider):
                  force_updatedb=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not all([user_id, dept_id, type, start_date, end_date]):
-            raise ValueError("必须提供 user_id, dept_id , type start_date , end_date参数")
+            raise ValueError("必须提供 user_id, dept_id , type , start_date , end_date参数")
         if type not in ['I', 'O']:
             raise ValueError("type 参数必须是 'I' 或 'O'")
+        #OP 类型请求虽然服务器也会响应，但是由于已经作废，所以直接这里过滤掉
 
-        load_dotenv()
+ 
         self.user_id = user_id
         self.dept_id = dept_id
         self.type = type
@@ -49,6 +50,7 @@ class InfoTimelineSpider(scrapy.Spider):
 
         self.record_buffer = []
         self.stats = {'patients': 0, 'records': 0, 'saved': 0, 'errors': 0, 'updated': 0}
+        load_dotenv()
 
         self.patient_list_url = os.getenv('PATIENT_LIST_URL')
         self.record_base_url = os.getenv('PATIENT_VISIT_RECORD_URL')
@@ -56,38 +58,50 @@ class InfoTimelineSpider(scrapy.Spider):
         self.Session = sessionmaker(bind=self.engine)
         self.login_handler = LoginHandler()
 
-    def start_requests(self, cookies=None):
+    def start_requests(self, cookies=None, jar=0):
         if cookies is None:
             session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
             if not session:
                 raise ValueError("无法获取有效 CCD 会话")
             cookies = session['cookies']
 
-        if not session:
-            raise ValueError("无法获取有效会话")
-
         formdata = {'type': self.type, 'dept_id': self.dept_id, 'patient_name': '', 'inpatient_no': '', 'inpatient_diagnose': ''}
         if self.type == 'O':
             formdata.update({'start_date': self.start_date, 'end_date': self.end_date})
 
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "*/*",
+            "Connection": "keep-alive",
+        }
+
         yield scrapy.FormRequest(
-            method='POST', url=self.patient_list_url,
-            cookies=cookies, meta={'cookiejar': 1},
-            formdata=formdata, headers=headers, callback=self.parse_patient_list
+            method='POST', 
+            url=self.patient_list_url,
+            cookies=cookies, 
+            meta={'handle_httpstatus_list': [200, 302], 'cookiejar': jar},
+            dont_filter=True,  
+            # 避免 Scrapy 过滤掉重复请求
+            formdata=formdata, 
+            headers=headers, 
+            callback=self.parse_patient_list
         )
 
     def parse_patient_list(self, response):
-        # —— 会话过期检测 ——  
+                # —— 会话过期检测 ——  
         if self.login_handler.is_ccd_expired_response(response):
             self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
             # 1. 重建 CCD 会话，拿到新的 cookies
             new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            old_jar = response.meta.get('cookiejar', 0)
+            new_jar = old_jar + 1
             # 2. 更新 spider 内部 cookie 存储（可选）
             #    这样 start_requests() 里拿到的 session 就是新的
             #    或者直接在 start_requests 中每次都重新取 session
             # 3. 重新发起本页请求
-            yield from self.start_requests(cookies=new_session['cookies'])
+            yield from self.start_requests(cookies=new_session['cookies'], jar=new_jar)
+            # 使用新的jar存放新的cookie，避免新旧cookie一起使用
+            return
         
         try:
             data = json.loads(response.text)
@@ -126,40 +140,55 @@ class InfoTimelineSpider(scrapy.Spider):
                 self.logger.info(f"患者列表：{len(to_insert)} 新，{len(existing)} 已存")
 
             for m in mappings:
-                yield self.fetch_visit_records(m['empi'], m['patient_name'])
+                yield self.fetch_visit_records(
+                    patient_empi = m['empi'],
+                    patient_name = m['patient_name'],
+                    cookies = response.request.cookies,
+                    jar = response.meta.get('cookiejar', 0)
+                )
         except Exception as e:
             self.stats['errors'] += 1
             self.logger.error(f"解析患者列表失败: {e}")
             self.logger.error(f"原始响应: {response.text}")
 
-    def fetch_visit_records(self, empi, patient_name):
+    def fetch_visit_records(self, patient_empi=None, patient_name=None, cookies=None, jar=0):
+        
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "*/*",
+            "Connection": "keep-alive",
+        }
+                
         return scrapy.Request(
-            url = f"{self.record_base_url}?id={empi}",
+            url = f"{self.record_base_url}?id={patient_empi}",
             callback=self.parse_visit_records,
-            errback=self.handle_request_error,
-            meta={'cookiejar': 1, 'patient_empi': empi, 'patient_name': patient_name,
-                  'handle_httpstatus_list': [400,401,403,404,500]}
+            cookies=cookies,
+            headers=headers, 
+            dont_filter=True,
+            meta={'cookiejar': jar, 'patient_empi': patient_empi, 'patient_name': patient_name,
+                  'handle_httpstatus_list': [200, 302]}
         )
 
     def parse_visit_records(self, response):
-        # —— 会话过期检测 ——  
+                # —— 会话过期检测 ——  
         if self.login_handler.is_ccd_expired_response(response):
-            self.logger.warning("检测到 CCD 会话已过期，正在重建并重试…")
-            # 重建 CCD 会话
-            new_sess = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
-            # 用新 Cookie 重试当前 URL
-            yield scrapy.Request(
-                url=response.url,
-                callback=self.parse_visit_records,
-                dont_filter=True,
-                cookies=new_sess['cookies'],        # 新的 CCD cookies
-                meta={'cookiejar': response.meta.get('cookiejar', 1),
-                      'patient_empi': response.meta['patient_empi'],
-                      'patient_name': response.meta['patient_name'],
-                      'handle_httpstatus_list': [200,302]}
-            )
+            self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
+            # 1. 重建 CCD 会话，拿到新的 cookies
+            new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            old_jar = response.meta.get('cookiejar', 0)
+            new_jar = old_jar + 1
+            # 2. 更新 spider 内部 cookie 存储（可选）
+            #    这样 start_requests() 里拿到的 session 就是新的
+            #    或者直接在 start_requests 中每次都重新取 session
+            # 3. 重新发起本页请求
+            #yield from self.start_requests(cookies=new_session['cookies'], jar=new_jar)
+            yield from self.fetch_visit_records(cookies=new_session['cookies'], 
+                                                patient_empi=response.meta['patient_empi'], 
+                                                patient_name=response.meta['patient_empi'],
+                                                jar=new_jar)
+            # 使用新的jar存放新的cookie，避免新旧cookie一起使用
             return
-
+        
         empi = response.meta.get('patient_empi')
         pname = response.meta.get('patient_name')
         try:
