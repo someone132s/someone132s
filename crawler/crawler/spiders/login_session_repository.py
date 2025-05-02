@@ -40,7 +40,6 @@ class LoginSessionRepository:
         user_id = session_data.get('user_id')
         dept_id = session_data.get('dept_id')
         cookies  = session_data.get('cookies')
-        print("#######session_data",session_data)
         # 强校验：类型 + 非空
         if not (
             isinstance(user_id, str) and user_id.strip() != "" and
