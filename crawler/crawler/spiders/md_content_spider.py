@@ -14,15 +14,17 @@ from dotenv import load_dotenv
 class MDContentSpider(scrapy.Spider):
     name = "md-content-spider"
     
-    VOID_VALUE = "void"  # 直接存储为字符串，不带引号
+    VOID_VALUE = "void"  # 存储为jsonb，不带引号
     
-    def __init__(self, document_unique_id=None, filepath=None, doc_type=None, payload_type=None,
+    def __init__(self, user_id=None, dept_id=None, document_unique_id=None, filepath=None, doc_type=None, payload_type=None,
                  fileSystemFk=1, dicomNum='', reportStatus='', modality='',
-                 dicomStudyTime='', name='', external_document_unique_id=None, *args, **kwargs):
+                 dicomStudyTime='', name='', external_document_unique_id='', *args, **kwargs):
         super(MDContentSpider, self).__init__(*args, **kwargs)
-        if not all([doc_type, payload_type]) or filepath is None:
-            raise ValueError("必须提供doc_type和payload_type参数，filepath可为void")
-            
+        if not all([user_id, dept_id, document_unique_id, doc_type, payload_type]) or filepath is None:
+            raise ValueError("必须提供user_id, dept_id, doc_type和payload_type参数，filepath可为void")
+        
+        self.user_id = user_id
+        self.dept_id = dept_id
         self.document_unique_id = document_unique_id
         self.filepath = filepath
         self.doc_type = doc_type  # 文档类型(如payLoadType.JianCha)
@@ -44,7 +46,7 @@ class MDContentSpider(scrapy.Spider):
         self.showinfo_url = os.getenv('DOCUMENT_SHOWINFO_URL')
         self.showinfo_plt_url = os.getenv('DOCUMENT_SHOWINFO_PLT_URL')
 
-    def start_requests(self):
+    def start_requests(self, cookies=None):
         """构造并提交GET请求获取文档内容"""
         if self.filepath == self.VOID_VALUE:
             self.logger.info(f"文档{self.document_unique_id}标记为void，跳过爬取并写入数据库")
@@ -57,9 +59,11 @@ class MDContentSpider(scrapy.Spider):
             }
             return
             
-        session = self.login_handler.get_session()
-        if not session:
-            raise ValueError("无法获取有效会话")
+        if cookies is None:
+            session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
+            if not session:
+                raise ValueError("无法获取有效 CCD 会话")
+            cookies = session['cookies']
 
         # 根据文档类型(doc_type)构造不同请求
         if self.doc_type in ['payLoadType.JianCha', 'payLoadType.JianYan']:
@@ -129,13 +133,26 @@ class MDContentSpider(scrapy.Spider):
         request = scrapy.Request(
             url=request_url,
             method='GET',
-            cookies=session['cookies'],
+            cookies=cookies,
             headers=headers,
-            callback=self.parse_response
+            callback=self.parse_response,
+            meta={'handle_httpstatus_list': [200, 302]}
         )
         yield request
 
     def parse_response(self, response):
+                # —— 会话过期检测 ——  
+        if self.login_handler.is_ccd_expired_response(response):
+            self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
+            # 1. 重建 CCD 会话，拿到新的 cookies
+            new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            # 2. 更新 spider 内部 cookie 存储（可选）
+            #    这样 start_requests() 里拿到的 session 就是新的
+            #    或者直接在 start_requests 中每次都重新取 session
+            # 3. 重新发起本页请求
+            yield from self.start_requests(cookies=new_session['cookies'])
+            return
+        
         """解析API响应并保存文档内容到数据库"""
         #print("#####",response.text)
         if response.status != 200:

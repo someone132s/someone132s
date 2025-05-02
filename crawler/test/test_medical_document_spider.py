@@ -58,6 +58,10 @@ class TestMedicalDocumentSpider:
                 
             cmd = [
                 'scrapy', 'crawl', 'medical-document-spider',
+                '-a', f'user_id=224G',
+                #直接写死
+                '-a', f'dept_id=f8d9a5d128b3586433c3efea570e65e7',
+                #直接写死
                 '-a', f'empi={record.empi}',
                 '-a', f'domain={record.visit_flow_domain}',
                 '-a', f'admit_date={record.admit_date.strftime("%Y%m%d%H%M%S")}',

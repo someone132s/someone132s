@@ -48,6 +48,10 @@ class TestCrawler:
         """为单条记录运行爬虫"""
         cmd = [
             'scrapy', 'crawl', 'visit-items-spider',
+            '-a', f'user_id=224G',
+            #直接写死
+            '-a', f'dept_id=f8d9a5d128b3586433c3efea570e65e7',
+            #直接写死
             '-a', f'empi={record.empi}',
             '-a', f'admit_date={record.admit_date.strftime("%Y-%m-%d")}',
             '-a', f'domain={record.visit_flow_domain}',

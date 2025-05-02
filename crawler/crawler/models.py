@@ -10,9 +10,9 @@ class SpiderSession(Base):
     __tablename__ = 'spider_sessions'
     
     id = Column(Integer, primary_key=True)
-    user_id = Column(String(50))  # 移除unique
-    dept_id = Column(String(100), default="default")  # 新增
-    cookies = Column(JSONB)
+    user_id = Column(String(50), nullable=False)  # 移除unique
+    dept_id = Column(String(100), nullable=False)  # 新增
+    cookies = Column(JSONB, nullable=False)
     access_token = Column(String(255))
     user_code = Column(String(50))
     created_at = Column(DateTime, default=datetime.now)

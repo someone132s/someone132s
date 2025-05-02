@@ -33,14 +33,18 @@ class UserDepartmentSpider(scrapy.Spider):
         
         self.login_handler = LoginHandler()
 
-    def start_requests(self):
+    def start_requests(self, cookies=None):
         """使用LoginHandler获取会话"""
-        session = self.login_handler.get_portal_session(self.user_id)
+        if cookies is None:
+            session = self.login_handler.get_portal_session(self.user_id)
+            if not session:
+                raise ValueError("无法获取有效 Portal 会话")
+            cookies = session['cookies']
         
         # 使用会话中的cookies发起请求
         yield scrapy.Request(
             url=self.user_info_url,
-            cookies=session['cookies'],
+            cookies=cookies,
             callback=self.parse
         )
 

@@ -53,6 +53,10 @@ class MDContentTester:
             
         # 必须参数
         required_params = {
+            'user_id': '224G',
+            #直接写死
+            'dept_id': 'f8d9a5d128b3586433c3efea570e65e7',
+            #直接写死
             'document_unique_id': document.document_id,
             'doc_type': document.doc_type,
             'filepath': metadata.get('filepath', 'void'),

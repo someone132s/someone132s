@@ -82,9 +82,9 @@ DATABASE_URI = os.getenv('DATABASE_URI')
 #DATABASE_URI = "postgresql://medical:medical@medical-helper-db:5432/medical"
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    "crawler.pipelines.SessionManagerPipeline": 100,
-}
+#ITEM_PIPELINES = {
+#    "crawler.pipelines.SessionManagerPipeline": 100,
+#}
 ##这里也许有更好的解决方案，使用getenv会获取不到数据库地址，因为env文件在上一级目录。
 
 # Enable and configure the AutoThrottle extension (disabled by default)

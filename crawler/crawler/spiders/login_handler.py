@@ -276,23 +276,25 @@ class LoginStateMachine:
             if r.status_code != 200:
                 raise ValueError(f"获取ccd cookie失败: HTTP {r.status_code}")
             
-            # 3. 合并cookies并保存
+            # 3. 更新数据库和上下文
             merged_cookies = {**self.context.get('portal_cookies', {}), **dict(r.cookies)}
+
+            # 只保存 **一次**，而且字段都是对的
             self.repo.save_session({
-                'user_id': self.context['user_id'],
-                'dept_id': self.context['dept_id'],
+                'user_id':      self.context['user_id'],
+                'dept_id':      self.context['dept_id'],
                 'access_token': new_token,
-                'cookies': merged_cookies,
-                'expires_at': (datetime.now() + timedelta(days=1)).isoformat()
+                'cookies':      merged_cookies,
+                'expires_at':  (datetime.now()+timedelta(days=1)).isoformat()
             })
-            
-            # 4. 更新上下文并完成
+
+            # 4. 再写回 context
             self.context['ccd_session'] = {
-                'user_id': self.context['user_id'],
-                'dept_id': self.context['dept_id'],
+                'user_id':      self.context['user_id'],
+                'dept_id':      self.context['dept_id'],
                 'access_token': new_token,
-                'cookies': merged_cookies
-            }
+                'cookies':      merged_cookies
+            }            
             self.renew_complete()
             
         except Exception as e:
@@ -341,7 +343,7 @@ class LoginHandler:
             new_token_url = self.new_token_url
         )
 
-    def get_portal_session(self, user_id: str) -> dict:
+    def get_portal_session(self, user_id: str, *, do_reset=True) -> dict:
         """
         获取基础portal会话
         Args:
@@ -352,8 +354,9 @@ class LoginHandler:
             ValueError: 当user_id为空时
             RuntimeError: 当登录失败时
         """
-        #重置状态机
-        self.sm.reset()
+        #重置状态机, do_reset=True时重置,避免mark_ccd_invalid()的时候插入空行
+        if do_reset:
+            self.sm.reset()
 
         if not user_id:
             raise ValueError("user_id是必填参数")
@@ -485,7 +488,8 @@ class LoginHandler:
         self.sm.context.update({
             'user_id': user_id,
             'dept_id': dept_id,
-            'portal_cookies': self.get_portal_session(user_id)['cookies']
+            'portal_cookies': self.get_portal_session(user_id, do_reset=False)['cookies']
+            #避免空行，设置为False
         })
         self.sm.renew_ccd()
         

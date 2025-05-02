@@ -1,3 +1,4 @@
+#visit_items_spider.py
 import os
 import json
 import scrapy
@@ -13,11 +14,13 @@ from dotenv import load_dotenv
 class VisitItemsSpider(scrapy.Spider):
     name = "visit-items-spider"
     
-    def __init__(self, empi=None, admit_date=None, domain=None, visit_id=None, *args, **kwargs):
+    def __init__(self, user_id=None, dept_id=None, empi=None, admit_date=None, domain=None, visit_id=None, *args, **kwargs):
         super(VisitItemsSpider, self).__init__(*args, **kwargs)
-        if not all([empi, admit_date, domain, visit_id]):
-            raise ValueError("必须提供empi, admit_date, domain和visit_id参数")
-            
+        if not all([user_id, dept_id, empi, admit_date, domain, visit_id]):
+            raise ValueError("必须提供user_id, dept_id, empi, admit_date, domain和visit_id参数")
+        
+        self.user_id = user_id
+        self.dept_id = dept_id
         self.empi = empi
         self.admit_date = admit_date
         self.domain = domain
@@ -30,11 +33,14 @@ class VisitItemsSpider(scrapy.Spider):
         self.Session = sessionmaker(bind=self.engine)
         self.login_handler = LoginHandler()
 
-    def start_requests(self):
+    def start_requests(self, cookies=None):
+        if cookies is None:
+            session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
+            if not session:
+                raise ValueError("无法获取有效 CCD 会话")
+            cookies = session['cookies']
+
         """构造并提交POST请求"""
-        session = self.login_handler.get_session()
-        if not session:
-            raise ValueError("无法获取有效会话")
 
         formdata = {
             'empi': self.empi,
@@ -53,14 +59,27 @@ class VisitItemsSpider(scrapy.Spider):
             url=self.url,
             method='POST',
             formdata=formdata,
-            cookies=session['cookies'],
+            cookies=cookies,
             headers=headers,
+            meta={'cookiejar': 1, 'handle_httpstatus_list': [200,302]},
+            dont_filter=True,
             callback=self.parse_response
         )
         
         yield request
 
     def parse_response(self, response):
+        # —— 会话过期检测 ——  
+        if self.login_handler.is_ccd_expired_response(response):
+            self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
+            # 1. 重建 CCD 会话，拿到新的 cookies
+            new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            # 2. 更新 spider 内部 cookie 存储（可选）
+            #    这样 start_requests() 里拿到的 session 就是新的
+            #    或者直接在 start_requests 中每次都重新取 session
+            # 3. 重新发起本页请求
+            yield from self.start_requests(cookies=new_session['cookies'])
+        
         """解析API响应并保存到数据库"""
         if response.status != 200:
             self.logger.error(f"请求失败，状态码: {response.status}")

@@ -18,9 +18,12 @@ class MedicalDocumentSpider(scrapy.Spider):
     # 只有这些类型的文档会进行就诊时间范围检查
     NEEDS_TIME_FILTER_TYPES = ['payLoadType.JianYan']
     
-    def __init__(self, empi=None, domain=None, admit_date=None, discharge_date=None, payload_types=None, 
+    def __init__(self, empi=None, user_id=None, dept_id=None, domain=None, admit_date=None, discharge_date=None, payload_types=None, 
                  visit_flow_id=None, doc_type=None, strict_date_check=True, **kwargs):
+        super().__init__(**kwargs)
         required_params = {
+            'user_id': user_id,
+            'dept_id': dept_id,
             'empi': empi,
             'domain': domain,
             'admit_date': admit_date,
@@ -35,6 +38,8 @@ class MedicalDocumentSpider(scrapy.Spider):
             raise ValueError(f"缺少必要参数: {', '.join(missing_params)}")
             
         load_dotenv()
+        self.user_id = user_id
+        self.dept_id = dept_id
         self.empi = empi
         self.domain = domain
         self.admit_date = admit_date
@@ -49,12 +54,14 @@ class MedicalDocumentSpider(scrapy.Spider):
         self.engine = create_engine(os.getenv('DATABASE_URI'))
         self.Session = sessionmaker(bind=self.engine)
         self.login_handler = LoginHandler()
-        super().__init__(**kwargs)
 
-    def start_requests(self, page_no=0):
-        session = self.login_handler.get_session()
-        if not session:
-            raise ValueError("无法获取有效会话")
+
+    def start_requests(self, page_no=0, cookies=None):
+        if cookies is None:
+            session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
+            if not session:
+                raise ValueError("无法获取有效 CCD 会话")
+            cookies = session['cookies']
 
         formdata = {
             "empi": self.empi,
@@ -85,13 +92,26 @@ class MedicalDocumentSpider(scrapy.Spider):
             url=self.base_url,
             method='POST',
             formdata=formdata,
-            cookies=session['cookies'],
+            cookies = cookies,
+            meta={'page_no': page_no, 'cookiejar': 1, 'handle_httpstatus_list': [200, 302]},
+            dont_filter=True,
             headers=headers,
             callback=self.parse_page,
-            meta={'page_no': page_no}
         )
 
     def parse_page(self, response):
+        # —— 会话过期检测 ——  
+        if self.login_handler.is_ccd_expired_response(response):
+            self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
+            # 1. 重建 CCD 会话，拿到新的 cookies
+            new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            # 2. 更新 spider 内部 cookie 存储（可选）
+            #    这样 start_requests() 里拿到的 session 就是新的
+            #    或者直接在 start_requests 中每次都重新取 session
+            # 3. 重新发起本页请求
+            yield from self.start_requests(page_no=response.meta['page_no'],cookies=new_session['cookies'])
+            return
+
         try:
             data = json.loads(response.text)
             

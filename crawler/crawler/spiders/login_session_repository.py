@@ -1,8 +1,10 @@
 # login_session_repository.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
+import json
 import logging
 from crawler.models import SpiderSession
 
@@ -29,45 +31,60 @@ class LoginSessionRepository:
             session.close()
 
     def save_session(self, session_data: Dict[str, Any]) -> bool:
-        """插入或更新会话记录，支持 portal 和 ccd（dept_id）"""
+        """
+        插入或更新会话记录，使用 ON CONFLICT DO UPDATE：
+         - 以 (user_id, dept_id) 为唯一键
+         - 冲突时更新 cookies/access_token/user_code/expires_at
+        """
+        # 必要字段检查
+        user_id = session_data.get('user_id')
+        dept_id = session_data.get('dept_id')
+        cookies  = session_data.get('cookies')
+        print("#######session_data",session_data)
+        # 强校验：类型 + 非空
+        if not (
+            isinstance(user_id, str) and user_id.strip() != "" and
+            isinstance(dept_id, str) and dept_id.strip() != "" and
+            isinstance(cookies, dict) and cookies
+        ):
+            self.logger.error(f"无效字段: user_id={user_id}, dept_id={dept_id}, cookies={cookies}")
+            return False
+
+
+        # 统一 expires_at 为 datetime
+        expires_at = session_data.get('expires_at')
+        if isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at)
+        elif not isinstance(expires_at, datetime):
+            expires_at = datetime.now() + timedelta(days=30)
+
+        stmt = insert(SpiderSession).values(
+            user_id     = user_id,
+            dept_id     = dept_id,
+            cookies     = cookies,
+            access_token= session_data.get('access_token'),
+            user_code   = session_data.get('user_code'),
+            expires_at  = expires_at
+        )
+        # 冲突时按新的值更新
+        stmt = stmt.on_conflict_do_update(
+            index_elements = ['user_id', 'dept_id'],
+            set_ = {
+                'cookies'     : stmt.excluded.cookies,
+                'access_token': stmt.excluded.access_token,
+                'user_code'   : stmt.excluded.user_code,
+                'expires_at'  : stmt.excluded.expires_at,
+            }
+        )
+
         session = self.Session()
         try:
-            # 统一 expires_at 为 datetime
-            expires_at = session_data.get('expires_at')
-            if isinstance(expires_at, str):
-                expires_at = datetime.fromisoformat(expires_at)
-            elif not isinstance(expires_at, datetime):
-                expires_at = datetime.now() + timedelta(days=30)
-
-            # 必须包含 dept_id
-            dept_id = session_data.get('dept_id')
-            if dept_id is None:
-                raise ValueError("保存会话时必须包含 'dept_id' 字段")
-
-            existing = session.query(SpiderSession)\
-                .filter(SpiderSession.user_id == session_data['user_id'],
-                        SpiderSession.dept_id == dept_id)\
-                .first()
-            if existing:
-                existing.cookies = session_data['cookies']
-                existing.access_token = session_data.get('access_token', existing.access_token)
-                existing.user_code = session_data.get('user_code', existing.user_code)
-                existing.expires_at = expires_at
-            else:
-                new_s = SpiderSession(
-                    user_id=session_data['user_id'],
-                    cookies=session_data['cookies'],
-                    access_token=session_data.get('access_token'),
-                    user_code=session_data.get('user_code'),
-                    expires_at=expires_at,
-                    dept_id=dept_id
-                )
-                session.add(new_s)
+            session.execute(stmt)
             session.commit()
             return True
         except Exception as e:
             session.rollback()
-            self.logger.error(f"保存会话失败: {e}")
+            self.logger.error(f"save_session 执行失败: {e}")
             raise
         finally:
             session.close()

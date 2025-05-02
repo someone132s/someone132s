@@ -1,3 +1,4 @@
+# info_timeline_spider.py
 # Enhanced InfoTimelineSpider with incremental upsert logic and robust parsing
 # 修改说明：
 # 1. parse_patient_list:
@@ -33,12 +34,10 @@ class InfoTimelineSpider(scrapy.Spider):
     def __init__(self, user_id=None, dept_id=None, type=None, start_date=None, end_date=None,
                  force_updatedb=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not all([user_id, dept_id, type]):
-            raise ValueError("必须提供 user_id, dept_id 和 type 参数")
+        if not all([user_id, dept_id, type, start_date, end_date]):
+            raise ValueError("必须提供 user_id, dept_id , type start_date , end_date参数")
         if type not in ['I', 'O']:
             raise ValueError("type 参数必须是 'I' 或 'O'")
-        if not dept_id:
-            raise ValueError("dept_id 参数不能为空")
 
         load_dotenv()
         self.user_id = user_id
@@ -57,27 +56,39 @@ class InfoTimelineSpider(scrapy.Spider):
         self.Session = sessionmaker(bind=self.engine)
         self.login_handler = LoginHandler()
 
-    def start_requests(self):
-        # 获取cookie：yihu-ccd
-        session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
-        self.ccd_cookies = session['cookies']
+    def start_requests(self, cookies=None):
+        if cookies is None:
+            session = self.login_handler.get_ccd_session(self.user_id, self.dept_id)
+            if not session:
+                raise ValueError("无法获取有效 CCD 会话")
+            cookies = session['cookies']
 
         if not session:
             raise ValueError("无法获取有效会话")
 
-        formdata = {'type': self.type, 'dept_id': self.dept_id,
-                    'patient_name': '', 'inpatient_no': '', 'inpatient_diagnose': ''}
+        formdata = {'type': self.type, 'dept_id': self.dept_id, 'patient_name': '', 'inpatient_no': '', 'inpatient_diagnose': ''}
         if self.type == 'O':
             formdata.update({'start_date': self.start_date, 'end_date': self.end_date})
 
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         yield scrapy.FormRequest(
             method='POST', url=self.patient_list_url,
-            cookies=self.ccd_cookies, meta={'cookiejar': 1},
+            cookies=cookies, meta={'cookiejar': 1},
             formdata=formdata, headers=headers, callback=self.parse_patient_list
         )
 
     def parse_patient_list(self, response):
+        # —— 会话过期检测 ——  
+        if self.login_handler.is_ccd_expired_response(response):
+            self.logger.warning("检测到 CCD 会话已过期，正在重建并重试本页…")
+            # 1. 重建 CCD 会话，拿到新的 cookies
+            new_session = self.login_handler.mark_ccd_invalid(self.user_id, self.dept_id)
+            # 2. 更新 spider 内部 cookie 存储（可选）
+            #    这样 start_requests() 里拿到的 session 就是新的
+            #    或者直接在 start_requests 中每次都重新取 session
+            # 3. 重新发起本页请求
+            yield from self.start_requests(cookies=new_session['cookies'])
+        
         try:
             data = json.loads(response.text)
             patients = data.get('data', {}).get('List', {}).get('InPatientMainInfo') or []
