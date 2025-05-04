@@ -513,8 +513,8 @@ class LoginHandler:
         - 否则（200 等），视为仍然有效
         """
         # Scrapy 在 meta.handle_httpstatus_list 中放行 302，此时 response.status == 302
-        print("######",response.headers)
-        print("######",response.status)
+        #print("######",response.headers)
+        #print("######",response.status)
         if response.status in (301, 302, 307, 308) :
             # 可选：进一步检查 response.headers['Location'] 是否包含登录 URL 关键字
             #loc = response.headers.get('Location', b'').decode('utf8')

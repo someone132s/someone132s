@@ -1,1 +1,0 @@
-docker build -t clawer-dev:v0.0.1 .
