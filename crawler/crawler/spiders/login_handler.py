@@ -275,7 +275,6 @@ class LoginStateMachine:
             r = requests.get(url, cookies=self.context.get('portal_cookies', {}), timeout=10)
             if r.status_code != 200:
                 raise ValueError(f"获取ccd cookie失败: HTTP {r.status_code}")
-            
             # 3. 更新数据库和上下文
             merged_cookies = {**self.context.get('portal_cookies', {}), **dict(r.cookies)}
 
@@ -285,7 +284,8 @@ class LoginStateMachine:
                 'dept_id':      self.context['dept_id'],
                 'access_token': new_token,
                 'cookies':      merged_cookies,
-                'expires_at':  (datetime.now()+timedelta(days=1)).isoformat()
+                'expires_at':  (datetime.now()+timedelta(days=30)).isoformat()
+                #暂时写死为30天，到时候再根据set-cookie的值来改
             })
 
             # 4. 再写回 context
