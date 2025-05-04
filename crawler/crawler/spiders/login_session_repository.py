@@ -52,7 +52,6 @@ class LoginSessionRepository:
 
         # 统一 expires_at 为 datetime
         expires_at = session_data.get('expires_at')
-        print("######", expires_at)
         if isinstance(expires_at, str):
             expires_at = datetime.fromisoformat(expires_at)
         elif not isinstance(expires_at, datetime):
