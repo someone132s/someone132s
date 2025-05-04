@@ -233,7 +233,8 @@ class LoginStateMachine:
             sess_data={
                 'user_id':self.username,
                 'cookies':dict(r.cookies),
-                'access_token':j['data']['access_token'],
+                'access_token':'portal',  # 标记为portal会话
+                #access token这个值其实不需要再到这里获取了
                 'user_code':j['data']['user_code'],
                 'expires_at':expires,
                 'dept_id':'portal'  # 标记为portal会话
